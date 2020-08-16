@@ -1,2 +1,8 @@
 2020-08-16  17:31:49 Sun Investment&DecisionAdvisorV3.0 custom_logger.py /Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main  warning警告
 2020-08-16  17:33:04 Sun Investment&DecisionAdvisorV3.0 custom_logger.py Current working file  /Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main  ERROR
+2020-08-16  17:36:58 Sun Investment&DecisionAdvisorV3.0 custom_logger.py Current working file  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main'  ERROR
+2020-08-16  17:39:58 Sun Investment&DecisionAdvisorV3.0 custom_logger.py Current working file  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/mainMaintest'  ERROR
+2020-08-16  17:40:57 Sun Investment&DecisionAdvisorV3.0 custom_logger.py Current working file  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main/Main/test'  ERROR
+2020-08-16  17:44:20 Sun Investment&DecisionAdvisorV3.0 custom_logger.py Current working dir  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main/Main()/test()'  ERROR
+2020-08-16  17:44:50 Sun Investment&DecisionAdvisorV3.0 custom_logger.py '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main/Main()/test()'  ERROR
+2020-08-16  17:48:31 Sun Investment&DecisionAdvisorV3.0 custom_logger.py '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main/Main()/test()'  ERROR

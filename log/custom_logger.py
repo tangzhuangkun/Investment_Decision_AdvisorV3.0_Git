@@ -63,7 +63,17 @@ class CustomLogger:
 
 
 if __name__ == "__main__":
-
+	
+	'''
+	# 调用时：参考
+	class_name = self.__class__.__name__
+	func_name = sys._getframe().f_code.co_name
+	custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'','ERROR', 'warning')
+	
+	
+	'''
+	
+	
 
 	go = CustomLogger()
 	#go.my_logger("debug警告",'DEBUG')

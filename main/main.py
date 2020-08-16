@@ -23,7 +23,9 @@ class Main:
 		try:
 			4/0
 		except:
-			custom_logger.CustomLogger().my_logger('Current working file  '+current_working_dir,'ERROR', 'warning')
+			class_name = self.__class__.__name__
+			func_name = sys._getframe().f_code.co_name
+			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'','ERROR', 'warning')
 
 
 
