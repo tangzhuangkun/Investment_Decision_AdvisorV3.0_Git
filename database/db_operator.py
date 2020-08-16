@@ -4,6 +4,7 @@ import sys
 sys.path.append('..')
 import main.environment as environment
 import config.db_config as db_config
+import log.custom_logger as custom_logger
 
 
 class DBOperator:
@@ -113,7 +114,12 @@ class DBOperator:
 		except Exception as e:
 			# 如果发生错误则回滚
 			conn.rollback()
-			print(e)
+			# print(e)
+			# 日志记录
+			msg = db_name+'  '+sql + '  '+ e
+			class_name = self.__class__.__name__
+			func_name = sys._getframe().f_code.co_name
+			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
 		
 		finally:
 			# 关闭

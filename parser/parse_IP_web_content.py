@@ -4,6 +4,9 @@ import socket
 import urllib.error
 import bs4
 import time
+import sys
+sys.path.append('..')
+import log.custom_logger as custom_logger
 
 
 class ParseIPWebContent:
@@ -29,10 +32,21 @@ class ParseIPWebContent:
 			# 使用beautifulsoup 解析页面
 			soup = bs4.BeautifulSoup(raw_content,'lxml')
 		except Exception as e:
-			print('Error:', e)
+			# print('Error:', e)
+			# 日志记录
+			msg = url + '  '+ e
+			class_name = self.__class__.__name__
+			func_name = sys._getframe().f_code.co_name
+			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
+			
 		except urllib.error.URLError as e:
 			if isinstance(e.reason, socket.timeout):
-				print('TIME OUT')
+				# print('TIME OUT')
+				# 日志记录
+				msg = url + '  '+ e
+				class_name = self.__class__.__name__
+				func_name = sys._getframe().f_code.co_name
+				custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
 				
 				
 		

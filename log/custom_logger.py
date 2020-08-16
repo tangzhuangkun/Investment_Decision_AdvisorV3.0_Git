@@ -11,8 +11,8 @@ class CustomLogger:
 		# 当天的日期
 		self.today= time.strftime("%Y-%m-%d", time.localtime())
 		
-	def my_logger(self,working_dir, msg, lev='warning'):
-		# working_dir:
+	def my_logger(self,working_dir, msg, lev='error'):
+		# working_dir: 调用该日志功能的函数路径
 		# msg: 需要写入日志文件的信息
 		# lev: 日志的级别，默认 warning,需要小写
 		# 日志级别：debug<info<warning<error<critical 
@@ -34,7 +34,7 @@ class CustomLogger:
 			
 			# 设置输出日志格式
 			formatter = logging.Formatter(
-				fmt="%(asctime)s %(name)s %(filename)s %(message)s",
+				fmt="%(asctime)s %(name)s %(message)s",
 				datefmt="%Y-%m-%d  %H:%M:%S %a"
 				)
 				
@@ -48,15 +48,15 @@ class CustomLogger:
 			
 		# 输出不同级别的log,严重级别依次递增
 		if lev=='debug':
-			logger.debug(working_dir+"  "+msg)
+			logger.debug("DEBUG  "+working_dir+"  "+msg)
 		elif lev=='info':
-			logger.info(working_dir+"  "+msg)
+			logger.info("INFO  "+working_dir+"  "+msg)
 		elif lev=='warning':
-			logger.warning(working_dir+"  "+msg)
+			logger.warning("WARNING  "+working_dir+"  "+msg)
 		elif lev=='error':
-			logger.error(working_dir+"  "+msg)
+			logger.error("ERROR  "+working_dir+"  "+msg)
 		elif lev=='critical':
-			logger.critical(working_dir+"  "+msg)
+			logger.critical("CRITICAL  "+working_dir+"  "+msg)
 		else:
 			print('WRONG LEVEL')
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 	# 调用时：参考
 	class_name = self.__class__.__name__
 	func_name = sys._getframe().f_code.co_name
-	custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'','ERROR', 'warning')
+	custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'','MSSSG')
 	
 	
 	'''
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 	go = CustomLogger()
 	#go.my_logger("debug警告",'DEBUG')
 	#go.my_logger("info警告",'INFO')
-	go.my_logger('/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main',"warning警告",'warning')
+	go.my_logger('/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main',"MSG",'warning')
 	#go.my_logger("error警告",'ERROR')
 	#go.my_logger("critical警告",'CRITICAL')
 	#go.my_logger("default警告")

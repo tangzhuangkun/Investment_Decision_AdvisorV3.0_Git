@@ -1,4 +1,7 @@
 import requests
+import sys
+sys.path.append('..')
+import log.custom_logger as custom_logger
 
 
 class CheckIPAvailability:
@@ -24,6 +27,12 @@ class CheckIPAvailability:
 			return True
 		except BaseException as e:
 			# print(e)
+			# 日志记录
+			msg = ip+' 失活'+ '  '+ e
+			class_name = self.__class__.__name__
+			func_name = sys._getframe().f_code.co_name
+			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
+			
 			return False
 
 

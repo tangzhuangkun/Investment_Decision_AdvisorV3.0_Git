@@ -58,7 +58,7 @@ class CollectProxyIP:
                 2、启用多线程
                 '''
                 page_url = url[0]+str(i)+url[1]
-                print(page_url)
+                # print(page_url)
                 
                 # 处理可能出现的ip代理网站链接异常的情况
                 # 可抛出异常，然后继续执行
@@ -69,7 +69,13 @@ class CollectProxyIP:
                     # 检查代理的可用性，并把可用的存入数据库
                     self.check_ip_availability_and_save_to_db(db_name, page_proxy_ip_detail_set)
                 except Exception as e:
-                    print('Error:', e)
+                    # print('Error:', e)
+                    
+                    # 日志记录
+                    msg = page_url + '  '+ e
+                    class_name = self.__class__.__name__
+                    func_name = sys._getframe().f_code.co_name
+                    custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
             
 
     def check_ip_availability_and_save_to_db(self, db_name, IP_set):
