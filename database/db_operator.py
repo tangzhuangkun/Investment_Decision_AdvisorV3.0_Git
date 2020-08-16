@@ -5,7 +5,7 @@ sys.path.append('..')
 import main.environment as environment
 import config.db_config as db_config
 import log.custom_logger as custom_logger
-
+import os
 
 class DBOperator:
 	# 数据库的基础操作，增删改查，
@@ -116,10 +116,8 @@ class DBOperator:
 			conn.rollback()
 			# print(e)
 			# 日志记录
-			msg = db_name+'  '+sql + '  '+ e
-			class_name = self.__class__.__name__
-			func_name = sys._getframe().f_code.co_name
-			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
+			msg = db_name+'  '+sql + '  '+ str(e)
+			custom_logger.CustomLogger().log_writter(msg)
 		
 		finally:
 			# 关闭

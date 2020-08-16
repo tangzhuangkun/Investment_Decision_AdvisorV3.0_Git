@@ -1,5 +1,8 @@
 import logging
 import time
+import sys
+import os
+import inspect
 
 
 class CustomLogger:
@@ -14,7 +17,7 @@ class CustomLogger:
 	def my_logger(self,working_dir, msg, lev='error'):
 		# working_dir: 调用该日志功能的函数路径
 		# msg: 需要写入日志文件的信息
-		# lev: 日志的级别，默认 warning,需要小写
+		# lev: 日志的级别，默认 error,需要小写
 		# 日志级别：debug<info<warning<error<critical 
 		# 只有warning，error，critical才会写入日志文件
 		# 输出：会在log文件夹中，按日期生成日志文件
@@ -59,26 +62,40 @@ class CustomLogger:
 			logger.critical("CRITICAL  "+working_dir+"  "+msg)
 		else:
 			print('WRONG LEVEL')
-
-
+	
+	
+	
+	def log_writter(self, msg, lev='error'):
+		# 该函数便于外部调用
+		# msg: 需要写入日志文件的信息
+		# lev: 日志的级别，默认 error,需要小写
+		# 日志级别：debug<info<warning<error<critical 
+		# 只有warning，error，critical才会写入日志文件
+		# 输出：会在log文件夹中，按日期生成日志文件
+		
+		
+		current_working_dir = os.path.realpath(sys.argv[0])
+		func_name = inspect.stack()[1][3]
+		self.my_logger('\''+current_working_dir+'/'+func_name+'()\'',msg,lev)
+		
 
 if __name__ == "__main__":
 	
 	'''
 	# 调用时：参考
+	# 日志记录
+	msg = ip+' 失活'+ '  '+ str(e)
+	current_working_dir = os.getcwd()
 	class_name = self.__class__.__name__
 	func_name = sys._getframe().f_code.co_name
-	custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'','MSSSG')
+	custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
 	
 	
 	'''
-	
+	pass
 	
 
 	go = CustomLogger()
-	#go.my_logger("debug警告",'DEBUG')
-	#go.my_logger("info警告",'INFO')
-	go.my_logger('/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main',"MSG",'warning')
-	#go.my_logger("error警告",'ERROR')
-	#go.my_logger("critical警告",'CRITICAL')
-	#go.my_logger("default警告")
+	#go.my_logger('/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/main',"MSG",'warning')
+	go.log_writter("MSG",'warning')
+

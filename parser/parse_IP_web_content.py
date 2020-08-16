@@ -7,7 +7,7 @@ import time
 import sys
 sys.path.append('..')
 import log.custom_logger as custom_logger
-
+import os
 
 class ParseIPWebContent:
 	def __init__(self):
@@ -34,20 +34,16 @@ class ParseIPWebContent:
 		except Exception as e:
 			# print('Error:', e)
 			# 日志记录
-			msg = url + '  '+ e
-			class_name = self.__class__.__name__
-			func_name = sys._getframe().f_code.co_name
-			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
+			msg = url + '  '+ str(e)
+			custom_logger.CustomLogger().log_writter(msg)
 			
 		except urllib.error.URLError as e:
 			if isinstance(e.reason, socket.timeout):
 				# print('TIME OUT')
 				# 日志记录
-				msg = url + '  '+ e
-				class_name = self.__class__.__name__
-				func_name = sys._getframe().f_code.co_name
-				custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
 				
+				msg = url + '  '+ 'TIME OUT'
+				custom_logger.CustomLogger().log_writter(msg)
 				
 		
 		# 通过url地址获取网站名称

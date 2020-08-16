@@ -8,8 +8,8 @@ sys.path.append('..')
 import database.db_operator as db_operator
 import config.parser_config as parser_config
 import time
-
-
+import log.custom_logger as custom_logger
+import os
 
 
 class CollectProxyIP:
@@ -72,10 +72,8 @@ class CollectProxyIP:
                     # print('Error:', e)
                     
                     # 日志记录
-                    msg = page_url + '  '+ e
-                    class_name = self.__class__.__name__
-                    func_name = sys._getframe().f_code.co_name
-                    custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
+                    msg = page_url + '  '+ str(e)
+                    custom_logger.CustomLogger().log_writter(msg)
             
 
     def check_ip_availability_and_save_to_db(self, db_name, IP_set):
