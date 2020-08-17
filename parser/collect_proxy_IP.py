@@ -104,7 +104,7 @@ class CollectProxyIP:
             sql = "INSERT INTO T_ip_availability(ip_address,is_anonymous,is_available,type,submission_date)VALUES ('%s','%s','%s','%s','%s')" %(ip,1,1,ip_type,today)
             if result:
                 # 存入数据库
-                db_operator.DBOperator().insert(db_name, sql)
+                db_operator.DBOperator().operate('insert',db_name, sql)
 
     
     def main(self):

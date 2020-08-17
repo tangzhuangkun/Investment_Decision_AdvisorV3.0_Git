@@ -51,15 +51,15 @@ class CustomLogger:
 			
 		# 输出不同级别的log,严重级别依次递增
 		if lev=='debug':
-			logger.debug("DEBUG  "+working_dir+"  "+msg)
+			logger.debug("	DEBUG  "+working_dir+"  "+msg+"\n")
 		elif lev=='info':
-			logger.info("INFO  "+working_dir+"  "+msg)
+			logger.info("	INFO  "+working_dir+"  "+msg+"\n")
 		elif lev=='warning':
-			logger.warning("WARNING  "+working_dir+"  "+msg)
+			logger.warning("	WARNING  "+working_dir+"  "+msg+"\n")
 		elif lev=='error':
-			logger.error("ERROR  "+working_dir+"  "+msg)
+			logger.error("	ERROR  "+working_dir+"  "+msg+"\n")
 		elif lev=='critical':
-			logger.critical("CRITICAL  "+working_dir+"  "+msg)
+			logger.critical("	CRITICAL  "+working_dir+"  "+msg+"\n")
 		else:
 			print('WRONG LEVEL')
 	

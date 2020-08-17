@@ -40,6 +40,8 @@ class DBOperator:
 	
 	
 	def select_one(self, db_name, sql):
+		# db_name：创建哪个模块的数据库连接池
+		# 来自 db_config.py 的 DATABASES
 		# sql: 需要插入数据库的sql query
 		# 查一个
 		# 输出： 返回查询结果
@@ -67,7 +69,9 @@ class DBOperator:
 			
 
 
-	def select_all(self, db_name,sql):	
+	def select_all(self, db_name,sql):
+		# db_name：创建哪个模块的数据库连接池
+		# 来自 db_config.py 的 DATABASES	
 		# sql: 需要插入数据库的sql query
 		# 查全部
 		# 输出： 返回查询结果
@@ -89,43 +93,55 @@ class DBOperator:
 		except Exception as e:
 			# 如果发生错误则回滚
 			conn.rollback()
-			print(e)
 			# 关闭
 			close_conn(conn, cur)
-
-	
-	
-	
-	
-	
-	def insert(self, db_name, sql):
-		# sql: 需要插入数据库的sql query
-		# 增
-		
-		# 创建链接和操作游标
-		conn, cur = self.create_conn(db_name)
-		try:
-			# 如果数据库连接失败，则重连
-			conn.ping(reconnect=True)
-			# 执行sql语句
-			cur.execute(sql)
-			# 提交
-			conn.commit()
-		except Exception as e:
-			# 如果发生错误则回滚
-			conn.rollback()
-			# print(e)
 			# 日志记录
 			msg = db_name+'  '+sql + '  '+ str(e)
 			custom_logger.CustomLogger().log_writter(msg)
+			
+			
+	def operate(self, action, db_name, sql):
+		# action：必选，只能填 insert，delete，update
+		# db_name：创建哪个模块的数据库连接池
+		# 来自 db_config.py 的 DATABASES
+		# sql: 需要删除数据库的sql query
+		# 增，删，改
 		
-		finally:
-			# 关闭
-			self.close_conn(conn, cur)
+		# 检查action是否符合规范
+		if action in ('insert','delete','update'):
+		
+			# 创建链接和操作游标
+			conn, cur = self.create_conn(db_name)
+			try:
+				# 如果数据库连接失败，则重连
+				conn.ping(reconnect=True)
+				# 执行sql语句
+				cur.execute(sql)
+				# 提交
+				conn.commit()
+			except Exception as e:
+				# 如果发生错误则回滚
+				conn.rollback()
+				# print(e)
+				# 日志记录
+				msg = db_name+'  '+sql + '  '+ str(e)
+				custom_logger.CustomLogger().log_writter(msg)
+			
+			finally:
+				# 关闭
+				self.close_conn(conn, cur)
+		else:
+			# print("Wrong action,please reinput one")
+			# 检查action不符合规范，只能填 insert，delete，update
+			# 日志记录
+			msg = "Wrong action,please reinput one, choose from (insert，delete，update)"
+			custom_logger.CustomLogger().log_writter(msg)
 
 
 if __name__ == "__main__":
 	go = DBOperator()
-	conn, cursor = go.create_conn('IP_proxy')		
-	print(conn)
-	print(cursor)
+	#conn, cursor = go.create_conn('IP_proxy')		
+	#print(conn)
+	#print(cursor)
+	# sql = ''
+	#go.operate('insert','IP_proxy',sql)
