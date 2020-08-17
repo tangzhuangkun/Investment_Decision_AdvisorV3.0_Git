@@ -68,6 +68,11 @@ class CollectProxyIP:
                     
                     # 检查代理的可用性，并把可用的存入数据库
                     self.check_ip_availability_and_save_to_db(db_name, page_proxy_ip_detail_set)
+                    
+                    # 日志记录
+                    msg = page_url 
+                    custom_logger.CustomLogger().log_writter('Collected '+msg,lev='info')
+                    
                 except Exception as e:
                     # print('Error:', e)
                     

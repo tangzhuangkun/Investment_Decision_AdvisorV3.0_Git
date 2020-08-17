@@ -7,7 +7,7 @@ import inspect
 
 class CustomLogger:
 	# 自定义的日志工具
-	# 只有warning，error，critical才会写入日志文件
+	# 只有info,warning，error，critical才会写入日志文件
 	# 会在log文件夹中，按日期生成日志文件
 	
 	def __init__(self):
@@ -27,12 +27,12 @@ class CustomLogger:
 		logger = logging.getLogger("Investment&DecisionAdvisorV3.0")
 		# 设置logger日志等级,设置日志器将会处理的日志消息的最低严重级别
 		# DEBUG<INFO<WARNING<ERROR<CRITICAL
-		logger.setLevel(logging.WARNING)  
+		logger.setLevel(logging.INFO)  
 		
 		# 如果logger.handlers列表为空，且日志级别不为debug和不为info，则添加，否则，直接去写日志
-		if not logger.handlers and lev != 'debug' and lev != 'info':
+		if not logger.handlers and lev != 'debug':
 			# 创建handler
-			fh = logging.FileHandler("../log/"+self.today+".log",encoding="utf-8")
+			fh = logging.FileHandler("../log/daily_log/"+self.today+".log",encoding="utf-8")
 			ch = logging.StreamHandler()
 			
 			# 设置输出日志格式
@@ -78,21 +78,17 @@ class CustomLogger:
 		func_name = inspect.stack()[1][3]
 		self.my_logger('\''+current_working_dir+'/'+func_name+'()\'',msg,lev)
 		
+		
 
 if __name__ == "__main__":
 	
 	'''
 	# 调用时：参考
-	# 日志记录
-	msg = ip+' 失活'+ '  '+ str(e)
-	current_working_dir = os.getcwd()
-	class_name = self.__class__.__name__
-	func_name = sys._getframe().f_code.co_name
-	custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'', msg)
-	
+	# 日志记录	
+	msg = db_name+'  '+sql + '  '+ str(e)
+	custom_logger.CustomLogger().log_writter(msg)
 	
 	'''
-	pass
 	
 
 	go = CustomLogger()
