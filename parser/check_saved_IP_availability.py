@@ -4,7 +4,7 @@ import sys
 sys.path.append('..')
 import database.db_operator as db_operator
 import log.custom_logger as custom_logger
-
+import threading
 
 class CheckSavedIPAvailability:
 	# 检查数据库中保存的所有IP的可用性
@@ -50,12 +50,46 @@ class CheckSavedIPAvailability:
 			is_available = check_IP_availability.CheckIPAvailability().check_single_ip_availability(ip_dict['ip_address'].split(":")[0])
 			if not is_available:
 				self.delete_unavailable_ip(db_name, ip_dict['ip_address'])	
+				
+	def multiple_threading_checking_saved_ips(self,db_name):
+		# 多线程检查数据库中ip的有效性
 		
+		# 数据库中输出的是一个list，里面装有dict，形式如：[{‘ip_address’:'61.145.48.100:9999'},,,,,]
+		IP_dict_list = self.get_all_db_IPs('IP_proxy')
+		
+		# 数据库中查询到的ip平均分成多份，每份至多处理15个
+		every_section_has_ip_num = 15
+		
+		divided_ips_list_into_sections = []
+		# 将查询到的ip分成以每个子list存有最多10个ip的大list   [[10个ip],[10个ip]...]
+		for i in range(0, len(IP_dict_list), every_section_has_ip_num):
+			divided_ips_list_into_sections.append(IP_dict_list[i:i + every_section_has_ip_num])	
+		
+		# 启用多线程
+		running_threads = []
+		for section_index in range(len(divided_ips_list_into_sections)):
+			# 创建新线程
+			running_thread = threading.Thread(target=self.check_ip_availability_and_delete_unable_from_DB,args=(db_name,divided_ips_list_into_sections[section_index]))	
+			running_threads.append(running_thread)	
+		
+		# 开启新线程
+		for mem in running_threads:
+			mem.start()
+			
+		# 等待所有线程完成
+		for mem in running_threads:
+			mem.join()
+		
+		# 日志记录	
+		msg = "Checked all saved IPs in multiple threading way "
+		custom_logger.CustomLogger().log_writter(msg,'info')
+	
+	
+	def main(self):
+		self.multiple_threading_checking_saved_ips('IP_proxy')
 
 
 if __name__ == "__main__":
 	go = CheckSavedIPAvailability()
-	IP_dict_list =  go.get_all_db_IPs('IP_proxy')
-	# go.delete_unavailable_ip('IP_proxy', '61.175.192.2:3542')
-	go.check_ip_availability_and_delete_unable_from_DB('IP_proxy', IP_dict_list)
+	go.main()
 		
