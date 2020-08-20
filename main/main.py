@@ -16,6 +16,7 @@ class Main:
 	
 	def timer(self):
 		pass
+		# 每天： collect_proxy_IP.py， check_saved_IP_availability.py
 		
 	def test(self):
 		
