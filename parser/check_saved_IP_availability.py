@@ -47,7 +47,7 @@ class CheckSavedIPAvailability:
 			
 		for ip_dict in IP_dict_list:
 			#挨个检查IP活性, 舍去端口号
-			is_available = check_IP_availability.CheckIPAvailability().check_single_ip_availability(ip_dict['ip_address'].split(":")[0])
+			is_available = check_IP_availability.CheckIPAvailability().check_single_ip_availability(ip_dict['ip_address'])
 			if not is_available:
 				self.delete_unavailable_ip(db_name, ip_dict['ip_address'])	
 				

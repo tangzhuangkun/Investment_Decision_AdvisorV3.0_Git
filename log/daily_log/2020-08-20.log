@@ -134,3 +134,9 @@
 
 2020-08-20  22:44:56 Thu Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/check_saved_IP_availability.py/multiple_threading_checking_saved_ips()'  Checked all saved IPs in multiple threading way 
 
+2020-08-20  23:07:04 Thu Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/check_IP_availability.py/check_single_ip_availability()'  61.145.48.100:9999'61.145.48.100:9999' does not appear to be an IPv4 or IPv6 address
+
+2020-08-20  23:08:07 Thu Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/check_IP_availability.py/check_single_ip_availability()'  61.145.48.100:9999name 'requests' is not defined
+
+2020-08-20  23:13:48 Thu Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/check_saved_IP_availability.py/multiple_threading_checking_saved_ips()'  Checked all saved IPs in multiple threading way 
+
