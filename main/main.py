@@ -18,6 +18,9 @@ class Main:
 		pass
 		# 每天： collect_proxy_IP.py， check_saved_IP_availability.py
 		
+		
+		# 每月：generate_save_user_agent.py
+		
 	def test(self):
 		
 		try:

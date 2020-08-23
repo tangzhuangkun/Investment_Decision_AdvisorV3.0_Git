@@ -86,7 +86,7 @@ if __name__ == "__main__":
 	# 调用时：参考
 	# 日志记录	
 	msg = db_name+'  '+sql + '  '+ str(e)
-	custom_logger.CustomLogger().log_writter(msg)
+	custom_logger.CustomLogger().log_writter(msg,'warning')
 	
 	'''
 	

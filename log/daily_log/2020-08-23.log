@@ -24,3 +24,21 @@
 
 2020-08-23  18:50:57 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/collect_proxy_IP.py/collect_web_content()'  Collected http://www.66ip.cn/1.html
 
+2020-08-23  20:03:25 Sun Investment&DecisionAdvisorV3.0 	ERROR  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/generate_and_save_user_agent()'  Inserted 2000 fake UAs into database
+
+2020-08-23  20:03:56 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/generate_and_save_user_agent()'  Inserted 2000 fake UAs into database
+
+2020-08-23  20:10:33 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/generate_and_save_user_agent()'  Inserted 2000 fake UAs into database
+
+2020-08-23  20:11:25 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/deleted_outdated_user_agent()'  DELETE all fake UAs from database
+
+2020-08-23  20:13:04 Sun Investment&DecisionAdvisorV3.0 	ERROR  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/operate()'  parser_component  DELETE FROM IF EXISTS fake_user_agent  (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'IF EXISTS fake_user_agent' at line 1")
+
+2020-08-23  20:13:04 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/deleted_outdated_user_agent()'  DELETE all fake UAs from database
+
+2020-08-23  20:15:59 Sun Investment&DecisionAdvisorV3.0 	ERROR  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/operate()'  parser_component  DELETE FROM IF EXISTS fake_user_agent  (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'IF EXISTS fake_user_agent' at line 1")
+
+2020-08-23  20:15:59 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/deleted_outdated_user_agent()'  DELETE all fake UAs from database
+
+2020-08-23  20:16:01 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/generate_and_save_user_agent()'  Inserted 2000 fake UAs into database
+
