@@ -43,7 +43,7 @@ class GenerateSaveUserAgent:
 		db_operator.DBOperator().operate('delete','parser_component', sql)
 		
 		# 日志记录
-		msg = 'DELETE all fake UAs from database'	
+		msg = 'DELETE all outdated fake UAs from database'	
 		custom_logger.CustomLogger().log_writter(msg,'info')
 	
 	

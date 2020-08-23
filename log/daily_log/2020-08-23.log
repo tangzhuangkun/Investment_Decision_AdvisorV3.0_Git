@@ -42,3 +42,5 @@
 
 2020-08-23  20:16:01 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/generate_save_user_agent.py/generate_and_save_user_agent()'  Inserted 2000 fake UAs into database
 
+2020-08-23  20:51:41 Sun Investment&DecisionAdvisorV3.0 	INFO  '/Users/tangzekun/Desktop/KunCloud/Coding_Projects/Investment_Decision_AdvisorV3.0_Git/parser/disguise.py/get_one_IP_UA()'  Get one IP and one UA from database
+
