@@ -13,7 +13,7 @@ import os
 
 
 class CollectProxyIP:
-    # 获取IP代理网站上的有用代理IP，并存入数据库IP_proxy 表 T_IP_availability
+    # 获取IP代理网站上的有用代理IP，并存入数据库parser_component 表 IP_availability
     # 运行频率：每天
 
     def __init__(self):
@@ -101,15 +101,15 @@ class CollectProxyIP:
             # 检查IP可用性
             result = check_IP_availability.CheckIPAvailability().check_single_ip_availability(ip)
             # SQL 插入语句
-            sql = "INSERT INTO T_ip_availability(ip_address,is_anonymous,is_available,type,submission_date)VALUES ('%s','%s','%s','%s','%s')" %(ip,1,1,ip_type,today)
+            sql = "INSERT INTO IP_availability(ip_address,is_anonymous,is_available,type,submission_date)VALUES ('%s','%s','%s','%s','%s')" %(ip,1,1,ip_type,today)
             if result:
                 # 存入数据库
                 db_operator.DBOperator().operate('insert',db_name, sql)
 
     
     def main(self):
-        # 抓取代理IP，存入 数据库 IP_proxy，抓取每个代理网站的前4页
-        self.collect_web_content('IP_proxy', 2)
+        # 抓取代理IP，存入 数据库 parser_component，抓取每个代理网站的前4页
+        self.collect_web_content('parser_component', 2)
     
     
 if __name__ == "__main__":

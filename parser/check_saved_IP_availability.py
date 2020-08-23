@@ -20,7 +20,7 @@ class CheckSavedIPAvailability:
 		# 输出：IP_dict_list，如[{'ip_address': '95.216.228.204:3128'},,,,]
 		
 		# sql query查询所有已存的ip地址		
-		sql = "SELECT ip_address from T_IP_availability"
+		sql = "SELECT ip_address from IP_availability"
 		# 从数据库取出
 		IP_dict_list = db_operator.DBOperator().select_all(db_name,sql)
 		
@@ -32,7 +32,7 @@ class CheckSavedIPAvailability:
 		# ip: IP地址
 		
 		#删除该无效的ip地址		
-		sql="DELETE from T_IP_availability where ip_address='%s'" % (ip)
+		sql="DELETE from IP_availability where ip_address='%s'" % (ip)
 		db_operator.DBOperator().operate('delete', db_name, sql)
 		
 		# 日志记录	
@@ -55,7 +55,7 @@ class CheckSavedIPAvailability:
 		# 多线程检查数据库中ip的有效性
 		
 		# 数据库中输出的是一个list，里面装有dict，形式如：[{‘ip_address’:'61.145.48.100:9999'},,,,,]
-		IP_dict_list = self.get_all_db_IPs('IP_proxy')
+		IP_dict_list = self.get_all_db_IPs('parser_component')
 		
 		# 数据库中查询到的ip平均分成多份，每份至多处理15个
 		every_section_has_ip_num = 15
@@ -86,7 +86,7 @@ class CheckSavedIPAvailability:
 	
 	
 	def main(self):
-		self.multiple_threading_checking_saved_ips('IP_proxy')
+		self.multiple_threading_checking_saved_ips('parser_component')
 
 
 if __name__ == "__main__":

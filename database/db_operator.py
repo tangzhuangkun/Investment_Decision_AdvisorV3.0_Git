@@ -140,8 +140,8 @@ class DBOperator:
 
 if __name__ == "__main__":
 	go = DBOperator()
-	#conn, cursor = go.create_conn('IP_proxy')		
+	#conn, cursor = go.create_conn('parser_component')
 	#print(conn)
 	#print(cursor)
 	# sql = ''
-	#go.operate('insert','IP_proxy',sql)
+	#go.operate('insert','parser_component',sql)
