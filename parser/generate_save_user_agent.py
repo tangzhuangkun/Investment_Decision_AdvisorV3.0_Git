@@ -1,5 +1,9 @@
 import fake_useragent
-
+import sys
+sys.path.append("..")
+import log.custom_logger as custom_logger
+import database.db_operator as db_operator
+import time
 
 
 class GenerateSaveUserAgent:
@@ -19,10 +23,10 @@ class GenerateSaveUserAgent:
 		# 忽略ssl验证
 		# ua = fake_useragent.UserAgent(verify_ssl=False)
 		
-		for i in range(1000):
+		for i in range(2000):
 			# 随机生成UA
 			ua = fake_useragent.UserAgent().random
-			print(ua)
+			
 		
 		
 

@@ -9,7 +9,6 @@ import database.db_operator as db_operator
 import config.parser_config as parser_config
 import time
 import log.custom_logger as custom_logger
-import os
 
 
 class CollectProxyIP:
