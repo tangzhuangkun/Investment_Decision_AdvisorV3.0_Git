@@ -29,6 +29,7 @@ class Disguise:
 		
 	def get_multi_IP_UA(self,num):
 		# 从数据库中获取多个IP和多个UA
+		# num: 需要多少个IP和UA
 		# 返回：多个IP和多个UA
 		# 返回例如：[{'ip_address': '101.255.125.10:8080'}, {'ip_address': '103.124.89.221:55443'}][{'ua': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36'}, {'ua': 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'}]
 		
