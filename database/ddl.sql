@@ -14,7 +14,7 @@ FLUSH PRIVILEGES;
 /* --------- db：parser_component ------ */
 /*创建一个表，IP_availability，用于记录ip的可用性 */
 
-
+DATABASE parser_component;
 CREATE TABLE IF NOT EXISTS `IP_availability`(
 	`ip_address` VARCHAR(21) NOT NULL COMMENT '主键，ip的地址+端口号，最长可达21位，作为主键可确保数据库中的ip地址不会重复',
 	`is_anonymous` BOOLEAN NOT NULL COMMENT '是否为高匿名，是为1，否为0',
@@ -34,6 +34,7 @@ COMMENT '记录IP的可用性';
 /* --------- db：parser_component ------ */
 /*创建一个表，fake_user_agent，用于存储生成的假UA（用户代理）*/
 
+DATABASE parser_component;
 CREATE TABLE IF NOT EXISTS `fake_user_agent`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`ua` VARCHAR(1000) NOT NULL COMMENT '用户代理',
@@ -69,6 +70,7 @@ FLUSH PRIVILEGES;
 /* --------- db：target_pool ------ */
 /*创建一个表，fund_target，用于存储基金标的,对应策略*/
 
+DATABASE target_pool;
 CREATE TABLE IF NOT EXISTS `fund_target`(
 	`fund_code` VARCHAR(12) NOT NULL COMMENT '基金代码',
 	`fund_name` VARCHAR(50) NOT NULL COMMENT '基金名称',
@@ -76,10 +78,10 @@ CREATE TABLE IF NOT EXISTS `fund_target`(
 	`tracking_index`  VARCHAR(50) COMMENT '跟踪指数名称',
 	`tracking_index_code`  VARCHAR(12) COMMENT '跟踪指数代码',
 	`hold_or_not`  tinyint(1) COMMENT '当前是否持有,1为持有，0不持有',
-	`valuation_method` COMMENT '估值方法',
-	`B&H_strategy`  COMMENT '买入持有策略',
-	`sell_out_strategy`  COMMENT '卖出策略',
-	`monitoring_frequency`  COMMENT '监控频率',
+	`valuation_method` VARCHAR(100) COMMENT '估值方法',
+	`B&H_strategy`  VARCHAR(100) COMMENT '买入持有策略',
+	`sell_out_strategy` VARCHAR(100) COMMENT '卖出策略',
+	`monitoring_frequency` VARCHAR(20) COMMENT '监控频率',
 	`submission_date` DATE NOT NULL COMMENT '提交的日期',
 	PRIMARY KEY ( `fund_code` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 
