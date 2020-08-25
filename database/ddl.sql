@@ -55,7 +55,7 @@ COMMENT '生成的假UA（用户代理）';
 
 
 
-
+/*
 
 -- 创建数据库 target_pool,用作标的池，存储标的物，对应交易策略
 CREATE DATABASE IF NOT EXISTS target_pool;
@@ -63,13 +63,14 @@ CREATE DATABASE IF NOT EXISTS target_pool;
 GRANT ALL PRIVILEGES ON target_pool.* TO 'investor1'@'%' WITH GRANT OPTION;
 # 刷新权限 权限更新后刷新才会起作用
 FLUSH PRIVILEGES;
-
+*/
 
 
 /* --------- user：investor1 ------ */
 /* --------- db：target_pool ------ */
 /*创建一个表，fund_target，用于存储基金标的,对应策略*/
 
+/*
 DATABASE target_pool;
 CREATE TABLE IF NOT EXISTS `fund_target`(
 	`fund_code` VARCHAR(12) NOT NULL COMMENT '基金代码',
@@ -86,3 +87,4 @@ CREATE TABLE IF NOT EXISTS `fund_target`(
 	PRIMARY KEY ( `fund_code` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 
 COMMENT '基金标的池';
+*/
