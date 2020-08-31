@@ -14,7 +14,7 @@ FLUSH PRIVILEGES;
 /* --------- db：parser_component ------ */
 /*创建一个表，IP_availability，用于记录ip的可用性 */
 
-DATABASE parser_component;
+
 CREATE TABLE IF NOT EXISTS `IP_availability`(
 	`ip_address` VARCHAR(21) NOT NULL COMMENT '主键，ip的地址+端口号，最长可达21位，作为主键可确保数据库中的ip地址不会重复',
 	`is_anonymous` BOOLEAN NOT NULL COMMENT '是否为高匿名，是为1，否为0',
@@ -34,7 +34,6 @@ COMMENT '记录IP的可用性';
 /* --------- db：parser_component ------ */
 /*创建一个表，fake_user_agent，用于存储生成的假UA（用户代理）*/
 
-DATABASE parser_component;
 CREATE TABLE IF NOT EXISTS `fake_user_agent`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`ua` VARCHAR(1000) NOT NULL COMMENT '用户代理',
@@ -45,6 +44,41 @@ COMMENT '生成的假UA（用户代理）';
 
 
 
+
+
+
+
+
+-- 创建数据库 financial_data,用于存储金融数据
+CREATE DATABASE IF NOT EXISTS financial_data;
+-- 授权给用户 investor1 所有权限
+GRANT ALL PRIVILEGES ON financial_data.* TO 'investor1'@'%' WITH GRANT OPTION;
+# 刷新权限 权限更新后刷新才会起作用
+FLUSH PRIVILEGES;
+
+
+
+
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，index_constituent_stocks_weights，用于存储 指数构成及权重*/
+
+
+CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
+	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
+	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
+	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
+	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
+	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`stock_industry` VARCHAR(10) COMMENT '股票所属行业',
+	`weight` DECIMAL(7,4) COMMENT '股票权重',
+	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
+	`edit_date` DATE NOT NULL COMMENT '数据调样日期',
+	`submission_date` DATE NOT NULL COMMENT '提交的日期',
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '指数构成及权重';	
+	
 
 
 
