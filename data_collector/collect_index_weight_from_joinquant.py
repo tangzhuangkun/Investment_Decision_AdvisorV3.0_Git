@@ -10,7 +10,7 @@ import log.custom_logger as custom_logger
 class CollectIndexWeightFromJoinquant:
 	# 从聚宽获取指数的权重数据，并存入数据库
 	# 运行频率：每月底
-	
+
 	def __init__(self):
 		pass
 	
@@ -48,4 +48,5 @@ class CollectIndexWeightFromJoinquant:
 
 if __name__ == "__main__":
 	go = CollectIndexWeightFromJoinquant()
-	go.get_index_stocks_weight('399997.XSHE')
+	result = go.get_index_stocks_weight('399997.XSHE')
+	print(result)

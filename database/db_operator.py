@@ -1,11 +1,9 @@
-import time
 import pymysql
 import sys
 sys.path.append('..')
 import main.environment as environment
 import config.db_config as db_config
 import log.custom_logger as custom_logger
-import os
 
 class DBOperator:
 	# 数据库的基础操作，增删改查，

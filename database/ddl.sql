@@ -72,16 +72,32 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
 	`stock_industry` VARCHAR(10) COMMENT '股票所属行业',
-	`weight` DECIMAL(7,4) COMMENT '股票权重',
+	`weight` DECIMAL(7,4) NOT NULL COMMENT '股票权重',
 	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
-	`edit_date` DATE NOT NULL COMMENT '数据调样日期',
 	`submission_date` DATE NOT NULL COMMENT '提交的日期',
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '指数构成及权重';	
 	
 
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，index_constituent_stocks_weights_back，用于备份过时的 指数构成及权重*/
 
+USE financial_data;
+CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
+	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
+	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
+	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
+	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
+	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`stock_industry` VARCHAR(10) COMMENT '股票所属行业',
+	`weight` DECIMAL(7,4) NOT NULL COMMENT '股票权重',
+	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
+	`submission_date` DATE NOT NULL COMMENT '提交的日期',
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '备份的指数构成及权重';
 
 
 

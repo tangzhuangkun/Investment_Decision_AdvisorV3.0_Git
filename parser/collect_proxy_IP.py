@@ -1,15 +1,15 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import parse_IP_web_content
-import check_IP_availability
+
 import sys
 sys.path.append('..')
 import database.db_operator as db_operator
 import config.parser_config as parser_config
 import time
 import log.custom_logger as custom_logger
-
+import parser.parse_IP_web_content as parse_IP_web_content
+import parser.check_IP_availability as check_IP_availability
 
 class CollectProxyIP:
     # 获取IP代理网站上的有用代理IP，并存入数据库parser_component 表 IP_availability
