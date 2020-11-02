@@ -85,7 +85,7 @@ COMMENT '指数构成及权重';
 /*创建一个表，index_constituent_stocks_weights_back，用于备份过时的 指数构成及权重*/
 
 USE financial_data;
-CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
+CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight_back`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
 	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`submission_date` DATE NOT NULL COMMENT '提交的日期',
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
-COMMENT '备份的指数构成及权重';
+COMMENT '指数构成及权重的备份';
 
 
 
