@@ -163,4 +163,5 @@ if __name__ == "__main__":
 	#print(result)
 	#print(type(result))
 	#print(len(result))
-	go.collect_index_content("399997.XSHE","中证白酒")
+	#go.collect_index_content("399997.XSHE","中证白酒")
+	go.collect_index_content("399396.XSHE", "国证食品")
