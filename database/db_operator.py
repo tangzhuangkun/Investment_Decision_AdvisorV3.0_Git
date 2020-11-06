@@ -92,7 +92,7 @@ class DBOperator:
 			# 如果发生错误则回滚
 			conn.rollback()
 			# 关闭
-			close_conn(conn, cur)
+			self.close_conn(conn, cur)
 			# 日志记录
 			msg = db_name+'  '+sql + '  '+ str(e)
 			custom_logger.CustomLogger().log_writter(msg)

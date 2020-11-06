@@ -16,7 +16,7 @@ class CollectIndexWeightFromJoinquant:
 		pass
 	
 	def get_index_stocks_weight(self,index_code):
-		# 获取指数权重 
+		# 获取最新指数权重
 		# 输入：index_code，指数代码，例如：399997.XSHE
 		# 输出：指数构成信息
 		
@@ -40,8 +40,55 @@ class CollectIndexWeightFromJoinquant:
 			# 日志记录	
 			msg = 'Failed to get joinquant index weights' + '  '+ str(e)
 			custom_logger.CustomLogger().log_writter(msg,'error')
-	
-	
+
+	def get_db_index_stocks_weight(self, index_code):
+		# 获取数据库中最新的指数权重
+		# 输入：index_code，指数代码，例如：399997.XSHE
+		# 输出：指数构成信息
+
+		# 查询sql
+		selecting_sql = "SELECT stock_code, stock_name, weight FROM index_constituent_stocks_weight WHERE index_code = '%s' AND submission_date = (SELECT MAX(submission_date) FROM index_constituent_stocks_weight WHERE index_code = '%s') " % (index_code, index_code)
+		# 从数据库获取内容
+		db_index_content = db_operator.DBOperator().select_all("financial_data",selecting_sql)
+		return db_index_content
+
+	def is_the_db_containing_the_same_index_content(self, index_code):
+		# 对比 新获取到的指数信息 与 数据库中的 指数信息
+		# 输入：index_code，指数代码，例如：399997.XSHE
+		# 返回：True是：包含同样信息；False否，未包含同样信息
+
+		# 获取数据库中同一个的信息
+		db_index_content_list = self.get_db_index_stocks_weight(index_code)
+
+
+		# 如果未获取到任何信息
+		# 说明 未包含同样信息
+		if len(db_index_content_list) == 0:
+			return False
+
+		# 获取最新的指数信息
+		index_stocks_weight_str = self.get_index_stocks_weight(index_code)
+		# 将聚宽传回的指数成分股及其权重信息，由string转化为list，便于处理
+		index_holding_detail_list = index_stocks_weight_str.replace('\n', ',').split(',')
+
+		stock_code = ''
+		weight = 0
+
+		# 聚宽返回的指数成分股的格式，每4个为一个循环，从第5个开始为正式数据['code','display_name','date', 'weight', '000568.XSHE','泸州老窖','2020-01-28','4.3930','000596.XSHE','古井贡酒','2020-01-28','1.0820',,,,]
+		for new_content_index in range(4, len(index_holding_detail_list)):
+			if new_content_index % 4 == 0:
+				# 获取股票代码
+				stock_code = index_holding_detail_list[new_content_index]
+			elif new_content_index % 4 == 3:
+				# 获取股票权重
+				weight = index_holding_detail_list[new_content_index]
+				# 遍历数据库中的信息
+				for db_content_index in range (len(db_index_content_list)):
+					# 只要有 一个股票代码相同，但是权重不同， 说明新获取的指数信息与数据库中的信息不相同
+					if stock_code == db_index_content_list[db_content_index]["stock_code"] and weight != str(db_index_content_list[db_content_index]["weight"]):
+						return False
+		return True
+
 
 	def save_index_stocks_weight_to_db(self, index_code,index_name):
 		# 存入数据库
@@ -67,7 +114,7 @@ class CollectIndexWeightFromJoinquant:
 				# 获取股票名称
 				stock_name = index_holding_detail_list[i]
 			elif i % 4 == 3:
-				# 获取股票权重F
+				# 获取股票权重
 				weight = index_holding_detail_list[i]
 
 				# 插入的SQL
@@ -76,8 +123,20 @@ class CollectIndexWeightFromJoinquant:
 				db_operator.DBOperator().operate("insert","financial_data",inserting_sql)
 
 
+	def collect_index_content(self,index_code,index_name):
+		# 收集指数信息
+		# 输入：index_code，指数代码，例如：399997.XSHE
+		# 		index_name，指数名称，例如：中证白酒指数
+		# 输出：指数成分股存入数据库
+
+		# 数据库中是否已包含相同的指数信息
+		is_containing = self.is_the_db_containing_the_same_index_content(index_code)
+		# 如果没有包含相同的信息，则收集
+		if not is_containing:
+			self.save_index_stocks_weight_to_db(index_code,index_name)
+
 	def get_query_count(self):
-		# 获取查询剩余条数
+		# 获取聚宽可供查询剩余条数
 		url, body, token = joinquant_account_info.JoinquantAccountInfo().get_token()
 		body = {
 			"method": "get_query_count",
@@ -95,8 +154,13 @@ class CollectIndexWeightFromJoinquant:
 
 if __name__ == "__main__":
 	go = CollectIndexWeightFromJoinquant()
-	result = go.get_index_stocks_weight('399997.XSHE')
-	go.save_index_stocks_weight_to_db("399997.XSHE","中证白酒")
+	#result = go.get_index_stocks_weight('399997.XSHE')
+	#print(result)
+	#go.save_index_stocks_weight_to_db("399997.XSHE","中证白酒")
 	#result = go.get_query_count()
-	print(result)
+	#result = go.get_db_index_stocks_weight('399997.XSHE')
+	#result = go.is_the_db_containing_the_same_index_content('399997.XSHE')
+	#print(result)
+	#print(type(result))
 	#print(len(result))
+	go.collect_index_content("399997.XSHE","中证白酒")
