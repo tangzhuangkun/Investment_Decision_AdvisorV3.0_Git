@@ -81,8 +81,26 @@ COMMENT '指数构成及权重';
 
 
 
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，stocks_main_estimation_indexes_historical_data，用于存储 股票估值指标历史数据*/
 
-
+USE financial_data;
+CREATE TABLE IF NOT EXISTS `stocks_main_estimation_indexes_historical_data`(
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
+	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`date` DATE COMMENT '日期',
+	`price`DECIMAL(9,3) COMMENT '每股价格',
+	`market_value`DECIMAL(10,3) COMMENT '总市值',
+	`pe_ttm`DECIMAL(8,3) COMMENT '滚动市盈率',
+	`nonrecurring_pe_ttm`DECIMAL(8,3) COMMENT '扣非滚动市盈率',
+	`pb`DECIMAL(7,3) COMMENT '市净率',
+	`dyr`DECIMAL(7,3) COMMENT '股息率',
+	`submission_date` DATE NOT NULL COMMENT '提交日期',
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '股票估值指标历史数据';
 
 
 
