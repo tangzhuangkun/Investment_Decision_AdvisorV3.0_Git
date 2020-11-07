@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
-	`stock_industry` VARCHAR(10) COMMENT '股票所属行业',
+	`stock_exchange_location` VARCHAR(20) NOT NULL COMMENT '股票上市地',
 	`weight` DECIMAL(7,4) NOT NULL COMMENT '股票权重',
 	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
 	`submission_date` DATE NOT NULL COMMENT '提交的日期',
@@ -91,13 +91,11 @@ CREATE TABLE IF NOT EXISTS `stocks_main_estimation_indexes_historical_data`(
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
 	`date` DATE COMMENT '日期',
-	`price`DECIMAL(9,3) COMMENT '每股价格',
-	`market_value`DECIMAL(10,3) COMMENT '总市值',
 	`pe_ttm`DECIMAL(8,3) COMMENT '滚动市盈率',
 	`nonrecurring_pe_ttm`DECIMAL(8,3) COMMENT '扣非滚动市盈率',
 	`pb`DECIMAL(7,3) COMMENT '市净率',
 	`dyr`DECIMAL(7,3) COMMENT '股息率',
-	`submission_date` DATE NOT NULL COMMENT '提交日期',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '股票估值指标历史数据';

@@ -122,12 +122,17 @@ class CollectIndexWeightFromJoinquant:
 		stock_code = ''
 		stock_name = ''
 		weight = 0
+		stock_exchange_location = ''
 
 		# 聚宽返回的指数成分股的格式，每4个为一个循环，从第5个开始为正式数据['code','display_name','date', 'weight', '000568.XSHE','泸州老窖','2020-01-28','4.3930','000596.XSHE','古井贡酒','2020-01-28','1.0820',,,,]
 		for i in range(4, len(index_holding_detail_list)):
 			if i % 4 == 0:
 				# 获取股票代码
 				stock_code = index_holding_detail_list[i]
+				if stock_code[-4:] == "XSHE":
+					stock_exchange_location = 'sz'
+				elif stock_code[-4:] == "XSHG":
+					stock_exchange_location = 'sh'
 			elif i % 4 == 1:
 				# 获取股票名称
 				stock_name = index_holding_detail_list[i]
@@ -137,8 +142,8 @@ class CollectIndexWeightFromJoinquant:
 
 				try:
 					# 插入的SQL
-					inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,weight,source,submission_date)VALUES ('%s','%s','%s','%s','%s','%s','%s')" % (
-					index_code, index_name, stock_code, stock_name, weight, '聚宽', today)
+					inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,stock_exchange_location,weight,source,submission_date)VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (
+					index_code, index_name, stock_code, stock_name, stock_exchange_location, weight, '聚宽', today)
 					db_operator.DBOperator().operate("insert","financial_data",inserting_sql)
 
 				except Exception as e:
@@ -191,5 +196,5 @@ if __name__ == "__main__":
 	#print(type(result))
 	#print(len(result))
 	#go.collect_index_content("399997.XSHE","中证白酒")
-	#go.main("399396.XSHE", "国证食品")
-	go.main("399997.XSHE","中证白酒")
+	go.main("399396.XSHE", "国证食品")
+	#go.main("399997.XSHE","中证白酒")
