@@ -42,6 +42,7 @@ class CollectStocksEstimationIndexes:
         opener = urllib.request.build_opener(proxy_support)
         # 给用户代理添加User-Agent属性
         opener.addheaders = [('User-Agent', fake_ua["ua"])]
+        response_content = ''
         try:
             # opener.open()方法发送请才使用自定义的代理
             response = opener.open(address)
@@ -52,30 +53,33 @@ class CollectStocksEstimationIndexes:
             #return (json_content)
             return response_content.decode()
         except urllib.error.HTTPError as e:
-            print(f"HTTP Error is :", e.code)
-            print(e.reason)
             # 日志记录
-            msg = e + " When get data from "+address
+            msg = "HTTP Error "+ str(e.code) + " " + e.reason + " When get data from " + address
             custom_logger.CustomLogger().log_writter(msg, 'info')
             # 如果出现403错误，说明代理ip或者文件头有误，重新再运行一次
-            if e.code == "403":
+            if e.code == 403:
                 return self.get_raw_web_content(stock_code,address)
             msg = "Run again to get " + address + " data "
             custom_logger.CustomLogger().log_writter(msg, 'info')
         except Exception as e:
-            print(e)
-            return 'there is nothing'
+            msg = e
+            custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
-        '''  
-        req_obj = requests.get('https://androidinvest.com/stock/history/sh600519/')
-        soup = BeautifulSoup(req_obj.text, 'lxml')
+    def analyze_and_save_web_content(self, response_content):
+        # 解析从乌龟量化获取到的内容
+        # 参数： response_content 获取到的网站内容
+        # 输出：解析之后，将有用的内容存入数据库
+
+        soup = BeautifulSoup(response_content, 'lxml')
         print(soup)
-        '''
+
 
 if __name__ == '__main__':
     go = CollectStocksEstimationIndexes()
     #result = go.generate_web_address("600519", "sh")
     #print(result)
-    result = go.get_raw_web_content('600519','https://androidinvest.com/stock/history/sh600519/')
-    print(result)
+    response_content = go.get_raw_web_content('600519','https://androidinvest.com/stock/history/sh600519/')
+    # print(result)
+    # go.get_raw_web_content('600519', 'https://androidinvest.com/stock/history/sh600519/')
+    go.analyze_and_save_web_content(response_content)
