@@ -21,7 +21,7 @@ class Main:
 		
 		# 每月：generate_save_user_agent.py
 		
-		# 每月底初（25-5）：collect_index_weight_from_joinquant.py
+		# 每月底初（25-5）：collect_index_weight.py
 		
 	def test(self):
 		
