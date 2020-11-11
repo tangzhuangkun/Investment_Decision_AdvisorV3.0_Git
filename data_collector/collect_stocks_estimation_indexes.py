@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import urllib.request
 from urllib import error
 import requests
+import json
+import ast
 import sys
 sys.path.append("..")
 import log.custom_logger as custom_logger
@@ -72,7 +74,11 @@ class CollectStocksEstimationIndexes:
         # 输出：解析之后，将有用的内容存入数据库
 
         soup = BeautifulSoup(response_content, 'lxml')
-        print(soup)
+        raw_data_str = soup.find('script', type="text/javascript").get_text()
+        raw_data_list = raw_data_str.split(";")
+        raw_data = raw_data_list[2][15:]
+        raw_data_eval = eval(raw_data_list[2][15:])
+        print(raw_data_eval)
 
 
 if __name__ == '__main__':
