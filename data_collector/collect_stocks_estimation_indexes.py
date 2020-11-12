@@ -15,8 +15,14 @@ import parser.disguise as disguise
 class CollectStocksEstimationIndexes:
     # 收集股票的估值指标，滚动市盈率，扣非滚动市盈率，市净率，股息率
 
-    def __init__(self):
-        pass
+    def __init__(self, stock_code, stock_name, stock_exchange_location):
+        # param： stock_code  股票代码  600519
+        # param: stock_name 股票名称  中国茅台
+        # param： stock_exchange_location  股票上市地 sz或者sh
+
+        self.stock_code = stock_code
+        self.stock_name = stock_name
+        self.stock_exchange_location = stock_exchange_location
 
     # https://androidinvest.com/stock/history/sh600519/
 
@@ -68,7 +74,7 @@ class CollectStocksEstimationIndexes:
             custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
-    def analyze_and_save_web_content(self, response_content):
+    def analyze_web_content(self, response_content):
         # 解析从乌龟量化获取到的内容
         # 参数： response_content 获取到的网站内容
         # 输出：解析之后，将有用的内容存入数据库
@@ -76,16 +82,63 @@ class CollectStocksEstimationIndexes:
         soup = BeautifulSoup(response_content, 'lxml')
         raw_data_str = soup.find('script', type="text/javascript").get_text()
         raw_data_list = raw_data_str.split(";")
-        raw_data = raw_data_list[2][15:]
-        raw_data_eval = eval(raw_data_list[2][15:])
-        print(raw_data_eval)
+        # 提取数据结构并转为字典
+        raw_data_dict = eval(raw_data_list[2][15:])
+        # 1，3，5，10年，all全部年份 的每周 PE-TTM， 扣非PE-TTM， 前复权收盘价，日期， 数据
+        # '1'，'3'，'5'，'10'，'all' 代表近X年
+        # list_val1 ：PE-TTM,滚动市盈率；
+        # list_val2 ：扣非PE-TTM，扣非滚动市盈率
+        # list_price ： 收盘价前复权
+        # list_date ： 日期, 按周
+        # list_val1_30：PE-TTM 30% 机会值
+        # list_val1_70：PE-TTM 70% 危险值
+        # list_val2_30：扣非PE-TTM 30% 机会值
+        # list_val2_70：扣非PE-TTM 70% 危险值
+        # list_val1_p：PE-TTM 历史百分位
+        # list_val2_p：扣非PE-TTM 历史百分位
+        # 数据结构：  ：{'1': {
+        #                       'list_val1': [37.76, 37.79,,],
+        #                       'list_val2': [37.51, 37.55,,,,],
+        #                       'list_price': [1215.78, 1217.06,,,],
+        #                       'list_date': ['2019-11-14', '2019-11-21', '2019-11-28',,,],
+        #                       'list_val1_30': [37.76, 37.77,,,,],
+        #                       'list_val1_70': [37.76, 37.78,,,,],
+        #                       'list_val2_30': [37.51, 37.52,,,,],
+        #                       'list_val2_70': [37.51, 37.54,,,,],
+        #                       'list_val1_p': [0.0, 50.0,,,,],
+        #                       'list_val2_p': [0.0, 50.0,,,,],}
+        #                '3':{}}
+        return raw_data_dict
+
+
+    def save_stocks_pe_into_db(self,raw_data_dict, recent_year=10):
+        # 存储股票的 滚动市盈率PE-TTM，扣非市盈率non-recurring PE-TTM
+        # param：raw_data_dict，从乌龟量化获取的生数据
+        # param: recent_year 收集最近年份，默认最近10年
+        # 输出：将数据存入数据库
+
+        # 默认最近10年的数据
+        recent_year_data = raw_data_dict[str(recent_year)]
+        # PE-TTM
+        PE_TTM_list = recent_year_data['list_val1']
+        # 扣非PE-TTM
+        PE_TTM_non_recurring_list = recent_year_data['list_val2']
+        # 日期
+        date_list = recent_year_data['list_date']
+
+        # 从最近日期向前遍历, 先把最新日期的数据存入数据库
+        # TODO 插入前，需要在观察乌龟量化的返回，检查是否在数据库中已存在，否再插入
+        for i in range(len(date_list)-1, -1, -1):
+            sql = "Insert INTO stocks_main_estimation_indexes_historical_data (stock_code, stock_name, date, pe_ttm, nonrecurring_pe_ttm) values ('%s', '%s', '%s', '%s', '%s') " % (self.stock_code, self.stock_name, date_list[i], PE_TTM_list[i], PE_TTM_non_recurring_list[i] )
+            db_operator.DBOperator().operate("insert", "financial_data", sql)
 
 
 if __name__ == '__main__':
-    go = CollectStocksEstimationIndexes()
+    go = CollectStocksEstimationIndexes("600519", "中国茅台", "sh")
     #result = go.generate_web_address("600519", "sh")
     #print(result)
     response_content = go.get_raw_web_content('600519','https://androidinvest.com/stock/history/sh600519/')
     # print(result)
     # go.get_raw_web_content('600519', 'https://androidinvest.com/stock/history/sh600519/')
-    go.analyze_and_save_web_content(response_content)
+    raw_data_dict = go.analyze_web_content(response_content)
+    go.save_stocks_pe_into_db(raw_data_dict)
