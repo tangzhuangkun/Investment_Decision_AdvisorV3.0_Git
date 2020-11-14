@@ -13,7 +13,7 @@ import database.db_operator as db_operator
 import parser.disguise as disguise
 
 class CollectStocksEstimationIndexes:
-    # 收集股票的估值指标，滚动市盈率，扣非滚动市盈率，市净率，股息率
+    # 从乌龟量化收集股票的估值指标，滚动市盈率，扣非滚动市盈率，市净率，股息率
 
     def __init__(self, stock_code, stock_name, stock_exchange_location):
         # param： stock_code  股票代码  600519
@@ -141,4 +141,5 @@ if __name__ == '__main__':
     # print(result)
     # go.get_raw_web_content('600519', 'https://androidinvest.com/stock/history/sh600519/')
     raw_data_dict = go.analyze_web_content(response_content)
-    go.save_stocks_pe_into_db(raw_data_dict)
+    print(raw_data_dict["10"])
+    #go.save_stocks_pe_into_db(raw_data_dict)

@@ -119,7 +119,7 @@ class CollectIndexWeight:
 		# 获取今天日期
 		today = time.strftime("%Y-%m-%d", time.localtime())
 
-		stock_code = ''
+		global_stock_code = ''
 		stock_name = ''
 		weight = 0
 		stock_exchange_location = ''
@@ -128,10 +128,10 @@ class CollectIndexWeight:
 		for i in range(4, len(index_holding_detail_list)):
 			if i % 4 == 0:
 				# 获取股票代码
-				stock_code = index_holding_detail_list[i]
-				if stock_code[-4:] == "XSHE":
+				global_stock_code = index_holding_detail_list[i]
+				if global_stock_code[-4:] == "XSHE":
 					stock_exchange_location = 'sz'
-				elif stock_code[-4:] == "XSHG":
+				elif global_stock_code[-4:] == "XSHG":
 					stock_exchange_location = 'sh'
 			elif i % 4 == 1:
 				# 获取股票名称
@@ -142,8 +142,8 @@ class CollectIndexWeight:
 
 				try:
 					# 插入的SQL
-					inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,stock_exchange_location,weight,source,submission_date)VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (
-					index_code, index_name, stock_code, stock_name, stock_exchange_location, weight, '聚宽', today)
+					inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,global_stock_code,stock_code,stock_name,stock_exchange_location,weight,source,submission_date)VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
+					index_code, index_name, global_stock_code, global_stock_code[:6], stock_name, stock_exchange_location, weight, '聚宽', today)
 					db_operator.DBOperator().operate("insert","financial_data",inserting_sql)
 
 				except Exception as e:
@@ -195,6 +195,5 @@ if __name__ == "__main__":
 	#print(result)
 	#print(type(result))
 	#print(len(result))
-	#go.collect_index_content("399997.XSHE","中证白酒")
 	go.main("399396.XSHE", "国证食品")
 	#go.main("399997.XSHE","中证白酒")
