@@ -3,6 +3,7 @@ import json
 import time
 
 import sys
+
 sys.path.append("..")
 import database.db_operator as db_operator
 import config.lxr_token as lxr_token
@@ -18,23 +19,26 @@ class CollectStockEstimationInfo:
     def demanded_stocks(self):
         # 数据库中，哪些股票需要被收集估值信息
         # 输出： 需要被收集估值信息的股票代码和股票名称
-        # 如 [{'stock_code': '000568', 'stock_name': '泸州老窖'}, {'stock_code': '000596', 'stock_name': '古井贡酒'},,,,,]
+        # 如 {'000568': '泸州老窖', '000596': '古井贡酒',,,,}
         selecting_sql = "SELECT DISTINCT stock_code, stock_name FROM index_constituent_stocks_weight"
-        stock_code_name = db_operator.DBOperator().select_all("financial_data", selecting_sql)
-        return stock_code_name
+        stock_codes_names = db_operator.DBOperator().select_all("financial_data", selecting_sql)
+        # stock_codes_names 如  [{'stock_code': '000568', 'stock_name': '泸州老窖'}, {'stock_code': '000596', 'stock_name': '古井贡酒'},,, , , ]
+        stock_codes_names_dict = dict()
+        for piece in stock_codes_names:
+            stock_codes_names_dict[piece["stock_code"]] = piece["stock_name"]
+        return stock_codes_names_dict
 
     def get_lxr_token(self):
         # 随机获取一个理杏仁的token、
         # 输出：理杏仁的token
         return lxr_token.LXRToken().get_token()
 
-
     def collect_a_period_time_estimation(self, stock_code_name_dict, start_date, end_date):
         # 调取理杏仁接口，获取一段时间范围内，该股票估值数据, 并储存
         # param:  stock_code_name_dict 股票代码名称字典, 只能1支股票， 如  {"000568":"泸州老窖"}
         # param:  start_date, 开始时间，如 2020-11-12
         # param:  end_date, 结束时间，默认为空，如 2020-11-13
-        # 输出： 获取到股票估值数据
+        # 输出： 将获取到股票估值数据存入数据库
 
         # 随机获取一个token
         token = self.get_lxr_token()
@@ -85,17 +89,15 @@ class CollectStockEstimationInfo:
                   str(stock_code_name_dict) + ' ' + start_date + ' ' + end_date
             custom_logger.CustomLogger().log_writter(msg, 'error')
             return self.collect_a_period_time_estimation(stock_code_name_dict, start_date, end_date)
-        return content
 
-
-
-
+        self.save_content_into_db(content, stock_code_name_dict)
 
     def collect_a_special_date_estimation(self, stock_codes_names_dict, date):
         # 调取理杏仁接口，获取特定一天，一只/多支股票估值数据, 并储存
         # param:  stock_codes_names_dict 股票代码名称字典, 可以多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
         # param:  date, 日期，如 2020-11-12
-        # 输出： 获取到股票估值数据
+        # 输出： 将获取到股票估值数据存入数据库
+
         # 随机获取一个token
         token = self.get_lxr_token()
         # 理杏仁要求 在请求的headers里面设置Content-Type为application/json。
@@ -142,23 +144,72 @@ class CollectStockEstimationInfo:
                   str(stock_codes_names_dict) + ' ' + date
             custom_logger.CustomLogger().log_writter(msg, 'error')
             return self.collect_a_special_date_estimation(stock_codes_names_dict, date)
-        return content
-
-
+        self.save_content_into_db(content, stock_codes_names_dict)
 
     def save_content_into_db(self, content, stock_codes_names_dict):
         # 将 理杏仁接口返回的数据 存入数据库
         # param:  content, 理杏仁接口返回的数据
         # param:  stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
 
+        # 解析返回的数据
+        for piece in content["data"]:
+            stock_code = piece['stockCode']
+            stock_name = stock_codes_names_dict[stock_code]
+            date = piece['date'][:10]
+            # 如果获取不到值，则置为0，避免出现 keyerror
+            pe_ttm = piece.setdefault('pe_ttm', 0)
+            pe_ttm_nonrecurring = piece.setdefault('d_pe_ttm', 0)
+            pb = piece.setdefault('pb', 0)
+            pb_wo_gw = piece.setdefault('pb_wo_gw', 0)
+            ps_ttm = piece.setdefault('ps_ttm', 0)
+            pcf_ttm = piece.setdefault('pcf_ttm', 0)
+            ev_ebit = piece.setdefault('ev_ebit_r', 0)
+            stock_yield = piece.setdefault('ey', 0)
+            dividend_yield = piece.setdefault('dyr', 0)
+            share_price = piece.setdefault('sp', 0)
+            turnover = piece.setdefault('tv', 0)
+            fc_rights = piece.setdefault('fc_rights', 0)
+            bc_rights = piece.setdefault('bc_rights', 0)
+            lxr_fc_rights = piece.setdefault('lxr_fc_rights', 0)
+            shareholders = piece.setdefault('shn', 0)
+            market_capitalization = piece.setdefault('mc', 0)
+            circulation_market_capitalization = piece.setdefault('cmc', 0)
+            free_circulation_market_capitalization = piece.setdefault('ecmc', 0)
+            free_circulation_market_capitalization_per_capita = piece.setdefault('ecmc_psh', 0)
+            financing_balance = piece.setdefault('fb', 0)
+            securities_balances = piece.setdefault('sb', 0)
+            stock_connect_holding_amount = piece.setdefault('ha_shm', 0)
 
+            # 存入数据库
+            inserting_sql = "INSERT INTO stocks_main_estimation_indexes_historical_data (stock_code, stock_name, date, pe_ttm,pe_ttm_nonrecurring,pb,pb_wo_gw,ps_ttm,pcf_ttm,ev_ebit,stock_yield,dividend_yield,share_price,turnover,fc_rights,bc_rights,lxr_fc_rights,shareholders,market_capitalization,circulation_market_capitalization,free_circulation_market_capitalization,free_circulation_market_capitalization_per_capita,financing_balance,securities_balances,stock_connect_holding_amount ) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s' )" % (
+            stock_code, stock_name, date, pe_ttm, pe_ttm_nonrecurring, pb, pb_wo_gw, ps_ttm, pcf_ttm, ev_ebit,
+            stock_yield, dividend_yield, share_price, turnover, fc_rights, bc_rights, lxr_fc_rights, shareholders,
+            market_capitalization, circulation_market_capitalization, free_circulation_market_capitalization,
+            free_circulation_market_capitalization_per_capita, financing_balance, securities_balances,
+            stock_connect_holding_amount)
+            db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
-        pass
+        # 日志记录
+        msg = str(stock_codes_names_dict) + '\'s estimation info has been saved '
+        custom_logger.CustomLogger().log_writter(msg, 'info')
+
+    def main(self):
+        # 获取需要被收集估值信息的股票
+        stock_codes_names_dict = self.demanded_stocks()
+        # 获取当前时间
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        # 遍历股票
+        for k, v in stock_codes_names_dict.items():
+            piece_dict = {k: v}
+            # 收集单只股票，从2010-01-01至今的估值数据
+            self.collect_a_period_time_estimation(piece_dict, "2010-01-01", today)
 
 
 if __name__ == "__main__":
     go = CollectStockEstimationInfo()
-    #go.demanded_stocks()
-    content = go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-12", "2020-11-13")
-    #content = go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-13")
-    print(content)
+    # stock_codes_names_dict = go.demanded_stocks()
+    # print(stock_codes_names_dict)
+    # content = go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-12", "2020-11-13")
+    # go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-13")
+    # print(content)
+    go.main()
