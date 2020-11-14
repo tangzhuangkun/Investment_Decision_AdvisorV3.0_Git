@@ -231,8 +231,8 @@ class CollectStockEstimationInfo:
             return True
 
 
-    def main(self):
-        # 获取需要被收集估值信息的股票
+    def collect_all_new_stocks_at_one_time(self):
+        # 将所有新的，且需要被收集估值信息的股票，一次性收集数据
         stock_codes_names_dict = self.demanded_stocks()
         # 获取当前时间
         today = time.strftime("%Y-%m-%d", time.localtime())
@@ -242,14 +242,16 @@ class CollectStockEstimationInfo:
             # 收集单只股票，从2010-01-01至今的估值数据
             self.collect_a_period_time_estimation(piece_dict, "2020-11-10", today)
 
+    # TODO 需要加强效率，当数据库中的需要被收集的股票数量不变时，可一天天的收集
+    # TODO 首次运行，或者数据库中的需要被收集的股票数量变化时，才需要全部遍历日期并收集
 
 if __name__ == "__main__":
     go = CollectStockEstimationInfo()
     # stock_codes_names_dict = go.demanded_stocks()
     # print(stock_codes_names_dict)
-    go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-04", "2020-11-05")
+    #go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-04", "2020-11-05")
     #go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-09")
     # print(content)
-    #go.main()
+    go.main()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)

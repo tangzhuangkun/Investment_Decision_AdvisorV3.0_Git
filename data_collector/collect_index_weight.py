@@ -203,4 +203,4 @@ if __name__ == "__main__":
     # print(type(result))
     # print(len(result))
     go.main("399396.XSHE", "国证食品")
-# go.main("399997.XSHE","中证白酒")
+    # go.main("399997.XSHE","中证白酒")
