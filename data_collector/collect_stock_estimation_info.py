@@ -81,16 +81,17 @@ class CollectStockEstimationInfo:
         # 调用理杏仁接口
         req = requests.post(url, data=values, headers=headers)
         content = req.json()
+        # content 如 {'code': 0, 'message': 'success', 'data': [{'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 48.04573277785343, 'd_pe_ttm': 47.83511443886097, 'pb': 14.42765025023379, 'pb_wo_gw': 14.42765025023379, 'ps_ttm': 22.564315310000808, 'pcf_ttm': 49.80250701327664, 'ev_ebit_r': 33.88432187818624, 'ey': 0.029323867066169462, 'dyr': 0.00998533724340176, 'sp': 1705, 'tv': 2815500, 'shn': 114300, 'mc': 2141817249000, 'cmc': 2141817249000, 'ecmc': 899670265725, 'ecmc_psh': 7871131, 'ha_shm': 173164289265, 'fb': 17366179363, 'sb': 2329851810, 'fc_rights': 1705, 'bc_rights': 1705, 'lxr_fc_rights': 1705, 'stockCode': '600519'}, {'date': '2020-11-12T00:00:00+08:00', 'pe_ttm': 48.88519458398379, 'd_pe_ttm': 48.67089629172529, 'pb': 14.679732186277464, 'pb_wo_gw': 14.679732186277464, 'ps_ttm': 22.95856220330575, 'pcf_ttm': 50.672663426136175, 'ev_ebit_r': 34.47543387050795, 'ey': 0.028824017925678805, 'dyr': 0.009813867960963575, 'sp': 1734.79, 'tv': 2347300, 'shn': 114300, 'mc': 2179239381462, 'cmc': 2179239381462, 'ecmc': 915389431248, 'ecmc_psh': 8008656, 'ha_shm': 176618263840, 'fb': 17207679699, 'sb': 2426239128, 'fc_rights': 1734.79, 'bc_rights': 1734.79, 'lxr_fc_rights': 1734.79, 'stockCode': '600519'}]}
         message = content['message']
         # 检查token是否失效
         if message == "illegal token.":
-            # 日志记录
+            # 日志记录失败
             msg = 'Failed to use token ' + token + ' ' + 'to collect_a_period_time_estimation of ' + \
                   str(stock_code_name_dict) + ' ' + start_date + ' ' + end_date
             custom_logger.CustomLogger().log_writter(msg, 'error')
             return self.collect_a_period_time_estimation(stock_code_name_dict, start_date, end_date)
-
-        self.save_content_into_db(content, stock_code_name_dict)
+        # 数据存入数据库
+        self.save_content_into_db(content, stock_code_name_dict, "period")
 
     def collect_a_special_date_estimation(self, stock_codes_names_dict, date):
         # 调取理杏仁接口，获取特定一天，一只/多支股票估值数据, 并储存
@@ -137,25 +138,45 @@ class CollectStockEstimationInfo:
         values = json.dumps(parms)
         req = requests.post(url, data=values, headers=headers)
         content = req.json()
+        # content 如 {'code': 0, 'message': 'success', 'data': [
+        # {'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 48.2957825939533, 'd_pe_ttm': 48.62280236330014, 'pb': 12.491374104141297, 'pb_wo_gw': 12.491374104141297, 'ps_ttm': 17.156305422424143, 'pcf_ttm': 63.68585789882434, 'ev_ebit_r': 37.63760421342357, 'ey': 0.026088654822125818, 'dyr': 0.0085167925205312, 'sp': 186.69, 'tv': 13479800, 'shn': 113900, 'mc': 273454640491.19998, 'cmc': 273371391686, 'ecmc': 133902847844, 'ecmc_psh': 1175618, 'ha_shm': 5559655830, 'fc_rights': 186.69, 'bc_rights': 186.69, 'lxr_fc_rights': 186.69, 'stockCode': '000568'}, {'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 60.72940789130697, 'd_pe_ttm': 64.53258136924804, 'pb': 11.823197225442007, 'pb_wo_gw': 12.43465627328832, 'ps_ttm': 11.182674688897702, 'pcf_ttm': 216.59317739098543, 'ev_ebit_r': 48.032852603259784, 'ey': 0.02045252811485187, 'dyr': 0.006568863586599518, 'sp': 228.35, 'tv': 3310800, 'shn': 31900, 'mc': 114997060000, 'cmc': 87595060000, 'ecmc': 25619951576, 'ecmc_psh': 803133, 'ha_shm': 1181857851, 'fc_rights': 228.35, 'bc_rights': 228.35, 'lxr_fc_rights': 228.35, 'stockCode': '000596'}]}
         # 检查token是否失效
         if content['message'] == "illegal token.":
-            # 日志记录
+            # 日志记录失败
             msg = 'Failed to use token ' + token + ' ' + 'to collect_a_special_date_estimation of ' + \
                   str(stock_codes_names_dict) + ' ' + date
             custom_logger.CustomLogger().log_writter(msg, 'error')
             return self.collect_a_special_date_estimation(stock_codes_names_dict, date)
-        self.save_content_into_db(content, stock_codes_names_dict)
+        # 数据存入数据库
+        self.save_content_into_db(content, stock_codes_names_dict, "date")
 
-    def save_content_into_db(self, content, stock_codes_names_dict):
+    def save_content_into_db(self, content, stock_codes_names_dict, range):
         # 将 理杏仁接口返回的数据 存入数据库
         # param:  content, 理杏仁接口返回的数据
         # param:  stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
+        # param： range， 时间范围，只能填 period 或者 date
 
         # 解析返回的数据
         for piece in content["data"]:
             stock_code = piece['stockCode']
             stock_name = stock_codes_names_dict[stock_code]
             date = piece['date'][:10]
+
+            # 检查记录是否已在数据库中存在
+            is_data_existing = self.is_existing(stock_code, stock_name, date)
+            # 如果已存在，且获取的是，一只股在一段时间内的估值数据，则循环截止,不需要收集这一天和往前日期的数据
+            if is_data_existing and range=="period":
+                # 日志记录
+                msg = date + " "+stock_code + " "+ stock_name+ '\'s info has already existed, there is no need to save it and the previous date again. '
+                custom_logger.CustomLogger().log_writter(msg, 'info')
+                break
+            # 如果已存在，且获取的是，一/多只股在特定日期的估值数据，则停止收集该只数据，切换至下一个
+            elif is_data_existing and range=="date":
+                # 日志记录
+                msg = date + " " + stock_code + " " + stock_name + '\'s info has already existed, there is no need to save it again. '
+                custom_logger.CustomLogger().log_writter(msg, 'info')
+                continue
+
             # 如果获取不到值，则置为0，避免出现 keyerror
             pe_ttm = piece.setdefault('pe_ttm', 0)
             pe_ttm_nonrecurring = piece.setdefault('d_pe_ttm', 0)
@@ -193,6 +214,23 @@ class CollectStockEstimationInfo:
         msg = str(stock_codes_names_dict) + '\'s estimation info has been saved '
         custom_logger.CustomLogger().log_writter(msg, 'info')
 
+    def is_existing(self, stock_code, stock_name, date):
+        # 检查数据库中是否有记录，主要是检查是否为同一支股票同一日期
+        # param: stock_code, 股票代码
+        # param: stock_name，股票名称
+        # param: date，日期
+        # 输出：True，已存在； False，无记录
+
+        selecting_sql = "SELECT pe_ttm FROM stocks_main_estimation_indexes_historical_data where stock_code = '%s' and stock_name = '%s' and date = '%s' " % (stock_code, stock_name, date)
+        existing = db_operator.DBOperator().select_one("financial_data", selecting_sql)
+
+        # 如果查询结果为None，则说明不存在；否则，说明有记录
+        if existing == None:
+            return False
+        else:
+            return True
+
+
     def main(self):
         # 获取需要被收集估值信息的股票
         stock_codes_names_dict = self.demanded_stocks()
@@ -202,14 +240,16 @@ class CollectStockEstimationInfo:
         for k, v in stock_codes_names_dict.items():
             piece_dict = {k: v}
             # 收集单只股票，从2010-01-01至今的估值数据
-            self.collect_a_period_time_estimation(piece_dict, "2010-01-01", today)
+            self.collect_a_period_time_estimation(piece_dict, "2020-11-10", today)
 
 
 if __name__ == "__main__":
     go = CollectStockEstimationInfo()
     # stock_codes_names_dict = go.demanded_stocks()
     # print(stock_codes_names_dict)
-    # content = go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-12", "2020-11-13")
-    # go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-13")
+    go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-04", "2020-11-05")
+    #go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-09")
     # print(content)
-    go.main()
+    #go.main()
+    #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
+    #print(result)
