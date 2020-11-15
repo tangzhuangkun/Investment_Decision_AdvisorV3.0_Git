@@ -16,7 +16,7 @@ class Main:
 	
 	def timer(self):
 		pass
-		# 每天： collect_proxy_IP.py， check_saved_IP_availability.py
+		# 每天： collect_proxy_IP.py， check_saved_IP_availability.py， collect_stock_historical_estimation_info.py
 		
 		
 		# 每月：generate_save_user_agent.py

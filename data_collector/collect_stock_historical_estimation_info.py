@@ -10,8 +10,31 @@ import config.lxr_token as lxr_token
 import log.custom_logger as custom_logger
 
 
-class CollectStockEstimationInfo:
+class CollectStockHistoricalEstimationInfo:
     # 收集所需的股票的估值信息
+    # PE-TTM :pe_ttm
+    # PE-TTM(扣非) :d_pe_ttm
+    # PB :pb
+    # PS-TTM :ps_ttm
+    # PCF-TTM :pcf_ttm
+    # EV/EBIT :ev_ebit_r
+    # 股票收益率 :ey
+    # 股息率 :dyr
+    # 股价 :sp
+    # 成交量 :tv
+    # 前复权 :fc_rights
+    # 后复权 :bc_rights
+    # 理杏仁前复权 :lxr_fc_rights
+    # 股东人数 :shn
+    # 市值 :mc
+    # 流通市值 :cmc
+    # 自由流通市值 :ecmc
+    # 人均自由流通市值 :ecmc_psh
+    # 融资余额 :fb
+    # 融券余额 :sb
+    # 陆股通持仓金额 :ha_shm
+
+    # 运行频率：每天收盘后
 
     def __init__(self):
         pass
@@ -105,7 +128,8 @@ class CollectStockEstimationInfo:
         headers = {'Content-Type': 'application/json'}
         # 理杏仁 获取基本面数据 接口
         url = 'https://open.lixinger.com/api/a/stock/fundamental/non_financial'
-        # 接口参数，PE-TTM :pe_ttm
+        # 接口参数，
+        # PE-TTM :pe_ttm
         # PE-TTM(扣非) :d_pe_ttm
         # PB :pb
         # PS-TTM :ps_ttm
@@ -246,7 +270,7 @@ class CollectStockEstimationInfo:
     # TODO 首次运行，或者数据库中的需要被收集的股票数量变化时，才需要全部遍历日期并收集
 
 if __name__ == "__main__":
-    go = CollectStockEstimationInfo()
+    go = CollectStockHistoricalEstimationInfo()
     # stock_codes_names_dict = go.demanded_stocks()
     # print(stock_codes_names_dict)
     #go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-04", "2020-11-05")
