@@ -254,10 +254,9 @@ class CollectStockHistoricalEstimationInfo:
         else:
             return True
 
-
-    def collect_all_new_stocks_at_one_time(self):
+    def collect_all_new_stocks_info_at_one_time(self, stock_codes_names_dict):
         # 将所有新的，且需要被收集估值信息的股票，一次性收集数据
-        stock_codes_names_dict = self.demanded_stocks()
+
         # 获取当前时间
         today = time.strftime("%Y-%m-%d", time.localtime())
         # 遍历股票
@@ -266,8 +265,39 @@ class CollectStockHistoricalEstimationInfo:
             # 收集单只股票，从2010-01-01至今的估值数据
             self.collect_a_period_time_estimation(piece_dict, "2020-11-10", today)
 
-    # TODO 需要加强效率，当数据库中的需要被收集的股票数量不变时，可一天天的收集
-    # TODO 首次运行，或者数据库中的需要被收集的股票数量变化时，才需要全部遍历日期并收集
+    def collect_stocks_recent_info(self, stock_codes_names_dict):
+        # 收集当前所有股票最近的信息
+
+        # 获取当前时间
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        # 收集数据库中所有股票，今日的估值数据
+        self.collect_a_special_date_estimation(stock_codes_names_dict, today)
+
+    def main(self):
+        # 与上次数据库中待收集的股票代码和名称对比，
+        # 并决定是 同时收集多只股票特定日期的数据 还是 分多次收集个股票一段时间的数据
+
+        # 当前数据库中，待收集的股票代码和名称
+        stock_codes_names_dict = self.demanded_stocks()
+
+        last_time_data = None
+        with open("comparison.json", "r", encoding="utf-8") as com:
+            last_time_data = json.load(com)
+
+        # 如果待收集的内容与上次数据库中的一致
+        # 则只收集最近日期的
+
+        if stock_codes_names_dict == last_time_data["last_time_stock_codes_names_in_db_dict"]:
+            self.collect_stocks_recent_info(stock_codes_names_dict)
+        # 如果不相同，一次性收集所有数据
+        else:
+            self.collect_all_new_stocks_info_at_one_time(stock_codes_names_dict)
+            # 更新comparison文件中的记录
+            with open("comparison.json", "w", encoding="utf-8") as com:
+                com.truncate()
+                new_data = dict()
+                new_data["last_time_stock_codes_names_in_db_dict"] = stock_codes_names_dict
+                com.write(json.dumps(new_data, ensure_ascii=False))
 
 if __name__ == "__main__":
     go = CollectStockHistoricalEstimationInfo()
@@ -276,6 +306,7 @@ if __name__ == "__main__":
     #go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-04", "2020-11-05")
     #go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-09")
     # print(content)
-    go.main()
+    #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
+    go.main()
