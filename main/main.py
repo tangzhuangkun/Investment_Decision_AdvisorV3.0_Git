@@ -16,9 +16,12 @@ class Main:
 	
 	def timer(self):
 		pass
-		# 每天： collect_proxy_IP.py， check_saved_IP_availability.py， collect_stock_historical_estimation_info.py
-		
-		
+		# 每天：
+		# 盘前：collect_proxy_IP.py， check_saved_IP_availability.py，
+		# 盘中：14:45 fund_strategy_PE_estimation.py
+		# 盘后：collect_stock_historical_estimation_info.py
+
+
 		# 每月：generate_save_user_agent.py
 		
 		# 每月底初（25-5）：collect_index_weight.py

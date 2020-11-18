@@ -298,6 +298,9 @@ class CollectStockHistoricalEstimationInfo:
                 new_data = dict()
                 new_data["last_time_stock_codes_names_in_db_dict"] = stock_codes_names_dict
                 com.write(json.dumps(new_data, ensure_ascii=False))
+            # 日志记录
+            msg = 'Update comparison.json content '
+            custom_logger.CustomLogger().log_writter(msg, 'info')
 
 if __name__ == "__main__":
     go = CollectStockHistoricalEstimationInfo()
