@@ -304,6 +304,7 @@ class CollectStockHistoricalEstimationInfo:
             msg = 'Update comparison.json content '
             custom_logger.CustomLogger().log_writter(msg, 'info')
 
+
 if __name__ == "__main__":
     go = CollectStockHistoricalEstimationInfo()
     # stock_codes_names_dict = go.demanded_stocks()

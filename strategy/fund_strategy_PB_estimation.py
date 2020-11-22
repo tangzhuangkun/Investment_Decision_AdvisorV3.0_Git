@@ -40,7 +40,7 @@ class FundStrategyPBEstimation:
         pb_wo_gw = 0
 
         # TODO 建立一张表，记录交易日
-        # TODO day判断，跳过非交易日
+        # TODO day判断，跳过非交易日, http://php-note.com/article/1854.html
 
         # 获取指数成分股及权重
         index_constitute_stocks_weight = self.get_index_constitute_stocks(index_code)
@@ -60,8 +60,14 @@ class FundStrategyPBEstimation:
 
             # 如果不能获取到信息
             else:
+                # TODO 检查某个日期的 前后数据
                 # TODO 某个日期无数据，这个日期前后有数据的，取之后的数据
                 # TODO 某个日期无数据，这个日期，后有数据，前无数据的，所有成分股计算完成之后，返回数值按等比例放大，以弥补缺失的数据。需要考虑可能多只股票同时缺失数据的情况。
+
+                # 离某个日期最近的数据
+                # SELECT *, abs(UNIX_TIMESTAMP(date) - UNIX_TIMESTAMP('2016-07-01')) as min
+                # from stocks_main_estimation_indexes_historical_data
+                # where stock_code = "000002" order BY min asc limit 1;
                 return 0,0
         return pb, pb_wo_gw
 
