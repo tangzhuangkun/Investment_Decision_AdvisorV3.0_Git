@@ -254,8 +254,10 @@ class CollectStockHistoricalEstimationInfo:
         else:
             return True
 
-    def collect_all_new_stocks_info_at_one_time(self, stock_codes_names_dict):
+    def collect_all_new_stocks_info_at_one_time(self, start_date, stock_codes_names_dict):
         # 将所有新的，且需要被收集估值信息的股票，一次性收集数据
+        # param: start_date, 起始日期，默认 2010-01-02
+        # param: stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
 
         # 获取当前时间
         today = time.strftime("%Y-%m-%d", time.localtime())
@@ -263,7 +265,7 @@ class CollectStockHistoricalEstimationInfo:
         for k, v in stock_codes_names_dict.items():
             piece_dict = {k: v}
             # 收集单只股票，从2010-01-01至今的估值数据
-            self.collect_a_period_time_estimation(piece_dict, "2020-11-10", today)
+            self.collect_a_period_time_estimation(piece_dict, start_date, today)
 
     def collect_stocks_recent_info(self, stock_codes_names_dict):
         # 收集当前所有股票最近的信息
@@ -273,7 +275,7 @@ class CollectStockHistoricalEstimationInfo:
         # 收集数据库中所有股票，今日的估值数据
         self.collect_a_special_date_estimation(stock_codes_names_dict, today)
 
-    def main(self):
+    def main(self,start_date):
         # 与上次数据库中待收集的股票代码和名称对比，
         # 并决定是 同时收集多只股票特定日期的数据 还是 分多次收集个股票一段时间的数据
 
@@ -291,7 +293,7 @@ class CollectStockHistoricalEstimationInfo:
             self.collect_stocks_recent_info(stock_codes_names_dict)
         # 如果不相同，一次性收集所有数据
         else:
-            self.collect_all_new_stocks_info_at_one_time(stock_codes_names_dict)
+            self.collect_all_new_stocks_info_at_one_time(start_date, stock_codes_names_dict)
             # 更新comparison文件中的记录
             with open("comparison.json", "w", encoding="utf-8") as com:
                 com.truncate()
@@ -312,4 +314,4 @@ if __name__ == "__main__":
     #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
-    go.main()
+    go.main("2010-01-02")
