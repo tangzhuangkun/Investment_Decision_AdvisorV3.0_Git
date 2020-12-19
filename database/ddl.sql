@@ -1,15 +1,3 @@
-
-
--- 创建数据库 parser_component,用于存储与爬虫相关的组件
-CREATE DATABASE IF NOT EXISTS parser_component;
--- 授权给用户 investor1 所有权限
-GRANT ALL PRIVILEGES ON parser_component.* TO 'investor1'@'%' WITH GRANT OPTION;
-# 刷新权限 权限更新后刷新才会起作用
-FLUSH PRIVILEGES;
-
-
-
-
 /* --------- user：investor1 ------ */
 /* --------- db：parser_component ------ */
 /*创建一个表，IP_availability，用于记录ip的可用性 */
