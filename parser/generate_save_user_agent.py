@@ -39,7 +39,7 @@ class GenerateSaveUserAgent:
 		# 删除数据库中过时的UA
 		
 		# 如果有数据，则删除
-		sql = "DELETE FROM IF EXISTS fake_user_agent"
+		sql = "truncate table fake_user_agent"
 		db_operator.DBOperator().operate('delete','parser_component', sql)
 		
 		# 日志记录

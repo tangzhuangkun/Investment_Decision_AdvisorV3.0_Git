@@ -10,8 +10,7 @@ class DBOperator:
 	# 使用数据库池以支持多线程操作
 	
 	def __init__(self):
-		self.env = environment.env
-
+		self.env = environment.Envirnment().tag_envirnment()
 	
 	def create_conn(self, db_name):
 		# db_name：创建哪个模块的数据库连接池
