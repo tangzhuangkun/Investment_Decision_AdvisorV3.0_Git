@@ -1,5 +1,6 @@
 import fake_useragent
 import sys
+import os
 sys.path.append("..")
 import log.custom_logger as custom_logger
 import database.db_operator as db_operator
@@ -19,13 +20,21 @@ class GenerateSaveUserAgent:
 		
 		# 获取当前时间
 		today= time.strftime("%Y-%m-%d", time.localtime())
-		
-		# 禁用服务器缓存
-		ua = fake_useragent.UserAgent(use_cache_server=False)
+
+
 		
 		for i in range(2000):
+			# 解决总是报 fake_useragent.errors.FakeUserAgentError: Maximum amount of retries reached 问题
+			location = os.getcwd() + '/fake_useragent_0.1.11.json'
+			# ua = fake_useragent.UserAgent(path=location)
+
+			# 禁用服务器缓存
+			# ua = fake_useragent.UserAgent(use_cache_server=False)
+			# ua = fake_useragent.UserAgent(cache=False)
+			# ua = fake_useragent.UserAgent(verify_ssl=False)
+
 			# 随机生成UA
-			ua = fake_useragent.UserAgent().random
+			ua = fake_useragent.UserAgent(path=location).random
 			# 插入数据库
 			sql = "INSERT INTO fake_user_agent(ua,submission_date)VALUES ('%s','%s')" %(ua,today)
 			db_operator.DBOperator().operate('insert','parser_component', sql)
@@ -43,7 +52,7 @@ class GenerateSaveUserAgent:
 		db_operator.DBOperator().operate('delete','parser_component', sql)
 		
 		# 日志记录
-		msg = 'DELETE all outdated fake UAs from database'	
+		msg = "Truncate table fake_user_agent to delete all outdated fake UAs from database"
 		custom_logger.CustomLogger().log_writter(msg,'info')
 	
 	
