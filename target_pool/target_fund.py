@@ -12,14 +12,16 @@
 # sell_out_strategy_list :  卖出策略
 # monitoring_frequency_list :  监控频率, daily, weekly, monthly, seasonly, yearly, periodically
 
-target_index_fund = {
+target_index_funds = {
 				'160222':{'fund_name':'国泰国证食品饮料行业指数', 'fund_type':'股票指数 ', 'tracking_index_name':'国证食品', 'tracking_index_code':'399396.XSHE', 'hold_or_not':True, 'valuation_method_list':[], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']},
 
 				'159928':{'fund_name':'汇添富中证主要消费ETF', 'fund_type':'股票指数,ETF-场内', 'tracking_index_name':'中证主要消费', 'tracking_index_code':'000932.XSHG', 'hold_or_not':True, 'valuation_method_list':[], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']},
 				
 				'161725':{'fund_name':'招商中证白酒指数分级', 'fund_type':'股票指数', 'tracking_index_name':'中证白酒', 'tracking_index_code':'399997.XSHE', 'hold_or_not':True, 'valuation_method_list':[], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']},
 
-				'160628':{'fund_name':'鹏华地产分级', 'fund_type':'股票指数', 'tracking_index_name':'中证800地产', 'tracking_index_code':'399965.XSHE', 'hold_or_not':True, 'valuation_method_list':[], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']}
+				'160628':{'fund_name':'鹏华地产分级', 'fund_type':'股票指数', 'tracking_index_name':'中证800地产', 'tracking_index_code':'399965.XSHE', 'hold_or_not':True, 'valuation_method_list':[], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']},
+
+				'160517':{'fund_name':'博时中证银行指数(LOF)', 'fund_type':'股票指数', 'tracking_index_name':'中证银行指数', 'tracking_index_code':'399986.XSHE', 'hold_or_not':True, 'valuation_method_list':[], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']}
 
 				}
 				

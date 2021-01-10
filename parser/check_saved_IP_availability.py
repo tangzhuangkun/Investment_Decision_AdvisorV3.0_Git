@@ -1,10 +1,12 @@
 
-import check_IP_availability
+
 import sys
 sys.path.append('..')
 import database.db_operator as db_operator
 import log.custom_logger as custom_logger
 import threading
+from . import check_IP_availability
+
 
 class CheckSavedIPAvailability:
 	# 检查数据库中保存的所有IP的可用性
