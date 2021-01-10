@@ -108,7 +108,7 @@ class CollectProxyIP:
     
     def main(self):
         # 抓取代理IP，存入 数据库 parser_component，抓取每个代理网站的前4页
-        self.collect_web_content('parser_component', 2)
+        self.collect_web_content('parser_component', 4)
     
     
 if __name__ == "__main__":
