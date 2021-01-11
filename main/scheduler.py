@@ -1,15 +1,14 @@
 # 每天
 # collect_proxy_IP.py 收集代理IP
 
-import schedule
+from apscheduler.schedulers.blocking import BlockingScheduler
 import time
-#import sys
+import sys
 sys.path.append('..')
-from log import custom_logger
 import log.custom_logger as custom_logger
 import target_pool.read_target_fund as read_target_fund
 import data_collector.collect_index_weight as collect_index_weight
-import parser.check_saved_IP_availability as check_saved_IP_availability
+import parsers.check_saved_IP_availability as check_saved_IP_availability
 
 
 # print(f"current_file_path: {current_file_path}")
@@ -21,11 +20,18 @@ class Scheduler:
 
 
 	def schedule_plan(self):
+		# 调度器的任务
+
+		scheduler = BlockingScheduler()
+
+
 		# 调度器，根据时间安排工作
 		# 每天：
 		# 盘中：	14:40 collect_proxy_IP.py， check_saved_IP_availability.py，
 		# 		14:45 fund_strategy_PE_estimation.py
-		schedule.every().day.at("22:26").do(check_saved_IP_availability.CheckSavedIPAvailability().main)
+
+		# TODO 需要再深入了解schedule的用法
+		#schedule.every().day.at("21:25").do(check_saved_IP_availability.CheckSavedIPAvailability().main)
 
 
 
@@ -35,10 +41,17 @@ class Scheduler:
 		# 每月：generate_save_user_agent.py
 		
 		# 每月底初（1-10）：收集所跟踪关注指数的成分及权重
-		self.collect_tracking_index_weight()
+		#self.collect_tracking_index_weight()
 
 
+		# 每月初（1-10号），每天15：30收集关注的成分股及权重
+		scheduler.add_job(func=self.collect_tracking_index_weight, trigger='cron', month='1-12', day='1-12', hour=23, minute=50, id='monthly1-10')
 
+		# 启动调度器
+		try:
+			scheduler.start()
+		except (KeyboardInterrupt, SystemExit):
+			pass
 
 
 	def collect_tracking_index_weight(self):
@@ -46,6 +59,7 @@ class Scheduler:
 		# 输入：无
 		# 输出：存入数据
 
+		'''
 		# 获取当月日期
 		monthly_date = time.strftime("%d", time.localtime())
 		# 如果介于每月底初（1-10）
@@ -55,7 +69,13 @@ class Scheduler:
 			# 收集指数的成分及权重
 			for index in tracking_indexes_names_dict:
 				collect_index_weight.CollectIndexWeight().main(index, tracking_indexes_names_dict.get(index))
+		'''
 
+		# 获取标的池中跟踪关注指数及他们的中文名称,字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
+		tracking_indexes_names_dict = read_target_fund.ReadTargetFund().getIndexesAndTheirNames()
+		# 收集指数的成分及权重
+		for index in tracking_indexes_names_dict:
+			collect_index_weight.CollectIndexWeight().main(index, tracking_indexes_names_dict.get(index))
 
 
 		
@@ -82,3 +102,11 @@ class Scheduler:
 if __name__ == "__main__":
 	go = Scheduler()
 	go.schedule_plan()
+
+
+
+
+
+
+
+

@@ -1,6 +1,5 @@
 import sys
 sys.path.append("..")
-import log.custom_logger as custom_logger
 import database.db_operator as db_operator
 
 class Disguise:

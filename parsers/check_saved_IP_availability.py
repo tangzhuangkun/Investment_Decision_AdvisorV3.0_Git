@@ -1,11 +1,9 @@
-
-
 import sys
 sys.path.append('..')
 import database.db_operator as db_operator
 import log.custom_logger as custom_logger
 import threading
-from . import check_IP_availability
+import parsers.check_IP_availability as check_IP_availability
 
 
 class CheckSavedIPAvailability:
