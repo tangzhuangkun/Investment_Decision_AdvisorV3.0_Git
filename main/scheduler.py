@@ -2,8 +2,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import sys
 sys.path.append('..')
 import log.custom_logger as custom_logger
-import target_pool.read_target_fund as read_target_fund
-import data_collector.collect_index_weight as collect_index_weight
+import target_pool.read_collect_target_fund as read_collect_target_fund
 import parsers.check_saved_IP_availability as check_saved_IP_availability
 import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
@@ -57,8 +56,8 @@ class Scheduler:
 
 		#####################      每月运行    ###################################################
 		# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
-		scheduler.add_job(func=self.collect_tracking_index_weight, trigger='cron', month='1-12', day='1-10',
-						  hour=23, minute=50, id='monthly1-10CollectIndexStocksAndWeight')
+		scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight, trigger='cron', month='1-12', day='1-12',
+						  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
 
 		# 启动调度器
 		try:
@@ -67,28 +66,7 @@ class Scheduler:
 			pass
 
 
-	def collect_tracking_index_weight(self):
-		# 收集所跟踪关注指数的成分及权重
-		# 输入：无
-		# 输出：存入数据
 
-		'''
-		# 获取当月日期
-		monthly_date = time.strftime("%d", time.localtime())
-		# 如果介于每月底初（1-10）
-		if int(monthly_date) in range(1, 11):
-			# 获取标的池中跟踪关注指数及他们的中文名称,字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
-			tracking_indexes_names_dict = read_target_fund.ReadTargetFund().getIndexesAndTheirNames()
-			# 收集指数的成分及权重
-			for index in tracking_indexes_names_dict:
-				collect_index_weight.CollectIndexWeight().main(index, tracking_indexes_names_dict.get(index))
-		'''
-
-		# 获取标的池中跟踪关注指数及他们的中文名称,字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
-		tracking_indexes_names_dict = read_target_fund.ReadTargetFund().getIndexesAndTheirNames()
-		# 收集指数的成分及权重
-		for index in tracking_indexes_names_dict:
-			collect_index_weight.CollectIndexWeight().main(index, tracking_indexes_names_dict.get(index))
 
 
 		
