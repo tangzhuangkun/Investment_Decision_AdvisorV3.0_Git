@@ -1,14 +1,12 @@
-# 每天
-# collect_proxy_IP.py 收集代理IP
-
 from apscheduler.schedulers.blocking import BlockingScheduler
-import time
 import sys
 sys.path.append('..')
 import log.custom_logger as custom_logger
 import target_pool.read_target_fund as read_target_fund
 import data_collector.collect_index_weight as collect_index_weight
 import parsers.check_saved_IP_availability as check_saved_IP_availability
+import parsers.collect_proxy_IP as collect_proxy_IP
+import parsers.generate_save_user_agent as generate_save_user_agent
 
 
 # print(f"current_file_path: {current_file_path}")
@@ -20,32 +18,47 @@ class Scheduler:
 
 
 	def schedule_plan(self):
-		# 调度器的任务
-
+		# 调度器，根据时间安排工作
 		scheduler = BlockingScheduler()
 
+		#####################      每天运行    ###################################################
+		# 	缺	14:45 fund_strategy_PE_estimation.py
 
-		# 调度器，根据时间安排工作
-		# 每天：
-		# 盘中：	14:40 collect_proxy_IP.py， check_saved_IP_availability.py，
-		# 		14:45 fund_strategy_PE_estimation.py
 
-		# TODO 需要再深入了解schedule的用法
-		#schedule.every().day.at("21:25").do(check_saved_IP_availability.CheckSavedIPAvailability().main)
+		#########  盘前  #########
 
 
 
+		#########  盘中  #########
+		# 每个交易日14：39检查已存储的IP的可用性，删除不可用的
+		scheduler.add_job(func=check_saved_IP_availability.CheckSavedIPAvailability().main, trigger='cron',
+						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=23, minute=13,
+						  id='weekdayCheckSavedIPAvailability')
+
+		# 每个交易日14：41收集代理IP
+		scheduler.add_job(func=collect_proxy_IP.CollectProxyIP().main, trigger='cron',
+						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=23, minute=21,
+						  id='weekdayCollectProxyIP')
+
+
+		#########  盘后  #########
 		# 盘后：collect_stock_historical_estimation_info.py
 
 
-		# 每月：generate_save_user_agent.py
-		
-		# 每月底初（1-10）：收集所跟踪关注指数的成分及权重
-		#self.collect_tracking_index_weight()
 
 
-		# 每月初（1-10号），每天15：30收集关注的成分股及权重
-		scheduler.add_job(func=self.collect_tracking_index_weight, trigger='cron', month='1-12', day='1-12', hour=23, minute=50, id='monthly1-10')
+		#####################      每周运行    ###################################################
+		# 每个星期天晚上23:00重新生成一批假的user_agent
+		scheduler.add_job(func=generate_save_user_agent.GenerateSaveUserAgent().main, trigger='cron',
+						  month='1-12', day_of_week='sun', hour=23,
+						  id='sundayGenerateFakeUserAgent')
+
+
+
+		#####################      每月运行    ###################################################
+		# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
+		scheduler.add_job(func=self.collect_tracking_index_weight, trigger='cron', month='1-12', day='1-10',
+						  hour=23, minute=50, id='monthly1-10CollectIndexStocksAndWeight')
 
 		# 启动调度器
 		try:

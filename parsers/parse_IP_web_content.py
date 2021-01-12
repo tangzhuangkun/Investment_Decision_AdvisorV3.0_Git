@@ -28,7 +28,7 @@ class ParseIPWebContent:
 			# 解码的时候加上ignore参数是因为解码过程中有一部分貌似不能正常解码，加上该参数之后能跳过该部分
 			raw_content = f.read().decode('utf-8','ignore')
 			# 使用beautifulsoup 解析页面
-			soup = bs4.BeautifulSoup(raw_content,'html.parsers')
+			soup = bs4.BeautifulSoup(raw_content,'html.parser')
 		except Exception as e:
 			# print('Error:', e)
 			# 日志记录

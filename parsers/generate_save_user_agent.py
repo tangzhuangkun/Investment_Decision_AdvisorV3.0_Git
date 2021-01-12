@@ -63,6 +63,10 @@ class GenerateSaveUserAgent:
 		self.deleted_outdated_user_agent()
 		self.generate_and_save_user_agent()
 
+
+	def main(self):
+		self.deleted_outdated_and_then_generate_and_save_user_agent()
+
 if __name__ == "__main__":
 	go = GenerateSaveUserAgent()
 	go.deleted_outdated_and_then_generate_and_save_user_agent()
