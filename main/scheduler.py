@@ -12,6 +12,7 @@ import parsers.generate_save_user_agent as generate_save_user_agent
 
 
 class Scheduler:
+	# 任务调度器，根据时间安排工作
 	def __init__(self):
 		pass
 
@@ -31,12 +32,12 @@ class Scheduler:
 		#########  盘中  #########
 		# 每个交易日14：39检查已存储的IP的可用性，删除不可用的
 		scheduler.add_job(func=check_saved_IP_availability.CheckSavedIPAvailability().main, trigger='cron',
-						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=23, minute=13,
+						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=39,
 						  id='weekdayCheckSavedIPAvailability')
 
 		# 每个交易日14：41收集代理IP
 		scheduler.add_job(func=collect_proxy_IP.CollectProxyIP().main, trigger='cron',
-						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=23, minute=21,
+						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=41,
 						  id='weekdayCollectProxyIP')
 
 
@@ -48,15 +49,19 @@ class Scheduler:
 
 		#####################      每周运行    ###################################################
 		# 每个星期天晚上23:00重新生成一批假的user_agent
+		# TODO day_of_week 需要调整回 sun
+		# TODO hour 需要调整回 23
 		scheduler.add_job(func=generate_save_user_agent.GenerateSaveUserAgent().main, trigger='cron',
-						  month='1-12', day_of_week='sun', hour=23,
+						  month='1-12', day_of_week='thu,sun', hour=16,
 						  id='sundayGenerateFakeUserAgent')
 
 
 
 		#####################      每月运行    ###################################################
 		# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
-		scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight, trigger='cron', month='1-12', day='1-12',
+		# todo day 需要调整回 1-10
+		scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
+						  trigger='cron', month='1-12', day='1-15',
 						  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
 
 		# 启动调度器

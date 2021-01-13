@@ -6,12 +6,13 @@ import data_collector.collect_index_weight as collect_index_weight
 
 
 class ReadCollectTargetFund:
-    # 读取标的池中的信息
+    # 读取标的池中关于基金的信息
 
     def __init__(self):
         pass
 
     def get_indexes_and_their_names(self):
+        # 获取标的池中跟踪关注指数及他们的中文名称
         # 输入：无
         # 输出：获取标的池中跟踪关注指数及他们的中文名称,字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
 
