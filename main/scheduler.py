@@ -6,9 +6,8 @@ import target_pool.read_collect_target_fund as read_collect_target_fund
 import parsers.check_saved_IP_availability as check_saved_IP_availability
 import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
+import data_collector.collect_stock_historical_estimation_info as collect_stock_historical_estimation_info
 
-
-# print(f"current_file_path: {current_file_path}")
 
 
 class Scheduler:
@@ -22,7 +21,7 @@ class Scheduler:
 		scheduler = BlockingScheduler()
 
 		#####################      每天运行    ###################################################
-		# 	缺	14:45 fund_strategy_PE_estimation.py
+
 
 
 		#########  盘前  #########
@@ -34,35 +33,59 @@ class Scheduler:
 		scheduler.add_job(func=check_saved_IP_availability.CheckSavedIPAvailability().main, trigger='cron',
 						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=39,
 						  id='weekdayCheckSavedIPAvailability')
+		# 日志记录
+		msg = 'Just checked saved IPs availability'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
+
 
 		# 每个交易日14：41收集代理IP
 		scheduler.add_job(func=collect_proxy_IP.CollectProxyIP().main, trigger='cron',
 						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=41,
 						  id='weekdayCollectProxyIP')
+		# 日志记录
+		msg = 'Just collected proxy IP'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
+
+		# 	缺	14:45 fund_strategy_PE_estimation.py
+		# 	缺	14:45 fund_strategy_PB_estimation.py
+
 
 
 		#########  盘后  #########
-		# 盘后：collect_stock_historical_estimation_info.py
+		# 每个交易日22：01收集所需的股票的估值信息
+		scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main,
+						  trigger='cron',
+						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=22, minute=1,
+						  id='weekdayCollectStockHistoricalEstimationInfo')
+		# 日志记录
+		msg = 'Just collected stock historical estimation info'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
 
 
 		#####################      每周运行    ###################################################
 		# 每个星期天晚上23:00重新生成一批假的user_agent
-		# TODO day_of_week 需要调整回 sun
-		# TODO hour 需要调整回 23
 		scheduler.add_job(func=generate_save_user_agent.GenerateSaveUserAgent().main, trigger='cron',
-						  month='1-12', day_of_week='thu,sun', hour=16,
+						  month='1-12', day_of_week='sun', hour=23,
 						  id='sundayGenerateFakeUserAgent')
+		# 日志记录
+		msg = 'Just generated fake user agents'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
+
+
 
 
 
 		#####################      每月运行    ###################################################
 		# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
-		# todo day 需要调整回 1-10
 		scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
-						  trigger='cron', month='1-12', day='1-15',
+						  trigger='cron', month='1-12', day='1-10',
 						  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
+		# 日志记录
+		msg = 'Just collected tracking index stocks and weight'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
+
 
 		# 启动调度器
 		try:
@@ -70,28 +93,6 @@ class Scheduler:
 		except (KeyboardInterrupt, SystemExit):
 			pass
 
-
-
-
-
-		
-	def test(self):
-		
-		try:
-			4/0
-			'''
-		except:
-			current_working_dir = os.getcwd()
-			class_name = self.__class__.__name__
-			func_name = sys._getframe().f_code.co_name
-			custom_logger.CustomLogger().my_logger('\''+current_working_dir+'/'+class_name+'()/'+func_name+'()\'','MSSSG')
-			'''
-		
-		except Exception as e:
-			#custom_logger.CustomLogger().get_running_file_path()
-			# custom_logger.CustomLogger().get_running_class_name()
-			#custom_logger.CustomLogger().get_running_function_name()
-			custom_logger.CustomLogger().log_writter(str(e))
 
 
 

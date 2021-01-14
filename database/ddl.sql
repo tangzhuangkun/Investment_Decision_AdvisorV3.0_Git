@@ -32,22 +32,6 @@ CREATE TABLE IF NOT EXISTS `fake_user_agent`(
 COMMENT '生成的假UA（用户代理）';
 
 
-
-
-
-
-
-
--- 创建数据库 financial_data,用于存储金融数据
-CREATE DATABASE IF NOT EXISTS financial_data;
--- 授权给用户 investor1 所有权限
-GRANT ALL PRIVILEGES ON financial_data.* TO 'investor1'@'%' WITH GRANT OPTION;
-# 刷新权限 权限更新后刷新才会起作用
-FLUSH PRIVILEGES;
-
-
-
-
 /* --------- user：investor1 ------ */
 /* --------- db：financial_data ------ */
 /*创建一个表，index_constituent_stocks_weights，用于存储 指数构成及权重*/
