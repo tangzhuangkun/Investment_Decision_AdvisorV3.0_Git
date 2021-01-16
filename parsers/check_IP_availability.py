@@ -36,7 +36,7 @@ class CheckIPAvailability:
 			except BaseException as e:
 				# 日志记录	
 				msg = ip + str(e)
-				custom_logger.CustomLogger().log_writter(msg,lev='info')
+				custom_logger.CustomLogger().log_writter(msg,lev='debug')
 				return False
 			
 			return True
@@ -44,7 +44,7 @@ class CheckIPAvailability:
 		except Exception as e:
 			# 日志记录	
 			msg = ip + str(e)
-			custom_logger.CustomLogger().log_writter(msg,lev='info')
+			custom_logger.CustomLogger().log_writter(msg,lev='debug')
 			return False
 	
 	

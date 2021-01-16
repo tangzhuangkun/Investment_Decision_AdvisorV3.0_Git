@@ -26,25 +26,27 @@ class Scheduler:
 
 		#########  盘前  #########
 
-
+		# todo 日期和时间需要根据真实情况修正
 
 		#########  盘中  #########
-		# 每个交易日14：39检查已存储的IP的可用性，删除不可用的
-		scheduler.add_job(func=check_saved_IP_availability.CheckSavedIPAvailability().main, trigger='cron',
-						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=39,
-						  id='weekdayCheckSavedIPAvailability')
-		# 日志记录
-		msg = 'Just checked saved IPs availability'
-		custom_logger.CustomLogger().log_writter(msg, 'info')
 
+		try:
+			# 每个交易日14：39检查已存储的IP的可用性，删除不可用的
+			scheduler.add_job(func=check_saved_IP_availability.CheckSavedIPAvailability().main, trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=14, minute=39,
+							  id='weekdayCheckSavedIPAvailability')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
 
-		# 每个交易日14：41收集代理IP
-		scheduler.add_job(func=collect_proxy_IP.CollectProxyIP().main, trigger='cron',
-						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=41,
-						  id='weekdayCollectProxyIP')
-		# 日志记录
-		msg = 'Just collected proxy IP'
-		custom_logger.CustomLogger().log_writter(msg, 'info')
+		try:
+			# 每个交易日14：41收集代理IP
+			scheduler.add_job(func=collect_proxy_IP.CollectProxyIP().main, trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=14, minute=41,
+							  id='weekdayCollectProxyIP')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		# 	缺	14:45 fund_strategy_PE_estimation.py
 		# 	缺	14:45 fund_strategy_PB_estimation.py
@@ -52,39 +54,41 @@ class Scheduler:
 
 
 		#########  盘后  #########
-		# 每个交易日22：01收集所需的股票的估值信息
-		scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main,
-						  trigger='cron',
-						  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=22, minute=1,
-						  id='weekdayCollectStockHistoricalEstimationInfo')
-		# 日志记录
-		msg = 'Just collected stock historical estimation info'
-		custom_logger.CustomLogger().log_writter(msg, 'info')
 
-
-
+		try:
+			# 每个交易日22：01收集所需的股票的估值信息
+			scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main, args=('2021-01-02',),
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=22, minute=1,
+							  id='weekdayCollectStockHistoricalEstimationInfo')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		#####################      每周运行    ###################################################
-		# 每个星期天晚上23:00重新生成一批假的user_agent
-		scheduler.add_job(func=generate_save_user_agent.GenerateSaveUserAgent().main, trigger='cron',
-						  month='1-12', day_of_week='sun', hour=23,
-						  id='sundayGenerateFakeUserAgent')
-		# 日志记录
-		msg = 'Just generated fake user agents'
-		custom_logger.CustomLogger().log_writter(msg, 'info')
 
+		try:
+			# 每个星期天晚上23:00重新生成一批假的user_agent
+			scheduler.add_job(func=generate_save_user_agent.GenerateSaveUserAgent().main, trigger='cron',
+							  month='1-12', day_of_week='sun', hour=23,
+							  id='sundayGenerateFakeUserAgent')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
 
 
 
 
 		#####################      每月运行    ###################################################
-		# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
-		scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
-						  trigger='cron', month='1-12', day='1-10',
-						  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
-		# 日志记录
-		msg = 'Just collected tracking index stocks and weight'
-		custom_logger.CustomLogger().log_writter(msg, 'info')
+
+		try:
+			# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
+			scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
+							  trigger='cron', month='1-12', day='1-10',
+							  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
 
 
 		# 启动调度器

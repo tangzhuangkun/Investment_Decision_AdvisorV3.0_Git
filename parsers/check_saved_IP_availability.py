@@ -37,7 +37,7 @@ class CheckSavedIPAvailability:
 		
 		# 日志记录	
 		msg = sql
-		custom_logger.CustomLogger().log_writter(msg,'info')
+		custom_logger.CustomLogger().log_writter(msg,'debug')
 		
 	
 	def check_ip_availability_and_delete_unable_from_DB(self,db_name,IP_dict_list):
@@ -87,6 +87,9 @@ class CheckSavedIPAvailability:
 	
 	def main(self):
 		self.multiple_threading_checking_saved_ips('parser_component')
+		# 日志记录
+		msg = 'Just checked saved IPs availability'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
 if __name__ == "__main__":

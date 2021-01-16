@@ -1,7 +1,7 @@
 import requests
 import json
 import time
-
+import os
 import sys
 
 sys.path.append("..")
@@ -282,20 +282,26 @@ class CollectStockHistoricalEstimationInfo:
         # 当前数据库中，待收集的股票代码和名称
         stock_codes_names_dict = self.demanded_stocks()
 
-        last_time_data = None
-        with open("comparison.json", "r", encoding="utf-8") as com:
+        # 获取文件的当前路径（绝对路径）
+        cur_path = os.path.dirname(os.path.realpath(__file__))
+        # 获取comparison.json的路径
+        json_path = os.path.join(cur_path, 'comparison.json')
+        with open(json_path, 'r', encoding='utf-8') as com:
             last_time_data = json.load(com)
 
         # 如果待收集的内容与上次数据库中的一致
         # 则只收集最近日期的
-
         if stock_codes_names_dict == last_time_data["last_time_stock_codes_names_in_db_dict"]:
             self.collect_stocks_recent_info(stock_codes_names_dict)
         # 如果不相同，一次性收集所有数据
         else:
             self.collect_all_new_stocks_info_at_one_time(start_date, stock_codes_names_dict)
+            # 获取文件的当前路径（绝对路径）
+            cur_path = os.path.dirname(os.path.realpath(__file__))
+            # 获取comparison.json的路径
+            json_path = os.path.join(cur_path, 'comparison.json')
             # 更新comparison文件中的记录
-            with open("comparison.json", "w", encoding="utf-8") as com:
+            with open(json_path, 'w', encoding='utf-8') as com:
                 com.truncate()
                 new_data = dict()
                 new_data["last_time_stock_codes_names_in_db_dict"] = stock_codes_names_dict
@@ -303,6 +309,10 @@ class CollectStockHistoricalEstimationInfo:
             # 日志记录
             msg = 'Update comparison.json content '
             custom_logger.CustomLogger().log_writter(msg, 'info')
+
+        # 日志记录
+        msg = 'Just collected stock historical estimation info'
+        custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
 if __name__ == "__main__":
@@ -315,4 +325,4 @@ if __name__ == "__main__":
     #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
-    go.main("2010-01-02")
+    go.main("2021-01-10")

@@ -66,6 +66,9 @@ class GenerateSaveUserAgent:
 
 	def main(self):
 		self.deleted_outdated_and_then_generate_and_save_user_agent()
+		# 日志记录
+		msg = 'Just generated fake user agents'
+		custom_logger.CustomLogger().log_writter(msg, 'info')
 
 if __name__ == "__main__":
 	go = GenerateSaveUserAgent()

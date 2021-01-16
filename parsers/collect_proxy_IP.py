@@ -70,14 +70,12 @@ class CollectProxyIP:
                     
                     # 日志记录
                     msg = page_url 
-                    custom_logger.CustomLogger().log_writter('Collected '+msg,lev='info')
+                    custom_logger.CustomLogger().log_writter('Collected '+msg,lev='debug')
                     
                 except Exception as e:
-                    # print('Error:', e)
-                    
                     # 日志记录
                     msg = page_url + '  '+ str(e)
-                    custom_logger.CustomLogger().log_writter(msg)
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
             
 
     def check_ip_availability_and_save_to_db(self, db_name, IP_set):
@@ -109,6 +107,9 @@ class CollectProxyIP:
     def main(self):
         # 抓取代理IP，存入 数据库 parser_component，抓取每个代理网站的前4页
         self.collect_web_content('parser_component', 4)
+        # 日志记录
+        msg = 'Just collected proxy IP'
+        custom_logger.CustomLogger().log_writter(msg, 'info')
     
     
 if __name__ == "__main__":

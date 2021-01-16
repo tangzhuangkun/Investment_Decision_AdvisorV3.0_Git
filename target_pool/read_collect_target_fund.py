@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 import target_pool.target as target
 import data_collector.collect_index_weight as collect_index_weight
+import log.custom_logger as custom_logger
 
 
 class ReadCollectTargetFund:
@@ -34,6 +35,9 @@ class ReadCollectTargetFund:
         # 收集指数的成分及权重
         for index in tracking_indexes_names_dict:
             collect_index_weight.CollectIndexWeight().main(index, tracking_indexes_names_dict.get(index))
+        # 日志记录
+        msg = 'Just collected tracking index stocks and weight'
+        custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
 
