@@ -35,7 +35,7 @@ class FundStrategyPEEstimation:
         # 基于当前指数构成，计算过去某一天该指数市盈率TTM, 扣非市盈率TTM
         # param: index_code 指数代码，如 399997
         # param: day, 日期， 如 2020-09-01
-        # 返回 指数市盈率TTM, 扣非市盈率TTM
+        # 返回 指数市盈率TTM, 扣非市盈率TTM, 均保留3位小数
         pe_ttm = 0
         pe_ttm_nonrecurring = 0
 
@@ -47,7 +47,7 @@ class FundStrategyPEEstimation:
             # 计算市盈率TTM, 扣非市盈率TTM
             pe_ttm += decimal.Decimal(pe_info[0]["pe_ttm"])*decimal.Decimal(stock_info["weight"])/100
             pe_ttm_nonrecurring += decimal.Decimal(pe_info[0]["pe_ttm_nonrecurring"])*decimal.Decimal(stock_info["weight"])/100
-        return pe_ttm, pe_ttm_nonrecurring
+        return round(pe_ttm,3), round(pe_ttm_nonrecurring,3)
 
 
 
@@ -57,5 +57,5 @@ if __name__ == '__main__':
     #print(result)
     #result = go.get_stock_historical_pe("000596", "古井贡酒", "2020-11-16")
     #print(result)
-    pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399997","2020-11-18")
+    pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399997","2021-01-15")
     print(pe_ttm, pe_ttm_nonrecurring)
