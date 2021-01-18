@@ -49,7 +49,7 @@ class FundStrategyPEEstimation:
             pe_ttm_nonrecurring += decimal.Decimal(pe_info[0]["pe_ttm_nonrecurring"])*decimal.Decimal(stock_info["weight"])/100
         return round(pe_ttm,3), round(pe_ttm_nonrecurring,3)
 
-
+    # todo 添加计算实时的市盈率
 
 if __name__ == '__main__':
     go = FundStrategyPEEstimation()
@@ -57,5 +57,5 @@ if __name__ == '__main__':
     #print(result)
     #result = go.get_stock_historical_pe("000596", "古井贡酒", "2020-11-16")
     #print(result)
-    pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399997","2021-01-15")
+    pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399965","2020-10-19")
     print(pe_ttm, pe_ttm_nonrecurring)
