@@ -5,7 +5,11 @@ import threading
 sys.path.append("..")
 import database.db_operator as db_operator
 import data_collector.get_stock_real_time_pe_from_xueqiu as xueqiu
+import target_pool.read_collect_target_fund as read_collect_target_fund
+import notification.email_notification as email_notification
+import log.custom_logger as custom_logger
 
+# todo 需要补充日志
 
 class FundStrategyPEEstimation:
     # 基金策略，市盈率估值法
@@ -17,7 +21,7 @@ class FundStrategyPEEstimation:
 
     def get_index_constitute_stocks(self, index_code):
         # 获取数据库中的指数最新的构成股和比例
-        # param: index_code 指数代码，如 399997
+        # param: index_code 指数代码，如 399997 或者 399997.XSHE
         # 返回： 指数构成股及其权重,
         # 如 [{'global_stock_code': '000568.XSHE', 'stock_code': '000568', 'stock_name': '泸州老窖', 'weight': Decimal('14.8100')},
         # {'global_stock_code': '000596.XSHE', 'stock_code': '000596', 'stock_name': '古井贡酒', 'weight': Decimal('3.6940')}]
@@ -96,7 +100,8 @@ class FundStrategyPEEstimation:
     def calculate_real_time_index_pe_multiple_threads(self,index_code):
         # 多线程计算指数的实时市盈率
         # index_code, 指数代码（1、6位数字+交易所代码；2、6位数字；例如： 399997.XSHE 或者 399997）
-        # 输出，指数的实时市盈率
+        # 输出，指数的实时市盈率， 如 70.5937989
+
         # 统计指数实时的市盈率
         self.index_real_time_pe_ttm = 0
 
@@ -148,6 +153,28 @@ class FundStrategyPEEstimation:
 
         return self.index_real_time_pe_ttm
 
+    def calculate_all_tracking_index_funds_real_time_PE_and_notificate(self,channel):
+        # 计算所有指数基金的实时市盈率TTM并发送通知
+        # param: channel 发送的渠道, 可填 email 或 sms
+
+        # 获取标的池中跟踪关注指数及他们的中文名称
+        # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
+        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+
+        # 获取当前日期
+        today = time.strftime("%Y-%m-%d", time.localtime())
+
+        # 拼接需要发送的指数实时动态市盈率信息
+        indexes_and_real_time_PE_msg = '指数实时动态市盈率信息： \n\n'
+        for index in indexes_and_their_names:
+            # 获取 实时市盈率TTM
+            index_real_time_pe_ttm = self.calculate_real_time_index_pe_multiple_threads(index)
+            indexes_and_real_time_PE_msg += indexes_and_their_names[index] + ": "+ str(index_real_time_pe_ttm) + "\n"
+
+        # 如果发送渠道为邮件
+        if channel == "email":
+            email_notification.EmailNotification().send_customized_content(indexes_and_real_time_PE_msg)
+
 
 if __name__ == '__main__':
     time_start = time.time()
@@ -158,8 +185,9 @@ if __name__ == '__main__':
     #print(result)
     #pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399965","2020-10-19")
     #print(pe_ttm, pe_ttm_nonrecurring)
-    result = go.calculate_real_time_index_pe_multiple_threads("399997")
-    print(result)
+    #result = go.calculate_real_time_index_pe_multiple_threads("399997.XSHE")
+    #print(result)
+    go.calculate_all_tracking_index_funds_real_time_PE_and_notificate("email")
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
