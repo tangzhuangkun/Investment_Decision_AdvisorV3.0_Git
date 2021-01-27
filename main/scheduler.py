@@ -7,7 +7,7 @@ import parsers.check_saved_IP_availability as check_saved_IP_availability
 import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
 import data_collector.collect_stock_historical_estimation_info as collect_stock_historical_estimation_info
-
+import strategy.fund_strategy_PE_estimation as fund_strategy_PE_estimation
 
 
 class Scheduler:
@@ -48,7 +48,21 @@ class Scheduler:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
-		# 	缺	14:45 fund_strategy_PE_estimation.py
+		try:
+			# 每个交易日14：49计算并通过邮件发送指数的动态市盈率
+			scheduler.add_job(func=fund_strategy_PE_estimation.FundStrategyPEEstimation().
+							  calculate_all_tracking_index_funds_real_time_PE_and_notificate, args=('email',),
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=49,
+							  id='weekdayCalRealTimeIndexPETTM')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+
+
+
+
 		# 	缺	14:45 fund_strategy_PB_estimation.py
 
 
@@ -84,7 +98,7 @@ class Scheduler:
 		try:
 			# 每月初（1-10号），每天15：30收集所跟踪关注指数的成分及权重
 			scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
-							  trigger='cron', month='1-12', day='1-10',
+							  trigger='cron', month='1-12', day='1-30',
 							  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
 		except Exception as e:
 			# 抛错

@@ -193,8 +193,8 @@ class CollectIndexWeight:
 
 if __name__ == "__main__":
     go = CollectIndexWeight()
-    # result = go.get_index_stocks_weight('399997.XSHE')
-    # print(result)
+    result = go.get_index_stocks_weight('399965.XSHE')
+    print(result)
     # go.save_index_stocks_weight_to_db("399997.XSHE","中证白酒")
     #result = go.get_query_count()
     # result = go.get_db_index_stocks_weight('399997.XSHE')
@@ -204,4 +204,4 @@ if __name__ == "__main__":
     # print(len(result))
     #go.main("399396.XSHE", "国证食品")
     # go.main("399997.XSHE","中证白酒")
-    go.main("399965.XSHE", "800地产")
+    #go.main("399965.XSHE", "800地产")

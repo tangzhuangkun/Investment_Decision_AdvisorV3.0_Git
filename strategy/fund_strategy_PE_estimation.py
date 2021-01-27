@@ -87,8 +87,8 @@ class FundStrategyPEEstimation:
         stock_real_time_pe_ttm = xueqiu.GetStockRealTimePEFromXueqiu().get_single_stock_real_time_pe_ttm(stock_id)
         # 如果获取的股票实时滚动市盈率不是数字，如’亏损‘
         if not self.is_a_number(stock_real_time_pe_ttm):
-            # 股票实时滚动市盈率为0
-            stock_real_time_pe_ttm = '0'
+            # 股票实时滚动市盈率为200
+            stock_real_time_pe_ttm = '200'
 
         # 获取锁，用于线程同步
         threadLock.acquire()
