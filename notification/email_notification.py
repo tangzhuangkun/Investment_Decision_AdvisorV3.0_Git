@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 #coding:utf-8
 import smtplib
 from email.mime.text import MIMEText
@@ -8,7 +9,7 @@ import sys
 sys.path.append("..")
 import config.notification_account as notification_account
 
-
+# todo 维护document
 
 class EmailNotification:
 	# 通过邮件发送提醒
@@ -29,17 +30,7 @@ class EmailNotification:
 		self.today= time.strftime("%Y-%m-%d", time.localtime())
 		# 设置邮件主题
 		self.subject = self.today+' 基金行情分析'
-	
-	'''
-	def get_index_real_time_pe(self,index_code):
-		# 获取指数的实时市盈率
-		# index_code: 指数代码
-		# 返回 指数的实时市盈率
-		
-		index_real_time_pe_ttm = strategy.calculate_index_pe.CalculateIndexPE().calculate_real_time_index_pe_multiple_threads(index_code)
-	
-		return index_real_time_pe_ttm
-	'''
+
 	
 	def send_customized_content(self,send_content):
 		# 自定义邮件的内容
@@ -56,9 +47,9 @@ class EmailNotification:
 	
 		try:
 			# 创建实例
-			smtpObj = smtplib.SMTP()
+			smtpObj = smtplib.SMTP_SSL(self.email_host)
 			# 连接服务器，25 为 SMTP 端口号
-			smtpObj.connect(self.email_host, 25)  
+			smtpObj.ehlo(self.email_host)
 			# 登录账号
 			smtpObj.login(self.email_user, self.email_pass)
 			# 发送邮件
@@ -73,7 +64,7 @@ if __name__ == '__main__':
 	time_start = time.time()
 	go = EmailNotification()
 	#real_time_pe = go.get_index_real_time_pe('399997')
-	send_content = 'hello ccx, 2021-01-17  '
+	send_content = 'hello 2021-01-28  '
 	go.send_customized_content(send_content)
 	time_end = time.time()
 	print(time_end-time_start)
