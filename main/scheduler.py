@@ -10,6 +10,7 @@ import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
 import data_collector.collect_stock_historical_estimation_info as collect_stock_historical_estimation_info
 import strategy.fund_strategy_PE_estimation as fund_strategy_PE_estimation
+import notification.notification_plan as notification_plan
 
 
 class Scheduler:
@@ -51,12 +52,12 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每个交易日14：49计算并通过邮件发送指数的动态市盈率
-			scheduler.add_job(func=fund_strategy_PE_estimation.FundStrategyPEEstimation().
-							  calculate_all_tracking_index_funds_real_time_PE_and_notificate, args=('email',),
+			# 每个交易日14：49计算并通过邮件发送指数的动态估值信息
+			scheduler.add_job(func=notification_plan.NotificationPlan().
+							  estimation_notification(),
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=49,
-							  id='weekdayCalRealTimeIndexPETTM')
+							  id='weekdayEmailEstimation')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')

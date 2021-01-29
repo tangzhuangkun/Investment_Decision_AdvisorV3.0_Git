@@ -8,6 +8,7 @@ import time
 import sys
 sys.path.append("..")
 import config.notification_account as notification_account
+import log.custom_logger as custom_logger
 
 # todo 维护document
 
@@ -29,11 +30,14 @@ class EmailNotification:
 		# 获取当前时间
 		self.today= time.strftime("%Y-%m-%d", time.localtime())
 		# 设置邮件主题
-		self.subject = self.today+' 基金行情分析'
+		self.subject = self.today
 
 	
-	def send_customized_content(self,send_content):
-		# 自定义邮件的内容
+	def send_customized_content(self, object, send_content):
+		# 自定义邮件主题+内容
+		# param: object, 邮件主题
+		# param: send_content, 自定义的内容
+		# 发送邮件
 		
 		# MIMEText 类来实现支持HTML格式的邮件，支持所有HTML格式的元素，包括表格，图片，动画，css样式，表单
 		# 第一个参数为邮件内容,第二个设置文本格式，第三个设置编码
@@ -43,7 +47,7 @@ class EmailNotification:
 		# 收件人
 		message['To'] = ",".join(self.email_receivers)
 		# 主题
-		message['Subject'] = Header(self.subject, 'utf-8')
+		message['Subject'] = Header(self.subject + object, 'utf-8')
 	
 		try:
 			# 创建实例
@@ -54,18 +58,21 @@ class EmailNotification:
 			smtpObj.login(self.email_user, self.email_pass)
 			# 发送邮件
 			smtpObj.sendmail(self.email_sender, self.email_receivers, message.as_string())
-			print("邮件发送成功")
+			# 日志记录
+			msg = '邮件发送成功'
+			custom_logger.CustomLogger().log_writter(msg, 'info')
 		except smtplib.SMTPException as e:
-			print(e)
-			print("Error: 无法发送邮件")
+			# 日志记录
+			msg = '无法发送邮件' + str(e)
+			custom_logger.CustomLogger().log_writter(msg, 'error')
 	
 	
 if __name__ == '__main__':
 	time_start = time.time()
 	go = EmailNotification()
 	#real_time_pe = go.get_index_real_time_pe('399997')
-	send_content = 'hello 2021-01-28  '
-	go.send_customized_content(send_content)
+	send_content = 'hello 2021-01-29  '
+	go.send_customized_content(' 基金行情分析', send_content)
 	time_end = time.time()
 	print(time_end-time_start)
 	

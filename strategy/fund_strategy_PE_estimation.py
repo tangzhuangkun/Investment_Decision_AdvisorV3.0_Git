@@ -153,9 +153,10 @@ class FundStrategyPEEstimation:
 
         return self.index_real_time_pe_ttm
 
-    def calculate_all_tracking_index_funds_real_time_PE_and_notificate(self,channel):
-        # 计算所有指数基金的实时市盈率TTM并发送通知
+    def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
+        # 计算所有指数基金的实时市盈率TTM
         # param: channel 发送的渠道, 可填 email 或 sms
+        # return: 返回计算结果
 
         # 获取标的池中跟踪关注指数及他们的中文名称
         # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
@@ -171,9 +172,8 @@ class FundStrategyPEEstimation:
             index_real_time_pe_ttm = self.calculate_real_time_index_pe_multiple_threads(index)
             indexes_and_real_time_PE_msg += indexes_and_their_names[index] + ": "+ str(index_real_time_pe_ttm) + "\n"
 
-        # 如果发送渠道为邮件
-        if channel == "email":
-            email_notification.EmailNotification().send_customized_content(indexes_and_real_time_PE_msg)
+        return indexes_and_real_time_PE_msg
+
 
 
 if __name__ == '__main__':
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     #print(pe_ttm, pe_ttm_nonrecurring)
     #result = go.calculate_real_time_index_pe_multiple_threads("399997.XSHE")
     #print(result)
-    go.calculate_all_tracking_index_funds_real_time_PE_and_notificate("email")
+    go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
