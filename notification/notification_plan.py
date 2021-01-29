@@ -24,11 +24,11 @@ class NotificationPlan:
         try:
             email_notification.EmailNotification().send_customized_content(' 指数基金估值数据', estimation_msg)
             # 日志记录
-            log_msg = '指数基金估值信息，邮件发送成功'
+            log_msg = 'Success, Sent The Email Of Index Fund Estimation Successfully'
             custom_logger.CustomLogger().log_writter(log_msg, 'info')
         except Exception as e:
             # 日志记录
-            log_msg = '指数基金估值信息，邮件发送失败'+str(e)
+            log_msg = 'Failure, Fail To Send The Email Of Index Fund Estimation '+str(e)
             custom_logger.CustomLogger().log_writter(log_msg, 'error')
 
 

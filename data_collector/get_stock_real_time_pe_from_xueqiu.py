@@ -13,7 +13,7 @@ import log.custom_logger as custom_logger
 
 
 class GetStockRealTimePEFromXueqiu:
-    # 获取雪球上的数据
+    # 获取雪球上股票估值数据
     # 1、获取实时的股票滚动市盈率
 
     def __init__(self):

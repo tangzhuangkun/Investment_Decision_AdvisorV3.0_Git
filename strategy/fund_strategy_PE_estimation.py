@@ -6,14 +6,11 @@ sys.path.append("..")
 import database.db_operator as db_operator
 import data_collector.get_stock_real_time_pe_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
-import notification.email_notification as email_notification
 import log.custom_logger as custom_logger
 
-# todo 需要补充日志
 
 class FundStrategyPEEstimation:
-    # 基金策略，市盈率估值法
-    # 运行时间： 每个交易日14:45
+    # 指数基金策略，市盈率估值法
 
     def __init__(self):
         pass
@@ -171,7 +168,9 @@ class FundStrategyPEEstimation:
             # 获取 实时市盈率TTM
             index_real_time_pe_ttm = self.calculate_real_time_index_pe_multiple_threads(index)
             indexes_and_real_time_PE_msg += indexes_and_their_names[index] + ": "+ str(index_real_time_pe_ttm) + "\n"
-
+            # 日志记录
+            log_msg = 'Just got the '+indexes_and_their_names[index] + ' real time PE TTM'
+            custom_logger.CustomLogger().log_writter(log_msg, 'debug')
         return indexes_and_real_time_PE_msg
 
 

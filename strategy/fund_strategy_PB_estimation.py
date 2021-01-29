@@ -6,8 +6,7 @@ import database.db_operator as db_operator
 
 
 class FundStrategyPBEstimation:
-    # 基金策略，市净率率估值法
-    # 运行时间： 每个交易日14:45
+    # 指数基金策略，市净率率估值法
 
     def __init__(self):
         pass

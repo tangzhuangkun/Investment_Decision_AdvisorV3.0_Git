@@ -119,11 +119,15 @@ class DBOperator:
 			except Exception as e:
 				# 如果发生错误则回滚
 				conn.rollback()
-				# print(e)
-				# 日志记录
-				msg = db_name+'  '+sql + '  '+ str(e)
-				custom_logger.CustomLogger().log_writter(msg)
-			
+
+				# 忽略因为收集的IP与库中现存的IP重复出现的日志信息
+				if db_name == 'parser_component' and e.args[0] == 1062:
+					pass
+				else:
+					# 日志记录
+					msg = db_name+'  '+sql + '  '+ str(e)
+					custom_logger.CustomLogger().log_writter(msg)
+
 			finally:
 				# 关闭
 				self.close_conn(conn, cur)

@@ -10,7 +10,6 @@ sys.path.append("..")
 import config.notification_account as notification_account
 import log.custom_logger as custom_logger
 
-# todo 维护document
 
 class EmailNotification:
 	# 通过邮件发送提醒
@@ -59,12 +58,12 @@ class EmailNotification:
 			# 发送邮件
 			smtpObj.sendmail(self.email_sender, self.email_receivers, message.as_string())
 			# 日志记录
-			msg = '邮件发送成功'
-			custom_logger.CustomLogger().log_writter(msg, 'info')
+			log_msg = 'Success, Sent Email Successfully'
+			custom_logger.CustomLogger().log_writter(log_msg, 'info')
 		except smtplib.SMTPException as e:
 			# 日志记录
-			msg = '无法发送邮件' + str(e)
-			custom_logger.CustomLogger().log_writter(msg, 'error')
+			log_msg = 'Failure, Fail To Send Email' + str(e)
+			custom_logger.CustomLogger().log_writter(log_msg, 'error')
 	
 	
 if __name__ == '__main__':
