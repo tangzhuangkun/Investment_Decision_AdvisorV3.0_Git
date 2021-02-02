@@ -76,6 +76,7 @@ class FundStrategyPBEstimation:
         # 返回 每一天的指数市净率, 扣商誉市净率
         # 获取今天日期
 
+        # todo 未完
         now_time = datetime.date.today()
         # 获取n年前的起始日期
         last_n_year = now_time + datetime.timedelta(days=-round(365*n_year))

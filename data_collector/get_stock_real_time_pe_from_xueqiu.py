@@ -24,7 +24,7 @@ class GetStockRealTimePEFromXueqiu:
         # page_address，地址
         # header，伪装的UA
         # proxy，伪装的IP
-        # 返回 股票滚动市盈率和该股权重
+        # 返回 股票滚动市盈率
 
         # 递归算法，处理异常
         try:
@@ -53,7 +53,7 @@ class GetStockRealTimePEFromXueqiu:
             msg = "Collected stock real time PE from " + page_address
             custom_logger.CustomLogger().log_writter(msg, lev='debug')
 
-            # 返回 股票滚动市盈率和该股权重
+            # 返回 股票滚动市盈率
             return real_time_pe_ttm
 
 
@@ -62,7 +62,7 @@ class GetStockRealTimePEFromXueqiu:
             # 日志记录
             msg = "Collected stock real time PE from " +page_address + '  ' + "ReadTimeout"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
-            # 返回解析页面得到的股票滚动市盈率 + 该股权重
+            # 返回解析页面得到的股票滚动市盈率
             return self.parse_page_content(page_address, header, proxy)
 
         # 如果连接请求超时，重新在执行一遍解析页面
@@ -70,7 +70,7 @@ class GetStockRealTimePEFromXueqiu:
             # 日志记录
             msg = "Collected stock real time PE from " +page_address + '  ' + "ConnectTimeout"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
-            # 返回解析页面得到的股票滚动市盈率 + 该股权重
+            # 返回解析页面得到的股票滚动市盈率
             return self.parse_page_content(page_address, header, proxy)
 
         # 如果请求超时，重新在执行一遍解析页面
@@ -78,7 +78,7 @@ class GetStockRealTimePEFromXueqiu:
             # 日志记录
             msg = "Collected stock real time PE from " +page_address + '  ' + "Timeout"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
-            # 返回解析页面得到的股票滚动市盈率 + 该股权重
+            # 返回解析页面得到的股票滚动市盈率
             return self.parse_page_content(page_address, header, proxy)
 
         except Exception as e:
@@ -89,7 +89,7 @@ class GetStockRealTimePEFromXueqiu:
     def get_single_stock_real_time_pe_ttm(self, stock_id):
         # 从雪球网获取实时的股票滚动市盈率pe_ttm
         # stock_id: 股票代码（2位上市地+6位数字， 如 sz000596）
-        # 返回： 获取的实时的股票滚动市盈率,该股权重 格式如 （32.74，0）
+        # 返回： 获取的实时的股票滚动市盈率 格式如 32.74
 
         # 地址模板
         page_address = 'https://xueqiu.com/S/' + stock_id
@@ -105,11 +105,15 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimePEFromXueqiu()
+    real_time_pe_ttm = go.get_single_stock_real_time_pe_ttm('SH600519')
+    print(real_time_pe_ttm)
+    '''
     for i in range(1000):
         real_time_pe_ttm = go.get_single_stock_real_time_pe_ttm('SH600519')
         print(real_time_pe_ttm)
         real_time_pe_ttm = go.get_single_stock_real_time_pe_ttm('SZ002505')
         print(real_time_pe_ttm)
         print()
+    '''
     time_end = time.time()
-    print(time_end - time_start)
+    print('Time Cost: ' + str(time_end - time_start))
