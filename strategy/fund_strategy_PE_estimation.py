@@ -4,7 +4,7 @@ import sys
 import threading
 sys.path.append("..")
 import database.db_operator as db_operator
-import data_collector.get_stock_real_time_pe_from_xueqiu as xueqiu
+import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
 
@@ -81,7 +81,7 @@ class FundStrategyPEEstimation:
         # threadLock：线程锁
 
         # 通过抓取数据雪球页面，获取单个股票的实时滚动市盈率
-        stock_real_time_pe_ttm = xueqiu.GetStockRealTimePEFromXueqiu().get_single_stock_real_time_pe_ttm(stock_id)
+        stock_real_time_pe_ttm = xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator_ttm(stock_id, 'pe_ttm')
         # 如果获取的股票实时滚动市盈率不是数字，如’亏损‘
         if not self.is_a_number(stock_real_time_pe_ttm):
             # 股票实时滚动市盈率为200
@@ -186,7 +186,8 @@ if __name__ == '__main__':
     #print(pe_ttm, pe_ttm_nonrecurring)
     #result = go.calculate_real_time_index_pe_multiple_threads("399997.XSHE")
     #print(result)
-    go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+    msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+    print(msg)
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
