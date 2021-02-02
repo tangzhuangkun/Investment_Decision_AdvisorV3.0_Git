@@ -15,6 +15,8 @@ import log.custom_logger as custom_logger
 class GetStockRealTimeIndicatorFromXueqiu:
     # 获取雪球上股票估值数据
     # 1、获取实时的股票滚动市盈率
+    # 2、获取实时的股票市净率
+    # 3、获取实时的股票滚动股息率
 
     def __init__(self):
         pass
