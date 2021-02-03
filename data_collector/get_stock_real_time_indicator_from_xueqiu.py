@@ -115,8 +115,10 @@ class GetStockRealTimeIndicatorFromXueqiu:
             # 日志记录
             msg = page_address + str(e)
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
+            # 返回解析页面得到的股票指标
+            return self.parse_page_content(page_address, header, proxy, indicator)
 
-    def get_single_stock_real_time_indicator_ttm(self, stock_id, indicator):
+    def get_single_stock_real_time_indicator(self, stock_id, indicator):
         # 从雪球网获取实时的股票滚动市盈率pe_ttm
         # stock_id: 股票代码（2位上市地+6位数字， 如 sz000596）
         # indicator, 需要抓取的指标，如 pe_ttm,市盈率TTM；pb,市净率，dr_ttm,滚动股息率 等
@@ -136,7 +138,7 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimeIndicatorFromXueqiu()
-    real_time_pe_ttm = go.get_single_stock_real_time_indicator_ttm('SH600519', 'pb')
+    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SH600519', 'pb')
     print(real_time_pe_ttm)
     '''
     for i in range(1000):

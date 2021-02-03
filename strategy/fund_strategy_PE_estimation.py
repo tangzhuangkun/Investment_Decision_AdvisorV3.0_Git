@@ -7,6 +7,7 @@ import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
+import data_miner.index_operator as index_operator
 
 
 class FundStrategyPEEstimation:
@@ -14,21 +15,6 @@ class FundStrategyPEEstimation:
 
     def __init__(self):
         pass
-
-
-    def get_index_constitute_stocks(self, index_code):
-        # 获取数据库中的指数最新的构成股和比例
-        # param: index_code 指数代码，如 399997 或者 399997.XSHE
-        # 返回： 指数构成股及其权重,
-        # 如 [{'global_stock_code': '000568.XSHE', 'stock_code': '000568', 'stock_name': '泸州老窖', 'weight': Decimal('14.8100')},
-        # {'global_stock_code': '000596.XSHE', 'stock_code': '000596', 'stock_name': '古井贡酒', 'weight': Decimal('3.6940')}]
-        selecting_sql = "SELECT global_stock_code, stock_code, stock_name, weight FROM index_constituent_stocks_weight " \
-                        "WHERE index_code LIKE '%s' AND submission_date = (" \
-                        "SELECT submission_date FROM index_constituent_stocks_weight " \
-                        "WHERE index_code LIKE '%s' " \
-                        "ORDER BY submission_date DESC LIMIT 1)" % (index_code+'%', index_code+'%')
-        index_constitute_stocks_weight = db_operator.DBOperator().select_all("financial_data", selecting_sql)
-        return index_constitute_stocks_weight
 
     def get_stock_historical_pe(self, stock_code, stock_name, day):
         # 提取股票的历史市盈率信息， 包括市盈率TTM, 扣非市盈率TTM
@@ -53,7 +39,7 @@ class FundStrategyPEEstimation:
         pe_ttm_nonrecurring = 0
 
         # 获取指数成分股及权重
-        index_constitute_stocks_weight = self.get_index_constitute_stocks(index_code)
+        index_constitute_stocks_weight = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
         for stock_info in index_constitute_stocks_weight:
             # 获取指数市盈率信息
             pe_info = self.get_stock_historical_pe(stock_info['stock_code'], stock_info['stock_name'], day)
@@ -81,7 +67,7 @@ class FundStrategyPEEstimation:
         # threadLock：线程锁
 
         # 通过抓取数据雪球页面，获取单个股票的实时滚动市盈率
-        stock_real_time_pe_ttm = xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator_ttm(stock_id, 'pe_ttm')
+        stock_real_time_pe_ttm = xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator(stock_id, 'pe_ttm')
         # 如果获取的股票实时滚动市盈率不是数字，如’亏损‘
         if not self.is_a_number(stock_real_time_pe_ttm):
             # 股票实时滚动市盈率为200
@@ -89,6 +75,8 @@ class FundStrategyPEEstimation:
 
         # 获取锁，用于线程同步
         threadLock.acquire()
+        print(stock_id)
+        print(stock_real_time_pe_ttm)
         # 统计指数的实时市盈率，成分股权重*股票实时的市盈率
         self.index_real_time_pe_ttm += stock_weight * decimal.Decimal(stock_real_time_pe_ttm)
         # 释放锁，开启下一个线程
@@ -103,7 +91,7 @@ class FundStrategyPEEstimation:
         self.index_real_time_pe_ttm = 0
 
         # 获取指数的成分股和权重
-        stocks_and_their_weights = self.get_index_constitute_stocks(index_code)
+        stocks_and_their_weights = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
 
         # 启用多线程
         running_threads = []
@@ -152,7 +140,6 @@ class FundStrategyPEEstimation:
 
     def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
         # 计算所有指数基金的实时市盈率TTM
-        # param: channel 发送的渠道, 可填 email 或 sms
         # return: 返回计算结果
 
         # 获取标的池中跟踪关注指数及他们的中文名称
