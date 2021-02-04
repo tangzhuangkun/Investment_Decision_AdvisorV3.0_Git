@@ -21,13 +21,17 @@ class GetStockRealTimeIndicatorFromXueqiu:
     def __init__(self):
         pass
 
-    def parse_page_content(self, page_address, header, proxy, indicator):
+    def parse_page_content(self, stock_id, header, proxy, indicator):
         # 解析雪球网页信息
         # page_address，地址
         # header，伪装的UA
         # proxy，伪装的IP
         # indicator, 需要抓取的指标，如 pe_ttm,市盈率TTM；pb,市净率，dr_ttm,滚动股息率 等
         # 返回 股票滚动市盈率
+
+        # 地址模板
+        page_address = 'https://xueqiu.com/S/' + stock_id
+
 
         # 递归算法，处理异常
         try:
@@ -47,11 +51,14 @@ class GetStockRealTimeIndicatorFromXueqiu:
             # 使用BeautifulSoup解析页面
             bs = BeautifulSoup(raw_page, "html.parser")
 
+            # todo 根据股票代码，在不同的上市板块，展示的信息的结构不同
+            # todo 300开头，创业板，688开头，科创板，其它
+
             if indicator == 'pe_ttm':
                 # 解析网页信息，获取动态市盈率
                 real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
-                trlist = real_time_stock_info.find_all('tr')
-                real_time_pe_ttm = trlist[2].find_all('span')[3].get_text()
+                tr_list = real_time_stock_info.find_all('tr')
+                real_time_pe_ttm = tr_list[2].find_all('span')[3].get_text()
                 # 日志记录
                 msg = "Collected stock real time " + indicator + " from " + page_address
                 custom_logger.CustomLogger().log_writter(msg, lev='debug')
@@ -61,8 +68,8 @@ class GetStockRealTimeIndicatorFromXueqiu:
             elif indicator == 'pb':
                 # 解析网页信息，获取市净率
                 real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
-                trlist = real_time_stock_info.find_all('tr')
-                real_time_pb = trlist[3].find_all('span')[3].get_text()
+                tr_list = real_time_stock_info.find_all('tr')
+                real_time_pb = tr_list[3].find_all('span')[3].get_text()
                 # 日志记录
                 msg = "Collected stock real time " + indicator + " from " + page_address
                 custom_logger.CustomLogger().log_writter(msg, lev='debug')
@@ -72,8 +79,8 @@ class GetStockRealTimeIndicatorFromXueqiu:
             elif indicator == 'dr_ttm':
                 # 解析网页信息，获取滚动股息率
                 real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
-                trlist = real_time_stock_info.find_all('tr')
-                real_time_dr_ttm = trlist[4].find_all('span')[1].get_text()
+                tr_list = real_time_stock_info.find_all('tr')
+                real_time_dr_ttm = tr_list[4].find_all('span')[1].get_text()
                 # 日志记录
                 msg = "Collected stock real time "+ indicator + " from " + page_address
                 custom_logger.CustomLogger().log_writter(msg, lev='debug')
@@ -124,21 +131,19 @@ class GetStockRealTimeIndicatorFromXueqiu:
         # indicator, 需要抓取的指标，如 pe_ttm,市盈率TTM；pb,市净率，dr_ttm,滚动股息率 等
         # 返回： 获取的实时的股票滚动市盈率 格式如 32.74
 
-        # 地址模板
-        page_address = 'https://xueqiu.com/S/' + stock_id
         # 伪装，隐藏UA和IP
         ip_address, ua = disguise.Disguise().get_one_IP_UA()
         header = {"user-agent": ua['ua'], 'Connection': 'close'}
         proxy = {'http': 'http://' + ip_address['ip_address']}
 
-        return self.parse_page_content(page_address, header, proxy, indicator)
+        return self.parse_page_content(stock_id, header, proxy, indicator)
 
 
 if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimeIndicatorFromXueqiu()
-    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SH600519', 'pb')
+    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SZ300146', 'pe_ttm')
     print(real_time_pe_ttm)
     '''
     for i in range(1000):
