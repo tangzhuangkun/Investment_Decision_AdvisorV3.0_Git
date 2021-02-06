@@ -103,8 +103,6 @@ class FundStrategyPBEstimation:
         # 获取锁，用于线程同步
         threadLock.acquire()
         # 统计指数的实时市净率，成分股权重*股票实时的市净率
-        print(stock_id)
-        print(stock_real_time_pb)
         self.index_real_time_pb += stock_weight * decimal.Decimal(stock_real_time_pb)
         # 释放锁，开启下一个线程
         threadLock.release()

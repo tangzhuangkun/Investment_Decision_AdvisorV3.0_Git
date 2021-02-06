@@ -2,6 +2,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import sys
 sys.path.append('..')
 import strategy.fund_strategy_PE_estimation as fund_strategy_PE_estimation
+import strategy.fund_strategy_PB_estimation as fund_strategy_PB_estimation
 import log.custom_logger as custom_logger
 import notification.email_notification as email_notification
 
@@ -16,9 +17,11 @@ class NotificationPlan:
 
         # 计算指数的动态市盈率
         indexes_and_real_time_PE_msg = fund_strategy_PE_estimation.FundStrategyPEEstimation().calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+        # 计算指数的市净率
+        indexes_and_real_time_PB_msg = fund_strategy_PB_estimation.FundStrategyPBEstimation().calculate_all_tracking_index_funds_real_time_PB_and_generate_msg()
 
         # 估值信息汇总
-        estimation_msg = indexes_and_real_time_PE_msg
+        estimation_msg = indexes_and_real_time_PE_msg + '\n\n' + indexes_and_real_time_PB_msg
 
         # 邮件发送所有估值信息
         try:

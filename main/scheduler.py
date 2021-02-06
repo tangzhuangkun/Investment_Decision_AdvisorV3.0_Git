@@ -63,11 +63,6 @@ class Scheduler:
 
 
 
-
-		# 	缺	14:45 fund_strategy_PB_estimation.py
-
-
-
 		#########  盘后  #########
 
 		try:
