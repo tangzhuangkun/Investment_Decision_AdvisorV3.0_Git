@@ -53,7 +53,7 @@ class GetStockRealTimeIndicatorFromXueqiu:
             bs = BeautifulSoup(raw_page, "html.parser")
 
             # 300开头，创业板
-            if (stock_id[:5] == 'SZ300'):
+            if (stock_id[:5] == 'SZ300' or stock_id[:5] == 'sz300'):
                 if indicator == 'pe_ttm':
                     # 解析网页信息，获取动态市盈率
                     real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
@@ -95,7 +95,7 @@ class GetStockRealTimeIndicatorFromXueqiu:
                     return -10000
 
             # 688开头，科创板
-            elif (stock_id[:5] == 'SH688'):
+            elif (stock_id[:5] == 'SH688' or stock_id[:5] == 'sh688'):
                 if indicator == 'pe_ttm':
                     # 解析网页信息，获取动态市盈率
                     real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimeIndicatorFromXueqiu()
-    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SZ002304', 'pb')
+    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SZ300783', 'pb')
     print(real_time_pe_ttm)
     '''
     for i in range(1000):
