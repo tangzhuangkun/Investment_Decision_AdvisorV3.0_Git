@@ -23,6 +23,7 @@ class GetStockRealTimeIndicatorFromXueqiu:
 
     def parse_page_content(self, stock_id, header, proxy, indicator):
         # 解析雪球网页信息
+        # stock_id: 股票代码（2位上市地+6位数字， 如 sz000596）
         # page_address，地址
         # header，伪装的UA
         # proxy，伪装的IP
@@ -51,48 +52,131 @@ class GetStockRealTimeIndicatorFromXueqiu:
             # 使用BeautifulSoup解析页面
             bs = BeautifulSoup(raw_page, "html.parser")
 
-            # todo 根据股票代码，在不同的上市板块，展示的信息的结构不同
-            # todo 300开头，创业板，688开头，科创板，其它
+            # 300开头，创业板
+            if (stock_id[:5] == 'SZ300'):
+                if indicator == 'pe_ttm':
+                    # 解析网页信息，获取动态市盈率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_pe_ttm = tr_list[4].find_all('span')[1].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动市盈率
+                    return real_time_pe_ttm
 
-            if indicator == 'pe_ttm':
-                # 解析网页信息，获取动态市盈率
-                real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
-                tr_list = real_time_stock_info.find_all('tr')
-                real_time_pe_ttm = tr_list[2].find_all('span')[3].get_text()
-                # 日志记录
-                msg = "Collected stock real time " + indicator + " from " + page_address
-                custom_logger.CustomLogger().log_writter(msg, lev='debug')
-                # 返回 股票滚动市盈率
-                return real_time_pe_ttm
+                elif indicator == 'pb':
+                    # 解析网页信息，获取市净率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_pb = tr_list[5].find_all('span')[1].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动市盈率
+                    return real_time_pb
 
-            elif indicator == 'pb':
-                # 解析网页信息，获取市净率
-                real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
-                tr_list = real_time_stock_info.find_all('tr')
-                real_time_pb = tr_list[3].find_all('span')[3].get_text()
-                # 日志记录
-                msg = "Collected stock real time " + indicator + " from " + page_address
-                custom_logger.CustomLogger().log_writter(msg, lev='debug')
-                # 返回 股票滚动市盈率
-                return real_time_pb
+                elif indicator == 'dr_ttm':
+                    # 解析网页信息，获取滚动股息率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_dr_ttm = tr_list[5].find_all('span')[3].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动股息率
+                    return real_time_dr_ttm
 
-            elif indicator == 'dr_ttm':
-                # 解析网页信息，获取滚动股息率
-                real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
-                tr_list = real_time_stock_info.find_all('tr')
-                real_time_dr_ttm = tr_list[4].find_all('span')[1].get_text()
-                # 日志记录
-                msg = "Collected stock real time "+ indicator + " from " + page_address
-                custom_logger.CustomLogger().log_writter(msg, lev='debug')
-                # 返回 股票滚动股息率
-                return real_time_dr_ttm
+                else:
+                    # 日志记录
+                    msg = "Unknown indicator"
+                    custom_logger.CustomLogger().log_writter(msg, lev='warning')
+                    # 返回 空
+                    return -10000
 
+            # 688开头，科创板
+            elif (stock_id[:5] == 'SH688'):
+                if indicator == 'pe_ttm':
+                    # 解析网页信息，获取动态市盈率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_pe_ttm = tr_list[4].find_all('span')[1].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动市盈率
+                    return real_time_pe_ttm
+
+                elif indicator == 'pb':
+                    # 解析网页信息，获取市净率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_pb = tr_list[5].find_all('span')[1].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动市盈率
+                    return real_time_pb
+
+                elif indicator == 'dr_ttm':
+                    # 解析网页信息，获取滚动股息率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_dr_ttm = tr_list[5].find_all('span')[3].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time "+ indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动股息率
+                    return real_time_dr_ttm
+
+                else:
+                    # 日志记录
+                    msg = "Unknown indicator"
+                    custom_logger.CustomLogger().log_writter(msg, lev='warning')
+                    # 返回 空
+                    return -10000
+
+            # 沪A，深A，中小板
             else:
-                # 日志记录
-                msg = "Unknown indicator"
-                custom_logger.CustomLogger().log_writter(msg, lev='warning')
-                # 返回 空
-                return -10000
+                if indicator == 'pe_ttm':
+                    # 解析网页信息，获取动态市盈率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_pe_ttm = tr_list[2].find_all('span')[3].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动市盈率
+                    return real_time_pe_ttm
+
+                elif indicator == 'pb':
+                    # 解析网页信息，获取市净率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_pb = tr_list[3].find_all('span')[3].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time " + indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动市盈率
+                    return real_time_pb
+
+                elif indicator == 'dr_ttm':
+                    # 解析网页信息，获取滚动股息率
+                    real_time_stock_info = bs.find('table', attrs={'class': 'quote-info'})
+                    tr_list = real_time_stock_info.find_all('tr')
+                    real_time_dr_ttm = tr_list[5].find_all('span')[1].get_text()
+                    # 日志记录
+                    msg = "Collected stock real time "+ indicator + " from " + page_address
+                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    # 返回 股票滚动股息率
+                    return real_time_dr_ttm
+
+                else:
+                    # 日志记录
+                    msg = "Unknown indicator"
+                    custom_logger.CustomLogger().log_writter(msg, lev='warning')
+                    # 返回 空
+                    return -10000
 
         # 如果读取超时，重新在执行一遍解析页面
         except requests.exceptions.ReadTimeout:
@@ -125,6 +209,7 @@ class GetStockRealTimeIndicatorFromXueqiu:
             # 返回解析页面得到的股票指标
             return self.parse_page_content(page_address, header, proxy, indicator)
 
+
     def get_single_stock_real_time_indicator(self, stock_id, indicator):
         # 从雪球网获取实时的股票滚动市盈率pe_ttm
         # stock_id: 股票代码（2位上市地+6位数字， 如 sz000596）
@@ -143,7 +228,7 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimeIndicatorFromXueqiu()
-    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SZ300146', 'pe_ttm')
+    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SZ002304', 'pb')
     print(real_time_pe_ttm)
     '''
     for i in range(1000):

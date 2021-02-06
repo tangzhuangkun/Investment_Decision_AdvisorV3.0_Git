@@ -75,8 +75,6 @@ class FundStrategyPEEstimation:
 
         # 获取锁，用于线程同步
         threadLock.acquire()
-        print(stock_id)
-        print(stock_real_time_pe_ttm)
         # 统计指数的实时市盈率，成分股权重*股票实时的市盈率
         self.index_real_time_pe_ttm += stock_weight * decimal.Decimal(stock_real_time_pe_ttm)
         # 释放锁，开启下一个线程
