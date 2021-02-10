@@ -184,7 +184,8 @@ class GetStockRealTimeIndicatorFromXueqiu:
             msg = "Collected stock real time "+ indicator + " from " + page_address + '  ' + "ReadTimeout"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
-            return self.parse_page_content(page_address, header, proxy, indicator)
+            # return self.parse_page_content(stock_id, header, proxy, indicator)
+            return self.get_single_stock_real_time_indicator(stock_id, indicator)
 
         # 如果连接请求超时，重新在执行一遍解析页面
         except requests.exceptions.ConnectTimeout:
@@ -192,7 +193,8 @@ class GetStockRealTimeIndicatorFromXueqiu:
             msg = "Collected stock real time "+ indicator + " from " + page_address + '  ' + "ConnectTimeout"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
-            return self.parse_page_content(page_address, header, proxy, indicator)
+            # return self.parse_page_content(stock_id, header, proxy, indicator)
+            return self.get_single_stock_real_time_indicator(stock_id, indicator)
 
         # 如果请求超时，重新在执行一遍解析页面
         except requests.exceptions.Timeout:
@@ -200,14 +202,16 @@ class GetStockRealTimeIndicatorFromXueqiu:
             msg = "Collected stock real time "+ indicator + " from " + page_address + '  ' + "Timeout"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
-            return self.parse_page_content(page_address, header, proxy, indicator)
+            # return self.parse_page_content(stock_id, header, proxy, indicator)
+            return self.get_single_stock_real_time_indicator(stock_id, indicator)
 
         except Exception as e:
             # 日志记录
             msg = page_address + str(e)
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
-            return self.parse_page_content(page_address, header, proxy, indicator)
+            # return self.parse_page_content(stock_id, header, proxy, indicator)
+            return self.get_single_stock_real_time_indicator(stock_id, indicator)
 
 
     def get_single_stock_real_time_indicator(self, stock_id, indicator):
@@ -228,7 +232,7 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimeIndicatorFromXueqiu()
-    real_time_pe_ttm = go.get_single_stock_real_time_indicator('SZ300783', 'pb')
+    real_time_pe_ttm = go.get_single_stock_real_time_indicator('sz002714', 'pb')
     print(real_time_pe_ttm)
     '''
     for i in range(1000):

@@ -34,27 +34,27 @@ class Scheduler:
 		try:
 			# 每日14：39检查已存储的IP的可用性，删除不可用的
 			scheduler.add_job(func=check_saved_IP_availability.CheckSavedIPAvailability().main, trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=14, minute=39,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=39,
 							  id='weekdayCheckSavedIPAvailability')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每日14：41收集代理IP
+			# 每个交易日14：41收集代理IP
 			scheduler.add_job(func=collect_proxy_IP.CollectProxyIP().main, trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=14, minute=41,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=41,
 							  id='weekdayCollectProxyIP')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每日14：49计算并通过邮件发送指数的动态估值信息
+			# 每个交易日14：49计算并通过邮件发送指数的动态估值信息
 			scheduler.add_job(func=notification_plan.NotificationPlan().
 							  estimation_notification,
 							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=14, minute=49,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=15, minute=40,
 							  id='weekdayEmailEstimation')
 		except Exception as e:
 			# 抛错
@@ -66,10 +66,10 @@ class Scheduler:
 		#########  盘后  #########
 
 		try:
-			# 每日22：01收集所需的股票的估值信息
+			# 每个交易日22：01收集所需的股票的估值信息
 			scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main, args=('2021-01-02',),
 							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri,sat,sun', hour=22, minute=1,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=22, minute=1,
 							  id='weekdayCollectStockHistoricalEstimationInfo')
 		except Exception as e:
 			# 抛错
