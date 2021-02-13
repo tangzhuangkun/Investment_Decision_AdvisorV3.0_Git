@@ -21,7 +21,8 @@ target_index_funds = {
 
 				'160628':{'fund_name':'鹏华地产分级', 'fund_type':'股票指数', 'tracking_index_name':'中证800地产', 'tracking_index_code':'399965.XSHE', 'hold_or_not':True, 'valuation_method_list':['pb'], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']},
 
-				'160517':{'fund_name':'博时中证银行指数(LOF)', 'fund_type':'股票指数', 'tracking_index_name':'中证银行指数', 'tracking_index_code':'399986.XSHE', 'hold_or_not':True, 'valuation_method_list':['pb'], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']}
+				'160517':{'fund_name':'博时中证银行指数(LOF)', 'fund_type':'股票指数', 'tracking_index_name':'中证银行指数', 'tracking_index_code':'399986.XSHE', 'hold_or_not':True, 'valuation_method_list':['pb'], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']},
 
+				'510630':{'fund_name':'华夏消费ETF', 'fund_type':'股票指数', 'tracking_index_name':'上证主要消费行业指数', 'tracking_index_code':'000036.XSHG', 'hold_or_not':False, 'valuation_method_list':['pe'], 'B&H_strategy_list':[], 'sell_out_strategy_list':[], 'monitoring_frequency_list':['daily']}
 				}
 				

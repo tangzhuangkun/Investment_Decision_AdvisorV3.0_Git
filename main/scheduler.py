@@ -54,7 +54,7 @@ class Scheduler:
 			scheduler.add_job(func=notification_plan.NotificationPlan().
 							  estimation_notification,
 							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=15, minute=40,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=49,
 							  id='weekdayEmailEstimation')
 		except Exception as e:
 			# 抛错
