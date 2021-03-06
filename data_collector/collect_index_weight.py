@@ -82,7 +82,6 @@ class CollectIndexWeight:
         index_stocks_weight_str = self.get_index_stocks_weight(index_code)
         # 将聚宽传回的指数成分股及其权重信息，由string转化为list，便于处理
         index_holding_detail_list = index_stocks_weight_str.replace('\n', ',').split(',')
-
         stock_code = ''
         weight = 0
 
@@ -90,7 +89,7 @@ class CollectIndexWeight:
         for new_content_index in range(4, len(index_holding_detail_list)):
             if new_content_index % 4 == 0:
                 # 获取股票代码
-                stock_code = index_holding_detail_list[new_content_index]
+                stock_code = index_holding_detail_list[new_content_index][:-5]
             elif new_content_index % 4 == 3:
                 # 获取股票权重
                 weight = index_holding_detail_list[new_content_index]
@@ -193,8 +192,8 @@ class CollectIndexWeight:
 
 if __name__ == "__main__":
     go = CollectIndexWeight()
-    result = go.get_index_stocks_weight('399965.XSHE')
-    print(result)
+    #result = go.get_index_stocks_weight('399965.XSHE')
+    #print(result)
     # go.save_index_stocks_weight_to_db("399997.XSHE","中证白酒")
     #result = go.get_query_count()
     # result = go.get_db_index_stocks_weight('399997.XSHE')
@@ -203,5 +202,8 @@ if __name__ == "__main__":
     # print(type(result))
     # print(len(result))
     #go.main("399396.XSHE", "国证食品")
-    # go.main("399997.XSHE","中证白酒")
+    #go.main("399997.XSHE","中证白酒")
     #go.main("399965.XSHE", "800地产")
+    go.main("000932.XSHG", "中证主要消费")
+    #print("--------------")
+    #go.is_the_db_containing_the_same_index_content("399997.XSHE")
