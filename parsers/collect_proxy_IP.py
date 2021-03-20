@@ -75,7 +75,7 @@ class CollectProxyIP:
                 except Exception as e:
                     # 日志记录
                     msg = page_url + '  '+ str(e)
-                    custom_logger.CustomLogger().log_writter(msg, lev='debug')
+                    custom_logger.CustomLogger().log_writter(msg, lev='error')
             
 
     def check_ip_availability_and_save_to_db(self, db_name, IP_set):
@@ -98,7 +98,8 @@ class CollectProxyIP:
             # 检查IP可用性
             result = check_IP_availability.CheckIPAvailability().check_single_ip_availability(ip)
             # SQL 插入语句
-            sql = "INSERT INTO IP_availability(ip_address,is_anonymous,is_available,type,submission_date)VALUES ('%s','%s','%s','%s','%s')" %(ip,1,1,ip_type,today)
+            sql = "INSERT INTO IP_availability(ip_address,is_anonymous,is_available,type,submission_date) " \
+                  "VALUES ('%s','%s','%s','%s','%s') ON DUPLICATE KEY UPDATE ip_address = ip_address" %(ip,1,1,ip_type,today)
             if result:
                 # 存入数据库
                 db_operator.DBOperator().operate('insert',db_name, sql)
