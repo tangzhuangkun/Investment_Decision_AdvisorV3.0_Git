@@ -37,11 +37,17 @@ class CollectStockHistoricalEstimationInfo:
     # 运行频率：每天收盘后
 
     def __init__(self):
-        pass
+        # 从数据库取数时，每页取的条数信息
+        # 每次向杏理仁请求数据时，每次申请的条数
+        self.page_size = 50
 
-    def demanded_stocks(self):
-        # 数据库中，哪些股票需要被收集估值信息
-        # 输出： 需要被收集估值信息的股票代码和股票名称
+        # 获取当前日期
+        # self.today = time.strftime("%Y-%m-%d", time.localtime())
+        self.today = "2021-03-26"
+
+    def all_demanded_stocks(self):
+        # 数据库中，全部需要被收集估值信息的股票
+        # 输出： 需要被收集估值信息的股票代码和股票名称的字典
         # 如 {'000568': '泸州老窖', '000596': '古井贡酒',,,,}
         selecting_sql = "SELECT DISTINCT stock_code, stock_name FROM index_constituent_stocks_weight"
         stock_codes_names = db_operator.DBOperator().select_all("financial_data", selecting_sql)
@@ -50,6 +56,37 @@ class CollectStockHistoricalEstimationInfo:
         for piece in stock_codes_names:
             stock_codes_names_dict[piece["stock_code"]] = piece["stock_name"]
         return stock_codes_names_dict
+
+    def all_demanded_stocks_counter(self):
+        # 数据库中，全部需要被收集估值信息的股票的统计数
+        # 输出： 统计数
+        # 如 108
+        selecting_sql = "SELECT count(DISTINCT stock_code) as counter FROM index_constituent_stocks_weight"
+        stock_codes_counter = db_operator.DBOperator().select_one("financial_data", selecting_sql)
+        return stock_codes_counter['counter']
+
+    def paged_demanded_stocks(self, page, size):
+        # 根据分页信息获取哪些股票需要被收集估值信息
+        # param: page, 分页的页码
+        # param: size, 每页条数
+        # return: 返回该页的 股票代码和股票名称的字典
+        # 如：{'000568': '泸州老窖', '000596': '古井贡酒',,,,}
+
+        start_row = page*size
+        selecting_sql = "SELECT DISTINCT stock_code, stock_name FROM index_constituent_stocks_weight order by stock_code limit %d,%d " % (start_row,size)
+        paged_stock_codes_names = db_operator.DBOperator().select_all("financial_data", selecting_sql)
+        paged_stock_codes_names_dict = dict()
+        for piece in paged_stock_codes_names:
+            paged_stock_codes_names_dict[piece["stock_code"]] = piece["stock_name"]
+        return paged_stock_codes_names_dict
+
+    def page_counter_by_page_size_per_page(self):
+        # 按80个为一页，将总的股票个数分成多页
+        # return: 需要被分成多少页
+        # 如：3
+        stock_codes_total_counter = self.all_demanded_stocks_counter()
+        page_counter = (stock_codes_total_counter//self.page_size) +1
+        return page_counter
 
     def get_lxr_token(self):
         # 随机获取一个理杏仁的token、
@@ -256,31 +293,50 @@ class CollectStockHistoricalEstimationInfo:
 
     def collect_all_new_stocks_info_at_one_time(self, start_date, stock_codes_names_dict):
         # 将所有新的，且需要被收集估值信息的股票，一次性收集数据
-        # param: start_date, 起始日期，默认 2010-01-02
+        # param: start_date, 起始日期，如 2010-01-02
         # param: stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
 
-        # 获取当前时间
-        today = time.strftime("%Y-%m-%d", time.localtime())
         # 遍历股票
         for k, v in stock_codes_names_dict.items():
             piece_dict = {k: v}
-            # 收集单只股票，从2010-01-01至今的估值数据
-            self.collect_a_period_time_estimation(piece_dict, start_date, today)
+            # 收集单只股票，如从2010-01-01至今的估值数据
+            self.collect_a_period_time_estimation(piece_dict, start_date, self.today)
+
+    def collect_all_new_stocks_info_at_one_time_in_batch(self,start_date):
+        # 分批次，将所有新的，且需要被收集估值信息的股票，从起始日期开始，全部收集
+        # param: start_date, 起始日期，如 2010-01-02
+
+        # 总共需要将采集的股票数分成多少页，即分成多少批次
+        page_counter = self.page_counter_by_page_size_per_page()
+        for page in range(page_counter):
+            stock_codes_names_dict_in_page = self.paged_demanded_stocks(page, self.page_size)
+            self.collect_all_new_stocks_info_at_one_time(start_date,stock_codes_names_dict_in_page)
+
 
     def collect_stocks_recent_info(self, stock_codes_names_dict):
         # 收集当前所有股票最近的信息
+        # param: stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
 
-        # 获取当前时间
-        today = time.strftime("%Y-%m-%d", time.localtime())
         # 收集数据库中所有股票，今日的估值数据
-        self.collect_a_special_date_estimation(stock_codes_names_dict, today)
+        self.collect_a_special_date_estimation(stock_codes_names_dict, self.today)
+
+    def collect_stocks_recent_info_in_batch(self):
+        # 分批次，收集当前所有股票最近的信息
+
+        # 总共需要将采集的股票数分成多少页，即分成多少批次
+        page_counter = self.page_counter_by_page_size_per_page()
+        for page in range(page_counter):
+            stock_codes_names_dict_in_page = self.paged_demanded_stocks(page,self.page_size)
+            self.collect_stocks_recent_info(stock_codes_names_dict_in_page)
+
+
 
     def main(self,start_date):
         # 与上次数据库中待收集的股票代码和名称对比，
         # 并决定是 同时收集多只股票特定日期的数据 还是 分多次收集个股票一段时间的数据
 
         # 当前数据库中，待收集的股票代码和名称
-        stock_codes_names_dict = self.demanded_stocks()
+        all_stock_codes_names_dict = self.all_demanded_stocks()
 
         # 获取文件的当前路径（绝对路径）
         cur_path = os.path.dirname(os.path.realpath(__file__))
@@ -291,11 +347,12 @@ class CollectStockHistoricalEstimationInfo:
 
         # 如果待收集的内容与上次数据库中的一致
         # 则只收集最近日期的
-        if stock_codes_names_dict == last_time_data["last_time_stock_codes_names_in_db_dict"]:
-            self.collect_stocks_recent_info(stock_codes_names_dict)
-        # 如果不相同，一次性收集所有数据
+        if all_stock_codes_names_dict == last_time_data["last_time_stock_codes_names_in_db_dict"]:
+            self.collect_stocks_recent_info_in_batch()
+        # 如果不相同，则一次性收集所有数据
         else:
-            self.collect_all_new_stocks_info_at_one_time(start_date, stock_codes_names_dict)
+            # todo 此处需要再详细测试，2021-03-28
+            self.collect_all_new_stocks_info_at_one_time_in_batch(start_date)
             # 获取文件的当前路径（绝对路径）
             cur_path = os.path.dirname(os.path.realpath(__file__))
             # 获取comparison.json的路径
@@ -304,7 +361,7 @@ class CollectStockHistoricalEstimationInfo:
             with open(json_path, 'w', encoding='utf-8') as com:
                 com.truncate()
                 new_data = dict()
-                new_data["last_time_stock_codes_names_in_db_dict"] = stock_codes_names_dict
+                new_data["last_time_stock_codes_names_in_db_dict"] = all_stock_codes_names_dict
                 com.write(json.dumps(new_data, ensure_ascii=False))
             # 日志记录
             msg = 'Update comparison.json content '
@@ -317,7 +374,7 @@ class CollectStockHistoricalEstimationInfo:
 
 if __name__ == "__main__":
     go = CollectStockHistoricalEstimationInfo()
-    # stock_codes_names_dict = go.demanded_stocks()
+    # stock_codes_names_dict = go.all_demanded_stocks()
     # print(stock_codes_names_dict)
     #go.collect_a_period_time_estimation({"600519":"贵州茅台"}, "2020-11-04", "2020-11-05")
     #go.collect_a_special_date_estimation({"000568":"泸州老窖", "000596":"古井贡酒"}, "2020-11-09")
@@ -325,4 +382,5 @@ if __name__ == "__main__":
     #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
-    go.main("2021-01-10")
+    go.main("2021-03-20")
+    #print(go.all_demanded_stocks_counter())
