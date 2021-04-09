@@ -42,8 +42,8 @@ class CollectStockHistoricalEstimationInfo:
         self.page_size = 50
 
         # 获取当前日期
-        # self.today = time.strftime("%Y-%m-%d", time.localtime())
-        self.today = "2021-03-26"
+        self.today = time.strftime("%Y-%m-%d", time.localtime())
+        #self.today = "2021-04-09"
 
     def all_demanded_stocks(self):
         # 数据库中，全部需要被收集估值信息的股票
@@ -351,7 +351,6 @@ class CollectStockHistoricalEstimationInfo:
             self.collect_stocks_recent_info_in_batch()
         # 如果不相同，则一次性收集所有数据
         else:
-            # todo 此处需要再详细测试，2021-03-28
             self.collect_all_new_stocks_info_at_one_time_in_batch(start_date)
             # 获取文件的当前路径（绝对路径）
             cur_path = os.path.dirname(os.path.realpath(__file__))
@@ -382,5 +381,5 @@ if __name__ == "__main__":
     #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
-    go.main("2021-03-20")
+    go.main("2021-04-01")
     #print(go.all_demanded_stocks_counter())
