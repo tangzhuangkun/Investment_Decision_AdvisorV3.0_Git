@@ -81,11 +81,18 @@ class CollectStockHistoricalEstimationInfo:
         return paged_stock_codes_names_dict
 
     def page_counter_by_page_size_per_page(self):
-        # 按80个为一页，将总的股票个数分成多页
+        # 按50个为一页，将总的股票个数分成多页
         # return: 需要被分成多少页
         # 如：3
         stock_codes_total_counter = self.all_demanded_stocks_counter()
-        page_counter = (stock_codes_total_counter//self.page_size) +1
+
+        # 如果分页后，有余数（即未满一页的）
+        if stock_codes_total_counter%self.page_size > 0:
+            # 总页数需要加1
+            page_counter = (stock_codes_total_counter//self.page_size) +1
+        # 如果分页后，刚好分完，无余数
+        else:
+            page_counter = stock_codes_total_counter // self.page_size
         return page_counter
 
     def get_lxr_token(self):
@@ -105,7 +112,8 @@ class CollectStockHistoricalEstimationInfo:
         # 理杏仁要求 在请求的headers里面设置Content-Type为application/json。
         headers = {'Content-Type': 'application/json'}
         # 理杏仁 获取基本面数据 接口
-        url = 'https://open.lixinger.com/api/a/stock/fundamental/non_financial'
+        # url = 'https://open.lixinger.com/api/a/stock/fundamental/non_financial'
+        url = 'https://open.lixinger.com/api/a/company/fundamental/non_financial'
         # 接口参数，PE-TTM :pe_ttm
         # PE-TTM(扣非) :d_pe_ttm
         # PB :pb
@@ -142,6 +150,24 @@ class CollectStockHistoricalEstimationInfo:
         req = requests.post(url, data=values, headers=headers)
         content = req.json()
         # content 如 {'code': 0, 'message': 'success', 'data': [{'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 48.04573277785343, 'd_pe_ttm': 47.83511443886097, 'pb': 14.42765025023379, 'pb_wo_gw': 14.42765025023379, 'ps_ttm': 22.564315310000808, 'pcf_ttm': 49.80250701327664, 'ev_ebit_r': 33.88432187818624, 'ey': 0.029323867066169462, 'dyr': 0.00998533724340176, 'sp': 1705, 'tv': 2815500, 'shn': 114300, 'mc': 2141817249000, 'cmc': 2141817249000, 'ecmc': 899670265725, 'ecmc_psh': 7871131, 'ha_shm': 173164289265, 'fb': 17366179363, 'sb': 2329851810, 'fc_rights': 1705, 'bc_rights': 1705, 'lxr_fc_rights': 1705, 'stockCode': '600519'}, {'date': '2020-11-12T00:00:00+08:00', 'pe_ttm': 48.88519458398379, 'd_pe_ttm': 48.67089629172529, 'pb': 14.679732186277464, 'pb_wo_gw': 14.679732186277464, 'ps_ttm': 22.95856220330575, 'pcf_ttm': 50.672663426136175, 'ev_ebit_r': 34.47543387050795, 'ey': 0.028824017925678805, 'dyr': 0.009813867960963575, 'sp': 1734.79, 'tv': 2347300, 'shn': 114300, 'mc': 2179239381462, 'cmc': 2179239381462, 'ecmc': 915389431248, 'ecmc_psh': 8008656, 'ha_shm': 176618263840, 'fb': 17207679699, 'sb': 2426239128, 'fc_rights': 1734.79, 'bc_rights': 1734.79, 'lxr_fc_rights': 1734.79, 'stockCode': '600519'}]}
+
+
+        if 'message' in content and content['message'] == "illegal token.":
+            # 日志记录失败
+            msg = 'Failed to use token ' + token + ' ' + 'to collect_a_special_date_estimation of ' + \
+                  str(stock_code_name_dict) + ' ' + start_date + ' ' + end_date
+            custom_logger.CustomLogger().log_writter(msg, 'error')
+            return self.collect_a_period_time_estimation(stock_code_name_dict, start_date, end_date)
+
+        try:
+            # 数据存入数据库
+            self.save_content_into_db(content, stock_code_name_dict, "period")
+        except Exception as e:
+            # 日志记录失败
+            msg = '数据存入数据库失败。 ' + '理杏仁接口返回为 '+str(content) + '。 抛错为 '+ str(e)
+            custom_logger.CustomLogger().log_writter(msg, 'error')
+
+        '''
         message = content['message']
         # 检查token是否失效
         if message == "illegal token.":
@@ -152,6 +178,7 @@ class CollectStockHistoricalEstimationInfo:
             return self.collect_a_period_time_estimation(stock_code_name_dict, start_date, end_date)
         # 数据存入数据库
         self.save_content_into_db(content, stock_code_name_dict, "period")
+        '''
 
     def collect_a_special_date_estimation(self, stock_codes_names_dict, date):
         # 调取理杏仁接口，获取特定一天，一只/多支股票估值数据, 并储存
@@ -164,7 +191,8 @@ class CollectStockHistoricalEstimationInfo:
         # 理杏仁要求 在请求的headers里面设置Content-Type为application/json。
         headers = {'Content-Type': 'application/json'}
         # 理杏仁 获取基本面数据 接口
-        url = 'https://open.lixinger.com/api/a/stock/fundamental/non_financial'
+        # url = 'https://open.lixinger.com/api/a/stock/fundamental/non_financial'
+        url = 'https://open.lixinger.com/api/a/company/fundamental/non_financial'
         # 接口参数，
         # PE-TTM :pe_ttm
         # PE-TTM(扣非) :d_pe_ttm
@@ -201,15 +229,36 @@ class CollectStockHistoricalEstimationInfo:
         content = req.json()
         # content 如 {'code': 0, 'message': 'success', 'data': [
         # {'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 48.2957825939533, 'd_pe_ttm': 48.62280236330014, 'pb': 12.491374104141297, 'pb_wo_gw': 12.491374104141297, 'ps_ttm': 17.156305422424143, 'pcf_ttm': 63.68585789882434, 'ev_ebit_r': 37.63760421342357, 'ey': 0.026088654822125818, 'dyr': 0.0085167925205312, 'sp': 186.69, 'tv': 13479800, 'shn': 113900, 'mc': 273454640491.19998, 'cmc': 273371391686, 'ecmc': 133902847844, 'ecmc_psh': 1175618, 'ha_shm': 5559655830, 'fc_rights': 186.69, 'bc_rights': 186.69, 'lxr_fc_rights': 186.69, 'stockCode': '000568'}, {'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 60.72940789130697, 'd_pe_ttm': 64.53258136924804, 'pb': 11.823197225442007, 'pb_wo_gw': 12.43465627328832, 'ps_ttm': 11.182674688897702, 'pcf_ttm': 216.59317739098543, 'ev_ebit_r': 48.032852603259784, 'ey': 0.02045252811485187, 'dyr': 0.006568863586599518, 'sp': 228.35, 'tv': 3310800, 'shn': 31900, 'mc': 114997060000, 'cmc': 87595060000, 'ecmc': 25619951576, 'ecmc_psh': 803133, 'ha_shm': 1181857851, 'fc_rights': 228.35, 'bc_rights': 228.35, 'lxr_fc_rights': 228.35, 'stockCode': '000596'}]}
-        # 检查token是否失效
-        if content['message'] == "illegal token.":
+
+        if 'message' in content and content['message'] == "illegal token.":
             # 日志记录失败
             msg = 'Failed to use token ' + token + ' ' + 'to collect_a_special_date_estimation of ' + \
                   str(stock_codes_names_dict) + ' ' + date
             custom_logger.CustomLogger().log_writter(msg, 'error')
             return self.collect_a_special_date_estimation(stock_codes_names_dict, date)
+
+        try:
+            # 数据存入数据库
+            self.save_content_into_db(content, stock_codes_names_dict, "date")
+        except Exception as e:
+            # 日志记录失败
+            msg = '数据存入数据库失败。 ' + '理杏仁接口返回为 '+str(content) + '。 抛错为 '+ str(e)
+            custom_logger.CustomLogger().log_writter(msg, 'error')
+
+
+        '''
+        message = content['message']
+        # 检查token是否失效
+        if message == "illegal token.":
+            # 日志记录失败
+            msg = 'Failed to use token ' + token + ' ' + 'to collect_a_period_time_estimation of ' + \
+                  str(stock_codes_names_dict) + ' ' + date
+            custom_logger.CustomLogger().log_writter(msg, 'error')
+            return self.collect_a_period_time_estimation(stock_codes_names_dict, date)
         # 数据存入数据库
         self.save_content_into_db(content, stock_codes_names_dict, "date")
+        '''
+
 
     def save_content_into_db(self, content, stock_codes_names_dict, range):
         # 将 理杏仁接口返回的数据 存入数据库
