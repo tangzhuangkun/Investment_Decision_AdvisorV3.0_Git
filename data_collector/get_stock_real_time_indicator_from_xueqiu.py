@@ -232,7 +232,7 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = GetStockRealTimeIndicatorFromXueqiu()
-    real_time_pe_ttm = go.get_single_stock_real_time_indicator('sz002714', 'pb')
+    real_time_pe_ttm = go.get_single_stock_real_time_indicator('sh600315', 'pe_ttm')
     print(real_time_pe_ttm)
     '''
     for i in range(1000):

@@ -70,13 +70,17 @@ class FundStrategyPEEstimation:
         stock_real_time_pe_ttm = xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator(stock_id, 'pe_ttm')
         # 如果获取的股票实时滚动市盈率不是数字，如’亏损‘
         if not self.is_a_number(stock_real_time_pe_ttm):
-            # 股票实时滚动市盈率为200
-            stock_real_time_pe_ttm = '200'
+            # 股票实时滚动市盈率为0
+            stock_real_time_pe_ttm = '0'
+            # 忽略亏损的成分股票的权重
+            stock_weight = 0
 
         # 获取锁，用于线程同步
         threadLock.acquire()
         # 统计指数的实时市盈率，成分股权重*股票实时的市盈率
-        self.index_real_time_pe_ttm += stock_weight * decimal.Decimal(stock_real_time_pe_ttm)
+        self.index_real_time_positive_pe_ttm += stock_weight * decimal.Decimal(stock_real_time_pe_ttm)
+        # 累加有效（即为正值的）市盈率成分股权重
+        self.index_positive_pe_ttm_weight += stock_weight
         # 释放锁，开启下一个线程
         threadLock.release()
 
@@ -86,7 +90,9 @@ class FundStrategyPEEstimation:
         # 输出，指数的实时市盈率， 如 70.5937989
 
         # 统计指数实时的市盈率
-        self.index_real_time_pe_ttm = 0
+        self.index_real_time_positive_pe_ttm = 0
+        # 统计指数实时的市盈率为正数的权重合计
+        self.index_positive_pe_ttm_weight = 0
 
         # 获取指数的成分股和权重
         stocks_and_their_weights = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
@@ -131,10 +137,11 @@ class FundStrategyPEEstimation:
         for mem in running_threads:
             mem.join()
 
-        # 整体市盈率除以100，因为之前的权重没有除以100
-        self.index_real_time_pe_ttm = self.index_real_time_pe_ttm / 100
+        # 整体市盈率除以有效权重得到有效市盈率
+        index_real_time_effective_pe_ttm = self.index_real_time_positive_pe_ttm/self.index_positive_pe_ttm_weight
 
-        return self.index_real_time_pe_ttm
+        # （市盈率为正值的成分股）累加市盈率/（市盈率为正值的成分股）有效权重
+        return round(index_real_time_effective_pe_ttm,4)
 
     def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
         # 计算所有指数基金的实时市盈率TTM
@@ -169,7 +176,7 @@ if __name__ == '__main__':
     #print(result)
     #pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399965","2020-10-19")
     #print(pe_ttm, pe_ttm_nonrecurring)
-    #result = go.calculate_real_time_index_pe_multiple_threads("399997.XSHE")
+    #result = go.calculate_real_time_index_pe_multiple_threads("399965.XSHE")
     #print(result)
     msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     print(msg)
