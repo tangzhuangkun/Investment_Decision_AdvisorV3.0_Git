@@ -57,7 +57,7 @@ class CollectProxyIP:
                 2、启用多线程
                 '''
                 page_url = url[0]+str(i)+url[1]
-                # print(page_url)
+                print(page_url)
                 
                 # 处理可能出现的ip代理网站链接异常的情况
                 # 可抛出异常，然后继续执行
@@ -107,7 +107,7 @@ class CollectProxyIP:
     
     def main(self):
         # 抓取代理IP，存入 数据库 parser_component，抓取每个代理网站的前4页
-        self.collect_web_content('parser_component', 4)
+        self.collect_web_content('parser_component', 5)
         # 日志记录
         msg = 'Just collected proxy IP'
         custom_logger.CustomLogger().log_writter(msg, 'info')
