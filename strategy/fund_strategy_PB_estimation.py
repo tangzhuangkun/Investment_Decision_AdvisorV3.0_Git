@@ -161,7 +161,7 @@ class FundStrategyPBEstimation:
         # 整体市净率除以100，因为之前的权重没有除以100
         self.index_real_time_pb = self.index_real_time_pb / 100
 
-        return self.index_real_time_pb
+        return round(self.index_real_time_pb,4)
 
     def calculate_all_tracking_index_funds_real_time_PB_and_generate_msg(self):
         # 计算所有指数基金的实时市净率
