@@ -43,7 +43,7 @@ class CollectStockHistoricalEstimationInfo:
 
         # 获取当前日期
         self.today = time.strftime("%Y-%m-%d", time.localtime())
-        #self.today = "2021-04-09"
+        #self.today = "2021-05-14"
 
     def all_demanded_stocks(self):
         # 数据库中，全部需要被收集估值信息的股票
@@ -145,10 +145,16 @@ class CollectStockHistoricalEstimationInfo:
                      "fc_rights", "bc_rights", "lxr_fc_rights", "shn", "mc", "cmc", "ecmc", "ecmc_psh", "fb", "sb",
                      "ha_shm"
                  ]}
+        # 日志记录
+        msg = '向理杏仁请求的接口参数 ' + str(parms)
+        custom_logger.CustomLogger().log_writter(msg, 'info')
         values = json.dumps(parms)
         # 调用理杏仁接口
         req = requests.post(url, data=values, headers=headers)
         content = req.json()
+        # 日志记录
+        msg = '理杏仁接口返回 ' + str(content)
+        custom_logger.CustomLogger().log_writter(msg, 'info')
         # content 如 {'code': 0, 'message': 'success', 'data': [{'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 48.04573277785343, 'd_pe_ttm': 47.83511443886097, 'pb': 14.42765025023379, 'pb_wo_gw': 14.42765025023379, 'ps_ttm': 22.564315310000808, 'pcf_ttm': 49.80250701327664, 'ev_ebit_r': 33.88432187818624, 'ey': 0.029323867066169462, 'dyr': 0.00998533724340176, 'sp': 1705, 'tv': 2815500, 'shn': 114300, 'mc': 2141817249000, 'cmc': 2141817249000, 'ecmc': 899670265725, 'ecmc_psh': 7871131, 'ha_shm': 173164289265, 'fb': 17366179363, 'sb': 2329851810, 'fc_rights': 1705, 'bc_rights': 1705, 'lxr_fc_rights': 1705, 'stockCode': '600519'}, {'date': '2020-11-12T00:00:00+08:00', 'pe_ttm': 48.88519458398379, 'd_pe_ttm': 48.67089629172529, 'pb': 14.679732186277464, 'pb_wo_gw': 14.679732186277464, 'ps_ttm': 22.95856220330575, 'pcf_ttm': 50.672663426136175, 'ev_ebit_r': 34.47543387050795, 'ey': 0.028824017925678805, 'dyr': 0.009813867960963575, 'sp': 1734.79, 'tv': 2347300, 'shn': 114300, 'mc': 2179239381462, 'cmc': 2179239381462, 'ecmc': 915389431248, 'ecmc_psh': 8008656, 'ha_shm': 176618263840, 'fb': 17207679699, 'sb': 2426239128, 'fc_rights': 1734.79, 'bc_rights': 1734.79, 'lxr_fc_rights': 1734.79, 'stockCode': '600519'}]}
 
 
@@ -224,9 +230,16 @@ class CollectStockHistoricalEstimationInfo:
                      "fc_rights", "bc_rights", "lxr_fc_rights", "shn", "mc", "cmc", "ecmc", "ecmc_psh", "fb", "sb",
                      "ha_shm"
                  ]}
+        # 日志记录
+        msg = '向理杏仁请求的接口参数 ' + str(parms)
+        custom_logger.CustomLogger().log_writter(msg, 'info')
+
         values = json.dumps(parms)
         req = requests.post(url, data=values, headers=headers)
         content = req.json()
+        # 日志记录
+        msg = '理杏仁接口返回 ' + str(content)
+        custom_logger.CustomLogger().log_writter(msg, 'info')
         # content 如 {'code': 0, 'message': 'success', 'data': [
         # {'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 48.2957825939533, 'd_pe_ttm': 48.62280236330014, 'pb': 12.491374104141297, 'pb_wo_gw': 12.491374104141297, 'ps_ttm': 17.156305422424143, 'pcf_ttm': 63.68585789882434, 'ev_ebit_r': 37.63760421342357, 'ey': 0.026088654822125818, 'dyr': 0.0085167925205312, 'sp': 186.69, 'tv': 13479800, 'shn': 113900, 'mc': 273454640491.19998, 'cmc': 273371391686, 'ecmc': 133902847844, 'ecmc_psh': 1175618, 'ha_shm': 5559655830, 'fc_rights': 186.69, 'bc_rights': 186.69, 'lxr_fc_rights': 186.69, 'stockCode': '000568'}, {'date': '2020-11-13T00:00:00+08:00', 'pe_ttm': 60.72940789130697, 'd_pe_ttm': 64.53258136924804, 'pb': 11.823197225442007, 'pb_wo_gw': 12.43465627328832, 'ps_ttm': 11.182674688897702, 'pcf_ttm': 216.59317739098543, 'ev_ebit_r': 48.032852603259784, 'ey': 0.02045252811485187, 'dyr': 0.006568863586599518, 'sp': 228.35, 'tv': 3310800, 'shn': 31900, 'mc': 114997060000, 'cmc': 87595060000, 'ecmc': 25619951576, 'ecmc_psh': 803133, 'ha_shm': 1181857851, 'fc_rights': 228.35, 'bc_rights': 228.35, 'lxr_fc_rights': 228.35, 'stockCode': '000596'}]}
 
@@ -357,9 +370,20 @@ class CollectStockHistoricalEstimationInfo:
 
         # 总共需要将采集的股票数分成多少页，即分成多少批次
         page_counter = self.page_counter_by_page_size_per_page()
+        # 日志记录
+        msg = '共需收集 ' + str(page_counter) + ' 页的股票估值信息'
+        custom_logger.CustomLogger().log_writter(msg, 'info')
         for page in range(page_counter):
             stock_codes_names_dict_in_page = self.paged_demanded_stocks(page, self.page_size)
-            self.collect_all_new_stocks_info_at_one_time(start_date,stock_codes_names_dict_in_page)
+            try:
+                self.collect_all_new_stocks_info_at_one_time(start_date,stock_codes_names_dict_in_page)
+                # 日志记录
+                msg = '收集了第 ' + str(page + 1) + ' 页的股票估值信息'
+                custom_logger.CustomLogger().log_writter(msg, 'info')
+            except Exception as e:
+                # 日志记录
+                msg = '收集到第 ' + str(page + 1) + ' 页的股票估值信息时' + '发生错误 ' + str(e)
+                custom_logger.CustomLogger().log_writter(msg, 'error')
 
 
     def collect_stocks_recent_info(self, stock_codes_names_dict):
@@ -367,16 +391,35 @@ class CollectStockHistoricalEstimationInfo:
         # param: stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
 
         # 收集数据库中所有股票，今日的估值数据
-        self.collect_a_special_date_estimation(stock_codes_names_dict, self.today)
+        try:
+            self.collect_a_special_date_estimation(stock_codes_names_dict, self.today)
+            # 日志记录
+            msg = '收集了 '+ self.today +'  '+ str(stock_codes_names_dict) +' 的股票估值信息'
+            custom_logger.CustomLogger().log_writter(msg, 'info')
+        except Exception as e:
+            # 日志记录
+            msg = '在收集 ' + self.today +'  '+ str(stock_codes_names_dict) + ' 的股票估值信息时' + '发生错误 ' + str(e)
+            custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def collect_stocks_recent_info_in_batch(self):
         # 分批次，收集当前所有股票最近的信息
 
         # 总共需要将采集的股票数分成多少页，即分成多少批次
         page_counter = self.page_counter_by_page_size_per_page()
+        # 日志记录
+        msg = '共需收集 ' + str(page_counter) + ' 页的股票估值信息'
+        custom_logger.CustomLogger().log_writter(msg, 'info')
         for page in range(page_counter):
             stock_codes_names_dict_in_page = self.paged_demanded_stocks(page,self.page_size)
-            self.collect_stocks_recent_info(stock_codes_names_dict_in_page)
+            try:
+                self.collect_stocks_recent_info(stock_codes_names_dict_in_page)
+                # 日志记录
+                msg = '收集了第 ' + str(page+1)+ ' 页的股票估值信息'
+                custom_logger.CustomLogger().log_writter(msg, 'info')
+            except Exception as e:
+                # 日志记录
+                msg = '收集到第 ' + str(page+1)+ ' 页的股票估值信息时' + '发生错误 ' +str(e)
+                custom_logger.CustomLogger().log_writter(msg, 'error')
 
 
 
@@ -397,9 +440,15 @@ class CollectStockHistoricalEstimationInfo:
         # 如果待收集的内容与上次数据库中的一致
         # 则只收集最近日期的
         if all_stock_codes_names_dict == last_time_data["last_time_stock_codes_names_in_db_dict"]:
+            # 日志记录
+            msg = '无新增的股票，开始收集最近交易日的股票估值信息 '
+            custom_logger.CustomLogger().log_writter(msg, 'info')
             self.collect_stocks_recent_info_in_batch()
         # 如果不相同，则一次性收集所有数据
         else:
+            # 日志记录
+            msg = '有新增的股票，开始收集从 '+start_date+' 到 '+self.today +' 的股票估值信息 '
+            custom_logger.CustomLogger().log_writter(msg, 'info')
             self.collect_all_new_stocks_info_at_one_time_in_batch(start_date)
             # 获取文件的当前路径（绝对路径）
             cur_path = os.path.dirname(os.path.realpath(__file__))
@@ -412,11 +461,11 @@ class CollectStockHistoricalEstimationInfo:
                 new_data["last_time_stock_codes_names_in_db_dict"] = all_stock_codes_names_dict
                 com.write(json.dumps(new_data, ensure_ascii=False))
             # 日志记录
-            msg = 'Update comparison.json content '
+            msg = '更新 comparison.json 的内容 '
             custom_logger.CustomLogger().log_writter(msg, 'info')
 
         # 日志记录
-        msg = 'Just collected stock historical estimation info'
+        msg = '已经收集了全部股票至今的历史估值信息'
         custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
