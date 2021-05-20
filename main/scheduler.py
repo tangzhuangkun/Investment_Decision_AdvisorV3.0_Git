@@ -66,10 +66,10 @@ class Scheduler:
 		#########  盘后  #########
 
 		try:
-			# 每个交易日22：01收集所需的股票的估值信息
+			# 每个交易日20：40收集所需的股票的估值信息
 			scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main, args=('2021-01-02',),
 							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=22, minute=1,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=40,
 							  id='weekdayCollectStockHistoricalEstimationInfo')
 		except Exception as e:
 			# 抛错

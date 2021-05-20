@@ -1,3 +1,6 @@
+import datetime
+from datetime import date
+
 import requests
 import json
 import time
@@ -337,8 +340,8 @@ class CollectStockHistoricalEstimationInfo:
             db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
         # 日志记录
-        msg = str(stock_codes_names_dict) + '\'s estimation info has been saved '
-        custom_logger.CustomLogger().log_writter(msg, 'info')
+        #msg = str(stock_codes_names_dict) + '\'s estimation info has been saved '
+        #custom_logger.CustomLogger().log_writter(msg, 'info')
 
     def is_existing(self, stock_code, stock_name, date):
         # 检查数据库中是否有记录，主要是检查是否为同一支股票同一日期
@@ -389,40 +392,65 @@ class CollectStockHistoricalEstimationInfo:
                 custom_logger.CustomLogger().log_writter(msg, 'error')
 
 
-    def collect_stocks_recent_info(self, stock_codes_names_dict):
-        # 收集当前所有股票最近的信息
+    def collect_stocks_recent_info(self, stock_codes_names_dict, processing_date):
+        # 收集当前所有股票特定日期的的信息
+        # param: processing_date, 需要收集的日期
         # param: stock_codes_names_dict 股票代码名称字典, 可以1支/多支股票， 如  {"000568":"泸州老窖", "000596":"古井贡酒",,,}
 
         # 收集数据库中所有股票，今日的估值数据
         try:
-            self.collect_a_special_date_estimation(stock_codes_names_dict, self.today)
+            self.collect_a_special_date_estimation(stock_codes_names_dict, processing_date)
             # 日志记录
-            msg = '收集了 '+ self.today +'  '+ str(stock_codes_names_dict) +' 的股票估值信息'
+            msg = '收集了 '+ processing_date +'  '+ str(stock_codes_names_dict) +' 的股票估值信息'
             custom_logger.CustomLogger().log_writter(msg, 'info')
         except Exception as e:
             # 日志记录
-            msg = '在收集 ' + self.today +'  '+ str(stock_codes_names_dict) + ' 的股票估值信息时' + '发生错误 ' + str(e)
+            msg = '在收集 ' + processing_date +'  '+ str(stock_codes_names_dict) + ' 的股票估值信息时' + '发生错误 ' + str(e)
             custom_logger.CustomLogger().log_writter(msg, 'error')
 
-    def collect_stocks_recent_info_in_batch(self):
+    def collect_stocks_recent_info_in_batch(self, start_date):
+        # param: start_date, 起始日期，如 2010-01-02
         # 分批次，收集当前所有股票最近的信息
 
-        # 总共需要将采集的股票数分成多少页，即分成多少批次
-        page_counter = self.page_counter_by_page_size_per_page()
-        # 日志记录
-        msg = '共需收集 ' + str(page_counter) + ' 页的股票估值信息'
-        custom_logger.CustomLogger().log_writter(msg, 'info')
-        for page in range(page_counter):
-            stock_codes_names_dict_in_page = self.paged_demanded_stocks(page,self.page_size)
-            try:
-                self.collect_stocks_recent_info(stock_codes_names_dict_in_page)
-                # 日志记录
-                msg = '收集了第 ' + str(page+1)+ ' 页的股票估值信息'
-                custom_logger.CustomLogger().log_writter(msg, 'info')
-            except Exception as e:
-                # 日志记录
-                msg = '收集到第 ' + str(page+1)+ ' 页的股票估值信息时' + '发生错误 ' +str(e)
-                custom_logger.CustomLogger().log_writter(msg, 'error')
+        plus_one_day = datetime.timedelta(days=1)
+        start_date = self.latest_collection_date(start_date)+plus_one_day
+        today_date = date.today()
+        while start_date <= today_date:
+            # 总共需要将采集的股票数分成多少页，即分成多少批次
+            page_counter = self.page_counter_by_page_size_per_page()
+            # 日志记录
+            #msg = '共需收集 ' + str(page_counter) + ' 页的股票估值信息'
+            #custom_logger.CustomLogger().log_writter(msg, 'info')
+            for page in range(page_counter):
+                stock_codes_names_dict_in_page = self.paged_demanded_stocks(page,self.page_size)
+                # 收集当前页内所有股票特定日期的的信息
+                self.collect_stocks_recent_info(stock_codes_names_dict_in_page,str(start_date))
+            start_date += plus_one_day
+
+    def latest_collection_date(self,start_date):
+        # 获取数据库中最新收集股票估值信息的日期
+        # param: start_date, 起始日期，如 2010-01-02
+        # 返回 如果数据库有最新的日期，则返回最新收集股票估值信息的日期，类型为datetime.date， 如 2021-05-14
+        #     如果数据库无最新的日期，返回起始日期的前一天
+
+        selecting_sql = "SELECT max(date) as date FROM stocks_main_estimation_indexes_historical_data"
+        latest_collection_date = db_operator.DBOperator().select_one("financial_data", selecting_sql)
+        # 如果数据库无最新的日期，为空
+        if latest_collection_date['date'] == None:
+            plus_one_day = datetime.timedelta(days=1)
+            # 返回起始日期的前一天，后续才能从 起始日期开始处理
+            return datetime.date(int(start_date[:4]),int(start_date[5:7]),int(start_date[8:10]))-plus_one_day
+        return latest_collection_date['date']
+
+    def test_date_loop(self):
+
+        plus_one_day = datetime.timedelta(days=1)
+        start_date = self.latest_collection_date()+plus_one_day
+        today_date = date.today()
+
+        while start_date<=today_date:
+            print(str(start_date))
+            start_date += plus_one_day
 
 
 
@@ -446,7 +474,7 @@ class CollectStockHistoricalEstimationInfo:
             # 日志记录
             msg = '无新增的股票，开始收集最近交易日的股票估值信息 '
             custom_logger.CustomLogger().log_writter(msg, 'info')
-            self.collect_stocks_recent_info_in_batch()
+            self.collect_stocks_recent_info_in_batch(start_date)
         # 如果不相同，则一次性收集所有数据
         else:
             # 日志记录
@@ -484,3 +512,5 @@ if __name__ == "__main__":
     #print(result)
     go.main("2021-04-01")
     #print(go.all_demanded_stocks_counter())
+    #go.latest_collection_date("2021-04-01")
+    #go.test_date_loop()
