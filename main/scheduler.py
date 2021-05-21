@@ -92,10 +92,10 @@ class Scheduler:
 		#####################      每月运行    ###################################################
 
 		try:
-			# 每月初（1-30号），每天15：30收集所跟踪关注指数的成分及权重
+			# 每月初（1-30号），每天14：45收集所跟踪关注指数的成分及权重
 			scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
 							  trigger='cron', month='1-12', day='1-30',
-							  hour=15, minute=30, id='monthly1To10CollectIndexStocksAndWeight')
+							  hour=14, minute=45, id='monthly1To10CollectIndexStocksAndWeight')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
