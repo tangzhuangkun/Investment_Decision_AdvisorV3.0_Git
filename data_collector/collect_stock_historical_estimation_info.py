@@ -510,7 +510,7 @@ if __name__ == "__main__":
     #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
-    go.main("2021-04-01")
+    go.main("2019-11-01")
     #print(go.all_demanded_stocks_counter())
     #go.latest_collection_date("2021-04-01")
     #go.test_date_loop()
