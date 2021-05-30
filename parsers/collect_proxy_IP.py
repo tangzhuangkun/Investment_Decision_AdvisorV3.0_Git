@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
-
+import threading
 import sys
 sys.path.append('..')
 import database.db_operator as db_operator
@@ -76,20 +76,44 @@ class CollectProxyIP:
                     # 日志记录
                     msg = page_url + '  '+ str(e)
                     custom_logger.CustomLogger().log_writter(msg, lev='error')
-            
+
+
+    def check_and_save_single_ip(self, db_name, ip_info):
+        # 检查单个IP的可用性，可用的话，存入数据库
+        # param: db_name,需要插入数据库的名称， 来自 db_config.py 的 DATABASES
+        # param: 单个ip信息的元组，('104.129.194.114:10605', '高匿', 'HTTP')
+
+        # 获取iP
+        ip = ip_info[0]
+        # ip类型，HTTP，HTTPS 或者 HTTP,HTTPS
+        ip_type = ip_info[2]
+
+        # 检查IP可用性
+        result = check_IP_availability.CheckIPAvailability().check_single_ip_availability(ip)
+        # SQL 插入语句
+        sql = "INSERT INTO IP_availability(ip_address,is_anonymous,is_available,type) " \
+              "VALUES ('%s','%s','%s','%s') ON DUPLICATE KEY UPDATE ip_address = ip_address" % (
+              ip, 1, 1, ip_type)
+        if result:
+            # 存入数据库
+            db_operator.DBOperator().operate('insert', db_name, sql)
 
     def check_ip_availability_and_save_to_db(self, db_name, IP_set):
         # db_name,需要插入数据库的名称， 来自 db_config.py 的 DATABASES
         # IP_set,输入一个装有IP信息的set，如 {('104.129.194.114:10605', '高匿', 'HTTP'),,,,}
-        # 检查输入的ip的可用性，
+        # 批量检查输入的ip的可用性，
         # 如果可用，则存入数据库
         
         # 获取当前时间
-        today= time.strftime("%Y-%m-%d", time.localtime())
-        
+        #today= time.strftime("%Y-%m-%d", time.localtime())
+
+        # 启用多线程
+        running_threads = []
+
         for ip_info in IP_set:
             #挨个检查IP活性
-            
+
+            '''
             # 获取iP
             ip = ip_info[0]
             # ip类型，HTTP，HTTPS 或者 HTTP,HTTPS
@@ -103,13 +127,25 @@ class CollectProxyIP:
             if result:
                 # 存入数据库
                 db_operator.DBOperator().operate('insert',db_name, sql)
+            '''
+            # 创建新线程
+            running_thread = threading.Thread(target=self.check_and_save_single_ip,
+                                              args=(db_name, ip_info))
+            running_threads.append(running_thread)
 
+        # 开启新线程
+        for mem in running_threads:
+            mem.start()
+
+        # 等待所有线程完成
+        for mem in running_threads:
+            mem.join()
     
     def main(self):
         # 抓取代理IP，存入 数据库 parser_component，抓取每个代理网站的前4页
         self.collect_web_content('parser_component', 5)
         # 日志记录
-        msg = 'Just collected proxy IP'
+        msg = '收集完最新的代理IP'
         custom_logger.CustomLogger().log_writter(msg, 'info')
     
     
