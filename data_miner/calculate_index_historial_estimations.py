@@ -1,6 +1,7 @@
 import threading
-import sys
+import time
 
+import sys
 sys.path.append("..")
 import database.db_operator as db_operator
 import target_pool.read_collect_target_fund as read_collect_target_fund
@@ -14,8 +15,8 @@ class CalculateIndexHistoricalEstimations:
 
     def __init__(self):
 
-        # 最大的线程数
-        self.max_threading_connections = 5
+        # 最大的计算线程数
+        self.max_threading_connections = 18
         # 限制线程数量
         self.threading_pool = threading.Semaphore(self.max_threading_connections)
 
@@ -70,7 +71,7 @@ class CalculateIndexHistoricalEstimations:
             stock_weight = stock_info['weight']
             # 获取某一股票的历史某一天的估值信息
             selecting_sql = "SELECT * FROM stocks_main_estimation_indexes_historical_data WHERE stock_code = '%s' and date = '%s'" % (
-                stock_code, day["date"])
+                stock_code, day)
             one_stock_special_day_estimation_info = db_operator.DBOperator().select_one("financial_data", selecting_sql)
             # 如果这一股票，当天有估值数据
             if one_stock_special_day_estimation_info:
@@ -83,7 +84,7 @@ class CalculateIndexHistoricalEstimations:
                     index_pe_ttm_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + " 滚动市盈率pe_ttm为负， 数值为" + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + " 滚动市盈率pe_ttm为负， 数值为" + \
                           str(stock_pe_ttm) + "; 该股票在指数 " + index_code + " " + index_name + "中的权重为 " \
                           + str(stock_weight)
                     custom_logger.CustomLogger().log_writter(msg, 'info')
@@ -94,7 +95,7 @@ class CalculateIndexHistoricalEstimations:
                     index_pe_ttm_nonrecurring_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + \
                           " 扣非滚动市盈率pe_ttm_nonrecurring为负， 数值为" + \
                           str(stock_pe_ttm_nonrecurring) + "; 该股票在指数 " + \
                           index_code + " " + index_name + "中的权重为 " \
@@ -107,7 +108,7 @@ class CalculateIndexHistoricalEstimations:
                     index_pb_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + " 市净率pb为负， 数值为" + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + " 市净率pb为负， 数值为" + \
                           str(stock_pb) + "; 该股票在指数 " + index_code + " " + index_name + "中的权重为 " \
                           + str(stock_weight)
                     custom_logger.CustomLogger().log_writter(msg, 'info')
@@ -118,7 +119,7 @@ class CalculateIndexHistoricalEstimations:
                     index_pb_wo_gw_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + " 扣商誉市净率pb_wo_gw为负， 数值为" + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + " 扣商誉市净率pb_wo_gw为负， 数值为" + \
                           str(stock_pb_wo_gw) + "; 该股票在指数 " + index_code + " " + index_name + "中的权重为 " \
                           + str(stock_weight)
                     custom_logger.CustomLogger().log_writter(msg, 'info')
@@ -129,7 +130,7 @@ class CalculateIndexHistoricalEstimations:
                     index_ps_ttm_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + " 滚动市销率ps_ttm为负， 数值为" + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + " 滚动市销率ps_ttm为负， 数值为" + \
                           str(stock_ps_ttm) + "; 该股票在指数 " + index_code + " " + index_name + "中的权重为 " \
                           + str(stock_weight)
                     custom_logger.CustomLogger().log_writter(msg, 'info')
@@ -140,7 +141,7 @@ class CalculateIndexHistoricalEstimations:
                     index_pcf_ttm_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + " 滚动市现率pcf_ttm为负， 数值为" + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + " 滚动市现率pcf_ttm为负， 数值为" + \
                           str(stock_pcf_ttm) + "; 该股票在指数 " + index_code + " " + index_name + "中的权重为 " \
                           + str(stock_weight)
                     custom_logger.CustomLogger().log_writter(msg, 'info')
@@ -151,15 +152,14 @@ class CalculateIndexHistoricalEstimations:
                     index_dividend_yield_effective_weight += stock_weight
                 else:
                     # 日志记录
-                    msg = stock_code + " " + stock_name + " " + "在 " + str(day["date"]) + " 股息率dividend_yield为负， 数值为" + \
+                    msg = stock_code + " " + stock_name + " " + "在 " + day + " 股息率dividend_yield为负， 数值为" + \
                           str(stock_dividend_yield) + "; 该股票在指数 " + index_code + " " + index_name + "中的权重为 " \
                           + str(stock_weight)
                     custom_logger.CustomLogger().log_writter(msg, 'info')
             else:
                 # 日志记录
-                msg = stock_code + " " + stock_name + " " + "在 " + str(
-                    day["date"]) + " 无任何估值数据，当前在 " + index_code + " " + index_name + \
-                      "中的权重为 " + str(stock_weight)
+                msg = stock_code + " " + stock_name + " " + "在 " + day + " 无任何估值数据，当前在 " + \
+                      index_code + " " + index_name + "中的权重为 " + str(stock_weight)
                 custom_logger.CustomLogger().log_writter(msg, 'info')
                 continue
 
@@ -179,7 +179,7 @@ class CalculateIndexHistoricalEstimations:
                         "(index_code, index_name, historical_date, pe_ttm, pe_ttm_effective_weight, pe_ttm_nonrecurring, pe_ttm_nonrecurring_effective_weight, pb, pb_effective_weight, " \
                         "pb_wo_gw, pb_wo_gw_effective_weight, ps_ttm, ps_ttm_effective_weight, pcf_ttm, pcf_ttm_effective_weight, dividend_yield, dividend_yield_effective_weight) VALUES " \
                         "('%s', '%s', '%s', %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f) " % (
-                            index_code, index_name, day["date"],
+                            index_code, index_name, day,
                             index_pe_ttm, index_pe_ttm_effective_weight,
                             index_pe_ttm_nonrecurring, index_pe_ttm_nonrecurring_effective_weight, index_pb,
                             index_pb_effective_weight,
@@ -191,7 +191,7 @@ class CalculateIndexHistoricalEstimations:
         # 释放线程
         self.threading_pool.release()
 
-    def cal_index_everyday_estimation_single_thread(self):
+    def cal_all_index_everyday_estimation_single_thread(self):
         # 单线程计算所有指数的历史上每一交易日的估值
 
         # 获取需要采集的目标指数
@@ -208,15 +208,15 @@ class CalculateIndexHistoricalEstimations:
             days = self.get_all_date()
             # 按天统计指数的估值
             for day in days:
-                self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, day)
+                self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, str(day["date"]))
 
-    def cal_index_everyday_estimation_multi_threads(self):
+    def cal_all_index_everyday_estimation_multi_threads(self):
         # 多线程计算所有指数的历史上每一交易日的估值
 
         # 获取需要采集的目标指数
         # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
         target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
-        # target_indexes = {'399997.XSHE': '中证白酒'}
+        #target_indexes = {'399997.XSHE': '中证白酒'}
         # 遍历目标指数
         for index_code in target_indexes:
             # 指数名称
@@ -233,11 +233,50 @@ class CalculateIndexHistoricalEstimations:
                 threading.Thread(target=self.cal_one_index_estimation_in_a_special_day,
                                                   kwargs={"index_constitute_stocks": index_constitute_stocks,
                                                           "index_code": index_code, "index_name": index_name,
-                                                          "day": day}).start()
+                                                          "day": str(day["date"])}).start()
+        # 日志记录
+        msg = " 计算并已储存了所有目标指数从2010-01-02至今收盘后的估值信息"
+        custom_logger.CustomLogger().log_writter(msg, 'info')
 
+
+    def cal_one_index_today_estimation(self, target_indexes, index_code, today):
+        # 计算单个指数今天收盘后的估值
+        # param: target_indexes, 需要采集的目标指数集
+        # param: index_code, 指数代码，如 399997.XSHE
+        # param: today, 今天日期，如 2021-05-28
+
+        # 指数名称
+        index_name = target_indexes[index_code]
+        # 获取指数最新的成分股和权重
+        index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        # 计算今天的估值
+        self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, today)
+
+    def cal_all_index_today_estimation(self):
+        # 多线程计算所有指数今天收盘后的估值
+
+        # 获取当前日期
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        #today = "2021-05-28"
+
+        # 获取需要采集的目标指数
+        # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
+        target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        # target_indexes = {'399997.XSHE': '中证白酒'}
+        # 遍历目标指数
+        for index_code in target_indexes:
+            # 限制线程数
+            self.threading_pool.acquire()
+            # 启动线程
+            threading.Thread(target=self.cal_one_index_today_estimation,
+                             args=(target_indexes,index_code,today)).start()
+        # 日志记录
+        msg = " 计算并已储存了今天 " + today + " 所有目标指数收盘后的估值信息"
+        custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
 if __name__ == '__main__':
     go = CalculateIndexHistoricalEstimations()
     #go.cal_index_everyday_estimation_single_thread()
-    go.cal_index_everyday_estimation_multi_threads()
+    #go.cal_all_index_everyday_estimation_multi_threads()
+    go.cal_all_index_today_estimation()
