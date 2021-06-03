@@ -23,8 +23,16 @@ class IndexOperator:
         index_constitute_stocks_weight = db_operator.DBOperator().select_all("financial_data", selecting_sql)
         return index_constitute_stocks_weight
 
+    def get_index_name(self, index_code):
+        # 根据指数代码获取指数名称
+        selecting_sql = "SELECT index_name FROM index_constituent_stocks_weight where index_code LIKE '%s' limit 1" % (index_code + '%')
+        index_name = db_operator.DBOperator().select_one("financial_data", selecting_sql)
+        return index_name["index_name"]
+
 
 if __name__ == '__main__':
     go = IndexOperator()
-    index_constitute_stocks_weight = go.get_index_constitute_stocks('399997')
-    print(index_constitute_stocks_weight)
+    #index_constitute_stocks_weight = go.get_index_constitute_stocks('399997')
+    #print(index_constitute_stocks_weight)
+    index_name = go.get_index_name("399997.XSHE")
+    print(index_name)

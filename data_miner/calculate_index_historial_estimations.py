@@ -191,7 +191,7 @@ class CalculateIndexHistoricalEstimations:
         # 释放线程
         self.threading_pool.release()
 
-    def cal_all_index_everyday_estimation_single_thread(self):
+    def cal_all_index_historical_estimation_single_thread(self):
         # 单线程计算所有指数的历史上每一交易日的估值
 
         # 获取需要采集的目标指数
@@ -210,7 +210,7 @@ class CalculateIndexHistoricalEstimations:
             for day in days:
                 self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, str(day["date"]))
 
-    def cal_all_index_everyday_estimation_multi_threads(self):
+    def cal_all_index_historical_estimation_multi_threads(self):
         # 多线程计算所有指数的历史上每一交易日的估值
 
         # 获取需要采集的目标指数
@@ -237,7 +237,6 @@ class CalculateIndexHistoricalEstimations:
         # 日志记录
         msg = " 计算并已储存了所有目标指数从2010-01-02至今收盘后的估值信息"
         custom_logger.CustomLogger().log_writter(msg, 'info')
-
 
     def cal_one_index_today_estimation(self, target_indexes, index_code, today):
         # 计算单个指数今天收盘后的估值
