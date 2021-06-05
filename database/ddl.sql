@@ -145,6 +145,27 @@ COMMENT '基金标的池';
 
 
 /* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，trading_days，用于存储 交易日期*/
+
+USE financial_data;
+DROP TABLE IF EXISTS `trading_days`;
+CREATE TABLE IF NOT EXISTS `trading_days`(
+	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
+	`trading_date` DATE NOT NULL COMMENT '交易日期',
+	`area` VARCHAR(50) NOT NULL COMMENT '地区',
+	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
+	UNIQUE INDEX (trading_date),
+	PRIMARY KEY ( `id`)
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '交易日期';
+
+
+
+
+
+/* --------- user：investor1 ------ */
 /* --------- db：aggregated_data ------ */
 /*创建一个表，index_components_historical_estimations，用于存储 基于指数最新成分股及权重得到的历史每日估值*/
 
