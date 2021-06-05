@@ -172,24 +172,6 @@ class CollectIndexWeight:
         if not is_containing:
             self.save_index_stocks_weight_to_db(index_code, index_name)
 
-    def get_query_count(self):
-        # 获取聚宽可供查询剩余条数
-        url, body, token = joinquant_account_info.JoinquantAccountInfo().get_token()
-        body = {
-            "method": "get_query_count",
-            "token": token,
-        }
-        try:
-            # 获取聚宽返回的剩余条数
-            response = requests.post(url, data=json.dumps(body))
-            return response.text
-
-        except Exception as e:
-            # 日志记录
-            msg = 'Failed to get joinquant query count' + '  ' + str(e)
-            custom_logger.CustomLogger().log_writter(msg, 'error')
-
-
 if __name__ == "__main__":
     go = CollectIndexWeight()
     #result = go.get_index_stocks_weight('399965.XSHE')
