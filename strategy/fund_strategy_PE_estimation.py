@@ -7,7 +7,8 @@ import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
-import data_miner.index_operator as index_operator
+import data_miner.common_index_operator as index_operator
+import data_miner.common_db_operation as common_db_operation
 
 
 class FundStrategyPEEstimation:
@@ -151,29 +152,64 @@ class FundStrategyPEEstimation:
         return round(index_real_time_effective_pe_ttm,4)
 
     def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
-        # 计算所有指数基金的实时市盈率TTM 和 市盈率TTM历史百分位
-        # return: 返回计算结果
+        # 返回包含 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅 的讯息
+        # return: 返回讯息
 
         # 获取标的池中跟踪关注指数及他们的中文名称
         # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
         indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
-        #indexes_and_their_names = {'399997.XSHE': '中证白酒'}
+        #indexes_and_their_names = {'399396.XSHE': '国证食品'}
 
         # 拼接需要发送的指数实时动态市盈率信息
         indexes_and_real_time_PE_msg = '指数实时动态市盈率和历史百分位： \n\n'
         for index_code in indexes_and_their_names:
-            # 获取 实时市盈率TTM 及 实时市盈率TTM所处历史百分位
-            index_real_time_pe_ttm, pe_ttm_percentile = self.cal_the_real_time_PE_percentile_in_hisstory(index_code)
+            # 获取 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
+            # 如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
+            pe_result_list = self.cal_the_PE_percentile_in_history(index_code)
             # 生成 讯息
-            indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  "+ str(index_real_time_pe_ttm) + \
-                                            "  "+str(pe_ttm_percentile*100)+"%"+"\n"
+            indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  \n"+ "动态市盈率 "+\
+                                            str(pe_result_list[0])+ "       历史百分位: "+str(pe_result_list[1]*100)+"%"+\
+                                            ";\n预估扣非市盈率: "+str(pe_result_list[2])+ "   历史百分位: "+\
+                                            str(pe_result_list[3]*100)+"%"+ ";\n同比上一个交易日: "+str(pe_result_list[4]*100)+"%"+"\n"
         return indexes_and_real_time_PE_msg
 
 
-    def cal_the_real_time_PE_percentile_in_hisstory(self, index_code):
-        # 获取当前指数的实时PETTM， 并计算当前实时市盈率TTM在历史上的百分位水平
+    def get_last_trading_day_PE(self, index_code):
+        # 获取当前指数上一个交易日的  PETTM 和 扣非市盈率
         # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
-        # return: 当前指数的实时PETTM， 在历史上的百分位水平
+        # return： 如果有值，则返回tuple，(PETTM, 扣非市盈率)
+        #          如果无值，则返回tuple，(0, 0)
+
+        # 获取当前日期
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        the_last_trading_date = common_db_operation.CommonDBOperation().get_the_last_trading_date(today)
+
+        # 获取指数上一个交易日的动态市盈率和扣非市盈率
+        selecting_sql = "select pe_ttm, pe_ttm_nonrecurring from " \
+                        "index_components_historical_estimations where index_code = '%s' and historical_date = '%s'" \
+                        "order by pe_ttm" % (index_code, the_last_trading_date)
+        # pe_info 如 {'pe_ttm': Decimal('61.27220'), 'pe_ttm_nonrecurring': Decimal('66.16330')}
+        pe_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
+        # 如果pe_info为空
+        if pe_info is not None:
+            return (pe_info["pe_ttm"],pe_info["pe_ttm_nonrecurring"])
+
+        else:
+            # 日志记录
+            log_msg = "无法获取日期 " + today +" 的上一个交易日 "+ the_last_trading_date+" 的PETTM 和 扣非市盈率数据"
+            custom_logger.CustomLogger().log_writter(log_msg, 'error')
+            return (0,0)
+
+
+
+    def cal_the_PE_percentile_in_history(self, index_code):
+        # 获取当前指数的实时PETTM， 并计算当前实时市盈率TTM在历史上的百分位水平，预估扣非市盈率，历史百分位，同比上个交易日涨跌幅
+        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
+        # return: 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
+        #         如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
+
+        # 返回的数列
+        result_list = []
 
         # 获取指数历史上所有日期的动态市盈率和扣非市盈率
         selecting_sql = "select pe_ttm, pe_ttm_nonrecurring, historical_date from " \
@@ -182,38 +218,65 @@ class FundStrategyPEEstimation:
         index_all_historical_pe_info_list = db_operator.DBOperator().select_all("aggregated_data", selecting_sql)
 
         # 获取指数名称
-        index_name = index_operator.IndexOperator().get_index_name(index_code)
+        #index_name = index_operator.IndexOperator().get_index_name(index_code)
 
         pe_ttm_list = []
         pe_ttm_nonrecurring_list = []
-        # 获取 历史上动态市盈率和扣非市盈率 的列表，有小到大排序
+        # 获取 历史上动态市盈率和扣非市盈率 的列表，由小到大排序
         for info_unit in index_all_historical_pe_info_list:
+            # pe_ttm_list已经是由小到大排序的
             pe_ttm_list.append(info_unit["pe_ttm"])
             pe_ttm_nonrecurring_list.append(info_unit["pe_ttm_nonrecurring"])
+
+        # 扣非市盈率，由小到大排序
+        pe_ttm_nonrecurring_list.sort()
         # 获取实时的有效动态市盈率
         index_real_time_effective_pe_ttm = self.calculate_real_time_index_pe_multiple_threads(index_code)
+        # 返回结果，添加 当前指数的实时PETTM
+        result_list.append(index_real_time_effective_pe_ttm)
 
+        # 返回结果，添加 当前指数的实时PETTM在历史上的百分位
         # 如果历史上最小的动态市盈率值都大于当前的实时值
         if (pe_ttm_list[0] >= index_real_time_effective_pe_ttm):
-            # 日志记录
-            log_msg = '已获取 ' + index_name + ' 实时 PE TTM及所处历史百分位'
-            custom_logger.CustomLogger().log_writter(log_msg, 'info')
-            return index_real_time_effective_pe_ttm, 0
+            result_list.append(0)
         # 如果历史上最大的动态市盈率值都小于当前的实时值
         elif (pe_ttm_list[len(pe_ttm_list) - 1] < index_real_time_effective_pe_ttm):
-            # 日志记录
-            log_msg = '已获取 ' + index_name + ' 实时 PE TTM及所处历史百分位'
-            custom_logger.CustomLogger().log_writter(log_msg, 'info')
-            return index_real_time_effective_pe_ttm, 1
+            result_list.append(1)
         for i in range(len(pe_ttm_list)):
             # 如果历史上某个动态市盈率值大于当前的实时值，则返回其位置
             if(pe_ttm_list[i]>=index_real_time_effective_pe_ttm):
-                # 日志记录
-                log_msg = '已获取 ' + index_name + ' 实时 PE TTM及所处历史百分位'
-                custom_logger.CustomLogger().log_writter(log_msg, 'info')
-                return index_real_time_effective_pe_ttm, round(i / len(pe_ttm_list), 4)
+                result_list.append(round(i / len(pe_ttm_list), 4))
+                break
 
+        # 获取上个交易日的收盘PETTM，扣非市盈率
+        last_trading_day_pe_ttm, last_trading_day_pe_ttm_nonrecurring = self.get_last_trading_day_PE(index_code)
 
+        # PETTM同比上个交易日涨跌幅, 保留4位小数
+        day_on_day_percentage = round(index_real_time_effective_pe_ttm / last_trading_day_pe_ttm - 1, 4)
+
+        # 根据PETTM的同比涨跌幅，预估实时的扣非市盈率
+        index_real_time_predictive_pe_ttm_nonrecurring = round(index_real_time_effective_pe_ttm * (1 + day_on_day_percentage), 4)
+
+        # 返回结果，添加 当前指数的预估的实时扣非市盈率
+        result_list.append(index_real_time_predictive_pe_ttm_nonrecurring)
+
+        # 返回结果，添加 当前指数的预估的实时扣非市盈率在历史上的百分位
+        # 如果历史上最小的扣非市盈率值都大于当前的实时预估值
+        if (pe_ttm_nonrecurring_list[0] >= index_real_time_predictive_pe_ttm_nonrecurring):
+            result_list.append(0)
+        # 如果历史上最大的扣非市盈率值都小于当前的实时预估值
+        elif (pe_ttm_nonrecurring_list[len(pe_ttm_nonrecurring_list) - 1] < index_real_time_predictive_pe_ttm_nonrecurring):
+            result_list.append(1)
+        for i in range(len(pe_ttm_nonrecurring_list)):
+            # 如果历史上某个扣非市盈率值大于当前的实时预估值，则返回其位置
+            if (pe_ttm_nonrecurring_list[i] >= index_real_time_predictive_pe_ttm_nonrecurring):
+                result_list.append(round(i / len(pe_ttm_nonrecurring_list), 4))
+                break
+
+        # 返回结果，添加 同比上个交易日涨跌幅
+        result_list.append(day_on_day_percentage)
+
+        return result_list
 
 if __name__ == '__main__':
     time_start = time.time()
@@ -226,13 +289,19 @@ if __name__ == '__main__':
     #print(pe_ttm, pe_ttm_nonrecurring)
     #result = go.calculate_real_time_index_pe_multiple_threads("399965.XSHE")
     #print(result)
-    msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
-    print(msg)
+    #msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+    #print(msg)
     #index_all_historical_pe_info = go.cal_the_real_time_PE_percentile_in_hisstory("399997.XSHE")
     #print(index_all_historical_pe_info)
     #print(index_all_historical_pe_info)
     #result = go.calculate_a_historical_date_index_PE("399997","2021-05-31")
     #print(result)
+    #result = go.get_last_trading_day_PE("399997.XSHE")
+    #print(result)
+    #result = go.cal_the_PE_percentile_in_history("399396.XSHE")
+    #print(result)
+    result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+    print(result)
     time_end = time.time()
     print('time:')
     print(time_end - time_start)

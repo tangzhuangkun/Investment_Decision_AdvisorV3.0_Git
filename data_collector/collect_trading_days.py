@@ -2,7 +2,6 @@ import requests
 import json
 import time
 import sys
-import warnings
 
 sys.path.append("..")
 import config.joinquant_account_info as joinquant_account_info

@@ -8,7 +8,7 @@ import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
-import data_miner.index_operator as index_operator
+import data_miner.common_index_operator as index_operator
 
 class FundStrategyPBEstimation:
     # 指数基金策略，市净率率估值法

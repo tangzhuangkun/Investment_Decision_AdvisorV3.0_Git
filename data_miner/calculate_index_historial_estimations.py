@@ -5,7 +5,7 @@ import sys
 sys.path.append("..")
 import database.db_operator as db_operator
 import target_pool.read_collect_target_fund as read_collect_target_fund
-import data_miner.index_operator as index_operator
+import data_miner.common_index_operator as index_operator
 import log.custom_logger as custom_logger
 
 
@@ -194,12 +194,19 @@ class CalculateIndexHistoricalEstimations:
     def cal_all_index_historical_estimation_single_thread(self):
         # 单线程计算所有指数的历史上每一交易日的估值
 
+        # todo 非常重要 如果指数有变化（成分股，权重相对于上个月有变化），就需要重新计算； 没有变化的指数，就不需要重新计算
+        # 重新计算前，清空也有记录
+        truncating_sql = "TRUNCATE TABLE index_components_historical_estimations"
+        # 删除记录
+        db_operator.DBOperator().operate("delete", "aggregated_data", truncating_sql)
+
         # 获取需要采集的目标指数
         # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
         target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
         # target_indexes = {'399997.XSHE': '中证白酒'}
         # 遍历目标指数
         for index_code in target_indexes:
+
             # 指数名称
             index_name = target_indexes[index_code]
             # 获取指数最新的成分股和权重
@@ -212,6 +219,14 @@ class CalculateIndexHistoricalEstimations:
 
     def cal_all_index_historical_estimation_multi_threads(self):
         # 多线程计算所有指数的历史上每一交易日的估值
+
+        # todo 非常重要 如果指数有变化（成分股，权重相对于上个月有变化），就需要重新计算； 没有变化的指数，就不需要重新计算
+        # todo 多进程进程计算，提高效率
+
+        # 重新计算前，清空也有记录
+        truncating_sql = "TRUNCATE TABLE index_components_historical_estimations"
+        # 删除记录
+        db_operator.DBOperator().operate("delete", "aggregated_data", truncating_sql)
 
         # 获取需要采集的目标指数
         # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
@@ -277,5 +292,5 @@ class CalculateIndexHistoricalEstimations:
 if __name__ == '__main__':
     go = CalculateIndexHistoricalEstimations()
     #go.cal_index_everyday_estimation_single_thread()
-    #go.cal_all_index_everyday_estimation_multi_threads()
-    go.cal_all_index_today_estimation()
+    go.cal_all_index_historical_estimation_multi_threads()
+    #go.cal_all_index_today_estimation()
