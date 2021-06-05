@@ -7,6 +7,7 @@ import database.db_operator as db_operator
 import log.custom_logger as custom_logger
 
 class CommonDBOperation:
+    # 通用，常用的数据库操作
 
     def __init__(self):
         pass

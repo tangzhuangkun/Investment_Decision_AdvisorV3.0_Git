@@ -9,6 +9,7 @@ import log.custom_logger as custom_logger
 import database.db_operator as db_operator
 
 class CollectTradingDays:
+    # 从聚宽接口收集交易日
 
     def __init__(self):
 
