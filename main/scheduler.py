@@ -10,6 +10,7 @@ import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
 import data_collector.collect_stock_historical_estimation_info as collect_stock_historical_estimation_info
 import notification.notification_plan as notification_plan
+import data_collector.collect_trading_days as collect_trading_days
 
 
 class Scheduler:
@@ -71,6 +72,16 @@ class Scheduler:
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=40,
 							  id='weekdayCollectStockHistoricalEstimationInfo')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+		try:
+			# 每个交易日20：00收集交易日信息
+			scheduler.add_job(func=collect_trading_days.CollectTradingDays().save_all_trading_days_into_db,
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=1,
+							  id='weekdayCollectTradingDays')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')

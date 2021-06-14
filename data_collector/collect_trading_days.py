@@ -10,6 +10,7 @@ import database.db_operator as db_operator
 
 class CollectTradingDays:
     # 从聚宽接口收集交易日
+    # 运行频率：每天收盘后
 
     def __init__(self):
 

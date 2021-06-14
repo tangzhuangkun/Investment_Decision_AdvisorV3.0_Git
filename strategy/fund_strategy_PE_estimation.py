@@ -170,7 +170,7 @@ class FundStrategyPEEstimation:
             indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  \n"+ "动态市盈率 "+\
                                             str(pe_result_list[0])+ "       历史百分位: "+str(pe_result_list[1]*100)+"%"+\
                                             ";\n预估扣非市盈率: "+str(pe_result_list[2])+ "   历史百分位: "+\
-                                            str(pe_result_list[3]*100)+"%"+ ";\n同比上一个交易日: "+str(pe_result_list[4]*100)+"%"+"\n"
+                                            str(pe_result_list[3]*100)+"%"+ ";\n同比上一个交易日: "+str(pe_result_list[4]*100)+"%"+"\n\n"
         return indexes_and_real_time_PE_msg
 
 
@@ -182,6 +182,7 @@ class FundStrategyPEEstimation:
 
         # 获取当前日期
         today = time.strftime("%Y-%m-%d", time.localtime())
+        #today = "2021-06-11"
         the_last_trading_date = common_db_operation.CommonDBOperation().get_the_last_trading_date(today)
 
         # 获取指数上一个交易日的动态市盈率和扣非市盈率
@@ -267,11 +268,12 @@ class FundStrategyPEEstimation:
         # 如果历史上最大的扣非市盈率值都小于当前的实时预估值
         elif (pe_ttm_nonrecurring_list[len(pe_ttm_nonrecurring_list) - 1] < index_real_time_predictive_pe_ttm_nonrecurring):
             result_list.append(1)
-        for i in range(len(pe_ttm_nonrecurring_list)):
-            # 如果历史上某个扣非市盈率值大于当前的实时预估值，则返回其位置
-            if (pe_ttm_nonrecurring_list[i] >= index_real_time_predictive_pe_ttm_nonrecurring):
-                result_list.append(round(i / len(pe_ttm_nonrecurring_list), 4))
-                break
+        else:
+            for i in range(len(pe_ttm_nonrecurring_list)):
+                # 如果历史上某个扣非市盈率值大于当前的实时预估值，则返回其位置
+                if (pe_ttm_nonrecurring_list[i] >= index_real_time_predictive_pe_ttm_nonrecurring):
+                    result_list.append(round(i / len(pe_ttm_nonrecurring_list), 4))
+                    break
 
         # 返回结果，添加 同比上个交易日涨跌幅
         result_list.append(day_on_day_percentage)
@@ -298,7 +300,7 @@ if __name__ == '__main__':
     #print(result)
     #result = go.get_last_trading_day_PE("399997.XSHE")
     #print(result)
-    #result = go.cal_the_PE_percentile_in_history("399396.XSHE")
+    #result = go.cal_the_PE_percentile_in_history("399965.XSHE")
     #print(result)
     result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     print(result)
