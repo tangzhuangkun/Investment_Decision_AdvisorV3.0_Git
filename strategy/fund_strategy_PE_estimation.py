@@ -168,9 +168,9 @@ class FundStrategyPEEstimation:
             pe_result_list = self.cal_the_PE_percentile_in_history(index_code)
             # 生成 讯息
             indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  \n"+ "动态市盈率 "+\
-                                            str(pe_result_list[0])+ "       历史百分位: "+str(pe_result_list[1]*100)+"%"+\
+                                            str(pe_result_list[0])+ "       历史百分位: "+str(decimal.Decimal(pe_result_list[1]*100).quantize(decimal.Decimal('0.00')))+"%"+\
                                             ";\n预估扣非市盈率: "+str(pe_result_list[2])+ "   历史百分位: "+\
-                                            str(pe_result_list[3]*100)+"%"+ ";\n同比上一个交易日: "+str(pe_result_list[4]*100)+"%"+"\n\n"
+                                            str(decimal.Decimal(pe_result_list[3]*100).quantize(decimal.Decimal('0.00')))+"%"+ ";\n同比上一个交易日: "+str(decimal.Decimal(pe_result_list[4]*100).quantize(decimal.Decimal('0.00')))+"%"+"\n\n"
         return indexes_and_real_time_PE_msg
 
 
