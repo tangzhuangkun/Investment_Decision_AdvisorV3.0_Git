@@ -169,10 +169,12 @@ class FundStrategyPBEstimation:
 
         # 获取标的池中跟踪关注指数及他们的中文名称
         # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
-        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pb')
 
         # 获取当前日期
         today = time.strftime("%Y-%m-%d", time.localtime())
+        #today = "2021-06-17"
 
         # 拼接需要发送的指数实时动态市净率信息
         indexes_and_real_time_PB_msg = '指数实时动态市净率信息： \n\n'

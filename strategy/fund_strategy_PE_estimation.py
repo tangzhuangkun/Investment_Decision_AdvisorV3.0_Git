@@ -157,7 +157,8 @@ class FundStrategyPEEstimation:
 
         # 获取标的池中跟踪关注指数及他们的中文名称
         # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
-        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pe')
         #indexes_and_their_names = {'399396.XSHE': '国证食品'}
 
         # 拼接需要发送的指数实时动态市盈率信息
@@ -182,7 +183,7 @@ class FundStrategyPEEstimation:
 
         # 获取当前日期
         today = time.strftime("%Y-%m-%d", time.localtime())
-        #today = "2021-06-11"
+        #today = "2021-06-17"
         the_last_trading_date = common_db_operation.CommonDBOperation().get_the_last_trading_date(today)
 
         # 获取指数上一个交易日的动态市盈率和扣非市盈率
