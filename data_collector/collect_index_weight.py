@@ -7,6 +7,7 @@ sys.path.append("..")
 import config.joinquant_account_info as joinquant_account_info
 import log.custom_logger as custom_logger
 import database.db_operator as db_operator
+import target_pool.read_collect_target_fund as read_collect_target_fund
 
 
 class CollectIndexWeight:
@@ -172,10 +173,25 @@ class CollectIndexWeight:
         if not is_containing:
             self.save_index_stocks_weight_to_db(index_code, index_name)
 
+    def collect_tracking_index_weight(self):
+        # 收集所跟踪关注指数的成分及权重
+        # 输入：无
+        # 输出：存入数据
+
+        # 获取标的池中跟踪关注指数及他们的中文名称,字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
+        tracking_indexes_names_dict = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        # 收集指数的成分及权重
+        for index in tracking_indexes_names_dict:
+            self.main(index, tracking_indexes_names_dict.get(index))
+        # 日志记录
+        msg = 'Just collected tracking index stocks and weight'
+        custom_logger.CustomLogger().log_writter(msg, 'info')
+
 if __name__ == "__main__":
     go = CollectIndexWeight()
-    result = go.get_index_stocks_weight('399997.XSHE')
-    print(result)
+    go.collect_tracking_index_weight()
+    #result = go.get_index_stocks_weight('399997.XSHE')
+    #print(result)
     # go.save_index_stocks_weight_to_db("399997.XSHE","中证白酒")
     #result = go.get_query_count()
     # result = go.get_db_index_stocks_weight('399997.XSHE')

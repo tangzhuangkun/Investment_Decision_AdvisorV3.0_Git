@@ -12,6 +12,7 @@ import data_collector.collect_stock_historical_estimation_info as collect_stock_
 import notification.notification_plan as notification_plan
 import data_collector.collect_trading_days as collect_trading_days
 import data_miner.calculate_index_historial_estimations as calculate_index_historial_estimations
+import data_collector.collect_index_weight as collect_index_weight
 
 
 class Scheduler:
@@ -114,10 +115,10 @@ class Scheduler:
 		#####################      每月运行    ###################################################
 
 		try:
-			# 每月初（1-30号），每天14：45收集所跟踪关注指数的成分及权重
-			scheduler.add_job(func=read_collect_target_fund.ReadCollectTargetFund().collect_tracking_index_weight,
+			# 每月初（1-30号），每天01：01收集所跟踪关注指数的成分及权重
+			scheduler.add_job(func=collect_index_weight.CollectIndexWeight().collect_tracking_index_weight(),
 							  trigger='cron', month='1-12', day='1-30',
-							  hour=14, minute=45, id='monthly1To10CollectIndexStocksAndWeight')
+							  hour=1, minute=1, id='monthly1To10CollectIndexStocksAndWeight')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
