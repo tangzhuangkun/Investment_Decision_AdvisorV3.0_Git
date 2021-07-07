@@ -192,6 +192,54 @@ class CalculateIndexHistoricalEstimations:
         # 释放线程
         # self.threading_pool.release()
 
+    def cal_one_index_today_estimation(self, index_code, index_name, today):
+        # 计算单个指数今天收盘后的估值
+        # param: index_code, 指数代码，如 399997.XSHE
+        # param: index_name, 指数名称，如 中证白酒
+        # param: today, 今天日期，如 2021-05-28
+
+        # 获取指数最新的成分股和权重
+        index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        # 计算今天的估值
+        self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, today)
+
+    def cal_all_index_today_estimation_by_multi_threads(self):
+        # 多线程计算所有指数今天收盘后的估值
+
+        # 获取当前日期
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        # today = "2021-06-30"
+
+        # 获取需要采集的目标指数
+        # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
+        target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        # target_indexes = {'399997.XSHE': '中证白酒'}
+
+        # 线程集
+        thread_list = []
+        # 遍历目标指数
+        for index_code in target_indexes:
+            # 限制线程数
+            # self.threading_pool.acquire()
+            # 启动线程
+            t = threading.Thread(target=self.cal_one_index_today_estimation,
+                                 args=(index_code, target_indexes[index_code], today))
+            thread_list.append(t)
+
+        for t in thread_list:
+            # 守护线程
+            t.setDaemon(True)
+            t.start()
+
+        for t in thread_list:
+            t.join()
+
+        # 日志记录
+        msg = " 计算并已储存了今天 " + today + " 所有目标指数收盘后的估值信息"
+        custom_logger.CustomLogger().log_writter(msg, 'info')
+
+
+
     def cal_all_index_historical_estimation_single_thread(self):
         # 单线程计算所有指数的历史上每一交易日的估值
 
@@ -241,40 +289,6 @@ class CalculateIndexHistoricalEstimations:
         # 日志记录
         msg = " 计算并已储存了所有目标指数从2010-01-02至今收盘后的估值信息"
         custom_logger.CustomLogger().log_writter(msg, 'info')
-
-    def cal_one_index_today_estimation(self, index_code, index_name, today):
-        # 计算单个指数今天收盘后的估值
-        # param: index_code, 指数代码，如 399997.XSHE
-        # param: index_name, 指数名称，如 中证白酒
-        # param: today, 今天日期，如 2021-05-28
-
-        # 获取指数最新的成分股和权重
-        index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
-        # 计算今天的估值
-        self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, today)
-
-    def cal_all_index_today_estimation_by_multi_threads(self):
-        # 多线程计算所有指数今天收盘后的估值
-
-        # 获取当前日期
-        today = time.strftime("%Y-%m-%d", time.localtime())
-        #today = "2021-05-28"
-
-        # 获取需要采集的目标指数
-        # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
-        target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
-        # target_indexes = {'399997.XSHE': '中证白酒'}
-        # 遍历目标指数
-        for index_code in target_indexes:
-            # 限制线程数
-            self.threading_pool.acquire()
-            # 启动线程
-            threading.Thread(target=self.cal_one_index_today_estimation,
-                             args=(index_code,target_indexes[index_code],today)).start()
-        # 日志记录
-        msg = " 计算并已储存了今天 " + today + " 所有目标指数收盘后的估值信息"
-        custom_logger.CustomLogger().log_writter(msg, 'info')
-
 
     def daily_check_and_cal_all_index_estimation_no_matter_updated_or_not(self):
         # 每日的例行检查,并计算指数估值
@@ -341,8 +355,10 @@ class CalculateIndexHistoricalEstimations:
 
 if __name__ == '__main__':
     go = CalculateIndexHistoricalEstimations()
+    #go.cal_one_index_today_estimation("399997.XSHE","中证白酒","2021-07-07")
+    go.cal_all_index_today_estimation_by_multi_threads()
     #go.cal_index_everyday_estimation_single_thread()
     #go.cal_all_index_historical_estimation_multi_threads()
     #go.cal_all_index_today_estimation_by_multi_threads()
-    go.daily_check_and_cal_all_index_estimation_no_matter_updated_or_not()
+    #go.daily_check_and_cal_all_index_estimation_no_matter_updated_or_not()
 
