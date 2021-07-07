@@ -260,32 +260,47 @@ class CalculateIndexHistoricalEstimations:
             for day in days:
                 self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, str(day["date"]))
 
+    def cal_one_index_estimation_in_a_special_day_with_limited_threads(self, index_constitute_stocks, index_code,
+                                                                       index_name, day, sem):
+        # 计算某一个指数在特定一天的估值,限制线程数的情况下
+        # param: index_constitute_stocks, 指数的成分股代码，名称，权重， 如 [{'global_stock_code': '000568.XSHE',
+        #       'stock_code': '000568', 'stock_name': '泸州老窖', 'weight': Decimal('17.0050')}, {'global_stock_code':
+        #       '000596.XSHE', 'stock_code': '000596', 'stock_name': '古井贡酒', 'weight': Decimal('3.1370')}, ，，，]
+        # param: index_code，指数代码，如 399997.XSHE
+        # param: index_name，指数名称，如 中证白酒
+        # param: day， 日期， 如 "2020-01-10"
+        # param: sem, 线程数量的限制
+
+        self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, day)
+        sem.release()
+
     def cal_all_index_historical_estimation_multi_threads(self):
         # 多线程计算所有指数的历史上每一交易日的估值
 
-        # todo 多进程进程计算，提高效率
-
+        # 限制线程数量
+        # threading_pool = threading.Semaphore(self.max_threading_connections)
         # 获取需要采集的目标指数
         # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
         target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
-        #target_indexes = {'399997.XSHE': '中证白酒'}
+        # target_indexes = {'399997.XSHE': '中证白酒'}
         # 遍历目标指数
         for index_code in target_indexes:
             # 指数名称
             index_name = target_indexes[index_code]
             # 获取指数最新的成分股和权重
             index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+            # 限制线程的最大数量
+            sem = threading.Semaphore(self.max_threading_connections)
             # 获取数据库中所有的日期
             days = self.get_all_date()
             # 按天统计指数的估值
             for day in days:
-                # 限制线程数
-                self.threading_pool.acquire()
+                sem.acquire()
                 # 启动线程
-                threading.Thread(target=self.cal_one_index_estimation_in_a_special_day,
-                                                  kwargs={"index_constitute_stocks": index_constitute_stocks,
-                                                          "index_code": index_code, "index_name": index_name,
-                                                          "day": str(day["date"])}).start()
+                threading.Thread(target=self.cal_one_index_estimation_in_a_special_day_with_limited_threads,
+                                 kwargs={"index_constitute_stocks": index_constitute_stocks,
+                                         "index_code": index_code, "index_name": index_name,
+                                         "day": str(day["date"]), "sem": sem}).start()
         # 日志记录
         msg = " 计算并已储存了所有目标指数从2010-01-02至今收盘后的估值信息"
         custom_logger.CustomLogger().log_writter(msg, 'info')
@@ -356,9 +371,9 @@ class CalculateIndexHistoricalEstimations:
 if __name__ == '__main__':
     go = CalculateIndexHistoricalEstimations()
     #go.cal_one_index_today_estimation("399997.XSHE","中证白酒","2021-07-07")
-    go.cal_all_index_today_estimation_by_multi_threads()
+    #go.cal_all_index_today_estimation_by_multi_threads()
     #go.cal_index_everyday_estimation_single_thread()
-    #go.cal_all_index_historical_estimation_multi_threads()
+    go.cal_all_index_historical_estimation_multi_threads()
     #go.cal_all_index_today_estimation_by_multi_threads()
     #go.daily_check_and_cal_all_index_estimation_no_matter_updated_or_not()
 
