@@ -260,7 +260,7 @@ class CalculateIndexHistoricalEstimations:
             for day in days:
                 self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, str(day["date"]))
 
-    def cal_one_index_estimation_in_a_special_day_with_limited_threads(self, index_constitute_stocks, index_code,
+    def cal_one_index_estimation_in_a_special_day_by_limited_threads(self, index_constitute_stocks, index_code,
                                                                        index_name, day, sem):
         # 计算某一个指数在特定一天的估值,限制线程数的情况下
         # param: index_constitute_stocks, 指数的成分股代码，名称，权重， 如 [{'global_stock_code': '000568.XSHE',
@@ -274,7 +274,7 @@ class CalculateIndexHistoricalEstimations:
         self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, day)
         sem.release()
 
-    def cal_all_index_historical_estimation_multi_threads(self):
+    def cal_all_index_historical_estimation_by_limited_threads(self):
         # 多线程计算所有指数的历史上每一交易日的估值
 
         # 限制线程数量
@@ -297,7 +297,7 @@ class CalculateIndexHistoricalEstimations:
             for day in days:
                 sem.acquire()
                 # 启动线程
-                threading.Thread(target=self.cal_one_index_estimation_in_a_special_day_with_limited_threads,
+                threading.Thread(target=self.cal_one_index_estimation_in_a_special_day_by_limited_threads,
                                  kwargs={"index_constitute_stocks": index_constitute_stocks,
                                          "index_code": index_code, "index_name": index_name,
                                          "day": str(day["date"]), "sem": sem}).start()
@@ -305,10 +305,45 @@ class CalculateIndexHistoricalEstimations:
         msg = " 计算并已储存了所有目标指数从2010-01-02至今收盘后的估值信息"
         custom_logger.CustomLogger().log_writter(msg, 'info')
 
+    def cal_one_index_historical_estimation_by_limited_threads(self, index_code, index_name):
+        # 多线程计算一个指数的历史上每一交易日的估值
+        # param: index_code，指数代码，如 399997.XSHE
+        # param: index_name，指数名称，如 中证白酒
+        # return: 指数的历史上每一交易日的估值存入数据库
+
+        # 获取指数最新的成分股和权重
+        index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        # 限制线程的最大数量
+        sem = threading.Semaphore(self.max_threading_connections)
+        # 获取数据库中所有的日期
+        days = self.get_all_date()
+        # 按天统计指数的估值
+        for day in days:
+            sem.acquire()
+            # 启动线程
+            threading.Thread(target=self.cal_one_index_estimation_in_a_special_day_by_limited_threads,
+                             kwargs={"index_constitute_stocks": index_constitute_stocks,
+                                     "index_code": index_code, "index_name": index_name,
+                                     "day": str(day["date"]), "sem": sem}).start()
+        # 日志记录
+        msg = " 计算并已储存了 "+index_code+"  "+index_name +" 指数从2010-01-02至今收盘后的估值信息"
+        custom_logger.CustomLogger().log_writter(msg, 'info')
+
+
+
+    def init_lock(self,l):
+        # 设置全局变量，进程锁
+        global process_lock
+        process_lock = l
+
+
+
     def daily_check_and_cal_all_index_estimation_no_matter_updated_or_not(self):
         # 每日的例行检查,并计算指数估值
         # 如果指数构成有变化，则重新计算，基于新构成，历史上的每一天的基金估值；
         # 如果指数构成无变化，则基于现有构成情况，计算今天的基金估值情况；
+
+        # TODO 该部分仍需要调试
 
         # 获取今天有更新的指数基金信息
         # 如 {'000932.XSHG': '中证主要消费', '399997.XSHE': '中证白酒'}
@@ -373,7 +408,8 @@ if __name__ == '__main__':
     #go.cal_one_index_today_estimation("399997.XSHE","中证白酒","2021-07-07")
     #go.cal_all_index_today_estimation_by_multi_threads()
     #go.cal_index_everyday_estimation_single_thread()
-    go.cal_all_index_historical_estimation_multi_threads()
+    #go.cal_all_index_historical_estimation_by_limited_threads()
     #go.cal_all_index_today_estimation_by_multi_threads()
     #go.daily_check_and_cal_all_index_estimation_no_matter_updated_or_not()
+    go.cal_one_index_historical_estimation_by_limited_threads("399997.XSHE","中证白酒")
 
