@@ -2,7 +2,6 @@ import threading
 import time
 import multiprocessing
 import os
-import random
 
 import sys
 sys.path.append("..")
@@ -343,7 +342,7 @@ class CalculateIndexHistoricalEstimations:
         # param: today，今天的日期，如 "2020-01-10"
 
         # 给进程加锁，进程同步
-        process_lock.acquire()
+        #process_lock.acquire()
         print("当前进程：", os.getpid(), " 父进程：", os.getppid())
         # 如果该指数代码的指数构成今日有更新，
         if index_code in updated_info_dict:
@@ -370,7 +369,7 @@ class CalculateIndexHistoricalEstimations:
             msg = " 计算并已储存了今天 " + today + " " + index_code + " " + target_indexes[index_code] + " 指数收盘后的估值信息"
             custom_logger.CustomLogger().log_writter(msg, 'info')
         # 进程锁释放
-        process_lock.release()
+        #process_lock.release()
 
     def init_lock(self,l):
         # 设置全局变量，进程锁
@@ -388,11 +387,11 @@ class CalculateIndexHistoricalEstimations:
         # 获取今天有更新的指数基金信息
         # 如 {'000932.XSHG': '中证主要消费', '399997.XSHE': '中证白酒'}
         #updated_info_dict = common_index_operator.IndexOperator().get_today_updated_index_info()
-        updated_info_dict = {'399965.XSHE': '中证800地产', '399997.XSHE': '中证白酒'}
+        updated_info_dict = {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
 
         # 获取当前日期
         #today = time.strftime("%Y-%m-%d", time.localtime())
-        today = "2021-07-07"
+        today = "2021-07-01"
 
         # 如果无任何指数基金信息更新
         if len(updated_info_dict) == 0:
