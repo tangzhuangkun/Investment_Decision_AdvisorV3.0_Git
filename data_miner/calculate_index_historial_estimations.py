@@ -18,10 +18,13 @@ class CalculateIndexHistoricalEstimations:
 
     def __init__(self):
 
-        # 最大的计算线程数
-        self.max_threading_connections = 6
+        # 单个进程最大的计算线程数
+        self.max_threading_connections = 4
         # 限制线程数量
         #self.threading_pool = threading.Semaphore(self.max_threading_connections)
+        # 最大的线程数量
+        # 所有进程同时可能存在的最大线程数 = 单个进程最大的计算线程数 * 最大的线程数量， 如 4*3 = 12
+        self.max_processing_connections = min(multiprocessing.cpu_count(),3)
 
     def get_all_date(self):
         # 获取数据库中所有的日期
@@ -37,6 +40,8 @@ class CalculateIndexHistoricalEstimations:
         # param: index_code，指数代码，如 399997.XSHE
         # param: index_name，指数名称，如 中证白酒
         # param: day， 日期， 如 "2020-01-10"
+
+        print( index_code, index_name, day)
 
         # 指数滚动市盈率
         index_pe_ttm = 0
@@ -166,6 +171,7 @@ class CalculateIndexHistoricalEstimations:
                 custom_logger.CustomLogger().log_writter(msg, 'info')
                 continue
 
+        print(index_code,index_name,day, index_pe_ttm, index_pe_ttm_effective_weight)
         # 各指标仅保留小数点后4位
         index_pe_ttm = round(float(index_pe_ttm) / 100 / float(index_pe_ttm_effective_weight / 100), 4)
         index_pe_ttm_nonrecurring = round(
@@ -273,7 +279,7 @@ class CalculateIndexHistoricalEstimations:
         # param: day， 日期， 如 "2020-01-10"
         # param: sem, 线程数量的限制
 
-        print(threading.currentThread().name)
+        #print(threading.currentThread().name)
         self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, day)
         sem.release()
 
@@ -343,7 +349,7 @@ class CalculateIndexHistoricalEstimations:
 
         # 给进程加锁，进程同步
         #process_lock.acquire()
-        print("当前进程：", os.getpid(), " 父进程：", os.getppid())
+        #print("当前进程：", os.getpid(), " 父进程：", os.getppid())
         # 如果该指数代码的指数构成今日有更新，
         if index_code in updated_info_dict:
             # 删除 以原有指数构成已计算好的历史估值信息
@@ -371,18 +377,13 @@ class CalculateIndexHistoricalEstimations:
         # 进程锁释放
         #process_lock.release()
 
-    def init_lock(self,l):
-        # 设置全局变量，进程锁
-        global process_lock
-        process_lock = l
-
     def daily_check_and_cal_all_index_estimation_no_matter_updated_or_not(self):
         # 每日的例行检查,并计算指数估值
         # 如果指数构成有变化，则重新计算，基于新构成，历史上的每一天的基金估值；
         # 如果指数构成无变化，则基于现有构成情况，计算今天的基金估值情况；
 
         # 打印父进程ID
-        print('Parent process %s.' % os.getpid())
+        #print('Parent process %s.' % os.getpid())
 
         # 获取今天有更新的指数基金信息
         # 如 {'000932.XSHG': '中证主要消费', '399997.XSHE': '中证白酒'}
@@ -405,15 +406,18 @@ class CalculateIndexHistoricalEstimations:
         else:
             # 获取需要采集的目标指数
             # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
-            #target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
-            target_indexes =  {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
+            target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+            #target_indexes =  {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
             # 启用进程锁
-            process_lock = multiprocessing.Lock()
+            #process_lock = multiprocessing.Lock()
             # 启用进程池，
             # initializer，每个工作进程启动时要执行的可调用对象
             # initargs：是要传给initializer的参数组。
-            process_pool = multiprocessing.Pool(multiprocessing.cpu_count(), initializer=self.init_lock,
-                                                initargs=(process_lock,))
+            # process_pool = multiprocessing.Pool(multiprocessing.cpu_count(), initializer=self.init_lock,initargs=(process_lock,))
+            # 启用进程池，限制线程池的数量
+            #process_pool = multiprocessing.Pool(multiprocessing.cpu_count())
+            process_pool = multiprocessing.Pool(self.max_processing_connections)
+
             # 遍历目标指数
             for index_code in target_indexes:
                 # apply_async， 该函数用于传递不定参数，主进程会被阻塞直到函数执行结束， 是非阻塞且支持结果返回进行回调
