@@ -1,5 +1,8 @@
 import threading
 import time
+import multiprocessing
+import os
+import random
 
 import sys
 sys.path.append("..")
@@ -19,7 +22,7 @@ class CalculateIndexHistoricalEstimations:
         # 最大的计算线程数
         self.max_threading_connections = 6
         # 限制线程数量
-        self.threading_pool = threading.Semaphore(self.max_threading_connections)
+        #self.threading_pool = threading.Semaphore(self.max_threading_connections)
 
     def get_all_date(self):
         # 获取数据库中所有的日期
@@ -271,6 +274,7 @@ class CalculateIndexHistoricalEstimations:
         # param: day， 日期， 如 "2020-01-10"
         # param: sem, 线程数量的限制
 
+        print(threading.currentThread().name)
         self.cal_one_index_estimation_in_a_special_day(index_constitute_stocks, index_code, index_name, day)
         sem.release()
 
@@ -325,32 +329,70 @@ class CalculateIndexHistoricalEstimations:
                              kwargs={"index_constitute_stocks": index_constitute_stocks,
                                      "index_code": index_code, "index_name": index_name,
                                      "day": str(day["date"]), "sem": sem}).start()
+
         # 日志记录
         msg = " 计算并已储存了 "+index_code+"  "+index_name +" 指数从2010-01-02至今收盘后的估值信息"
         custom_logger.CustomLogger().log_writter(msg, 'info')
 
 
+    def cal_one_index_historical_or_only_today_estimation(self, index_code, updated_info_dict, target_indexes, today ):
+        # 在多进程中，判断该指数是应该计算其所有历史日期的估值还是仅今天的估值即可
+        # param: index_code，指数代码，如 399997.XSHE
+        # param: updated_info_dict，今天有更新的指数信息，如 {'399965.XSHE': '中证800地产', '399997.XSHE': '中证白酒'}
+        # param: target_indexes，需要采集的目标指数，如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
+        # param: today，今天的日期，如 "2020-01-10"
+
+        # 给进程加锁，进程同步
+        process_lock.acquire()
+        print("当前进程：", os.getpid(), " 父进程：", os.getppid())
+        # 如果该指数代码的指数构成今日有更新，
+        if index_code in updated_info_dict:
+            # 删除 以原有指数构成已计算好的历史估值信息
+            deleting_query = "DELETE FROM index_components_historical_estimations " \
+                             "WHERE index_code = '%s'" % (index_code)
+            db_operator.DBOperator().operate("delete", "aggregated_data", deleting_query)
+
+            # 指数名称
+            index_name = target_indexes[index_code]
+
+            # 多线程计算一个指数的历史上每一交易日的估值
+            self.cal_one_index_historical_estimation_by_limited_threads(index_code, index_name)
+
+            # 日志记录
+            #msg = " 重新计算并已储存了" + index_code + "  " + index_name + "指数从2010-01-02至今收盘后的估值信息"
+            #custom_logger.CustomLogger().log_writter(msg, 'info')
+
+        # 如果该指数代码的指数构成今日无更新，
+        # 则基于现有构成，仅计算今日的估值信息
+        else:
+            self.cal_one_index_today_estimation(index_code, target_indexes[index_code], today)
+            # 日志记录
+            msg = " 计算并已储存了今天 " + today + " " + index_code + " " + target_indexes[index_code] + " 指数收盘后的估值信息"
+            custom_logger.CustomLogger().log_writter(msg, 'info')
+        # 进程锁释放
+        process_lock.release()
 
     def init_lock(self,l):
         # 设置全局变量，进程锁
         global process_lock
         process_lock = l
 
-
-
     def daily_check_and_cal_all_index_estimation_no_matter_updated_or_not(self):
         # 每日的例行检查,并计算指数估值
         # 如果指数构成有变化，则重新计算，基于新构成，历史上的每一天的基金估值；
         # 如果指数构成无变化，则基于现有构成情况，计算今天的基金估值情况；
 
-        # TODO 该部分仍需要调试
+        # 打印父进程ID
+        print('Parent process %s.' % os.getpid())
 
         # 获取今天有更新的指数基金信息
         # 如 {'000932.XSHG': '中证主要消费', '399997.XSHE': '中证白酒'}
-        updated_info_dict = common_index_operator.IndexOperator().get_today_updated_index_info()
+        #updated_info_dict = common_index_operator.IndexOperator().get_today_updated_index_info()
+        updated_info_dict = {'399965.XSHE': '中证800地产', '399997.XSHE': '中证白酒'}
 
         # 获取当前日期
-        today = time.strftime("%Y-%m-%d", time.localtime())
+        #today = time.strftime("%Y-%m-%d", time.localtime())
+        today = "2021-07-07"
 
         # 如果无任何指数基金信息更新
         if len(updated_info_dict) == 0:
@@ -364,43 +406,22 @@ class CalculateIndexHistoricalEstimations:
         else:
             # 获取需要采集的目标指数
             # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
-            target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+            #target_indexes = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+            target_indexes =  {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
+            # 启用进程锁
+            process_lock = multiprocessing.Lock()
+            # 启用进程池，
+            # initializer，每个工作进程启动时要执行的可调用对象
+            # initargs：是要传给initializer的参数组。
+            process_pool = multiprocessing.Pool(multiprocessing.cpu_count(), initializer=self.init_lock,
+                                                initargs=(process_lock,))
             # 遍历目标指数
             for index_code in target_indexes:
-                # 如果该指数代码的指数构成今日有更新，
-                if index_code in updated_info_dict:
-                    # 删除 以原有指数构成已计算好的历史估值信息
-                    deleting_query = "DELETE FROM index_components_historical_estimations " \
-                                     "WHERE index_code = '%s'" % (index_code)
-                    db_operator.DBOperator().operate("delete","aggregated_data",deleting_query)
+                # apply_async， 该函数用于传递不定参数，主进程会被阻塞直到函数执行结束， 是非阻塞且支持结果返回进行回调
+                process_pool.apply_async(self.cal_one_index_historical_or_only_today_estimation, args=(index_code, updated_info_dict, target_indexes, today))
 
-                    # 对指数基金的新构成进行计算
-                    # 指数名称
-                    index_name = target_indexes[index_code]
-                    # 获取指数最新的成分股和权重
-                    index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
-                    # 获取数据库中所有的日期
-                    days = self.get_all_date()
-                    # 按天统计指数的估值
-                    for day in days:
-                        # 限制线程数
-                        self.threading_pool.acquire()
-                        # 启动线程
-                        threading.Thread(target=self.cal_one_index_estimation_in_a_special_day,
-                                         kwargs={"index_constitute_stocks": index_constitute_stocks,
-                                                 "index_code": index_code, "index_name": index_name,
-                                                 "day": str(day["date"])}).start()
-                    # 日志记录
-                    msg = " 重新计算并已储存了" + index_code + "  " + index_name + "指数从2010-01-02至今收盘后的估值信息"
-                    custom_logger.CustomLogger().log_writter(msg, 'info')
-
-                # 如果该指数代码的指数构成今日无更新，
-                # 则基于现有构成，仅计算今日的估值信息
-                else:
-                    self.cal_one_index_today_estimation(index_code,target_indexes[index_code],today)
-                    # 日志记录
-                    msg = " 计算并已储存了今天 " + today +" "+index_code+" "+target_indexes[index_code]+" 指数收盘后的估值信息"
-                    custom_logger.CustomLogger().log_writter(msg, 'info')
+            process_pool.close()
+            process_pool.join()
 
 
 if __name__ == '__main__':
@@ -410,6 +431,7 @@ if __name__ == '__main__':
     #go.cal_index_everyday_estimation_single_thread()
     #go.cal_all_index_historical_estimation_by_limited_threads()
     #go.cal_all_index_today_estimation_by_multi_threads()
-    #go.daily_check_and_cal_all_index_estimation_no_matter_updated_or_not()
-    go.cal_one_index_historical_estimation_by_limited_threads("399997.XSHE","中证白酒")
+    go.daily_check_and_cal_all_index_estimation_no_matter_updated_or_not()
+    #go.cal_one_index_historical_estimation_by_limited_threads("399997.XSHE","中证白酒")
+    #go.main_test()
 
