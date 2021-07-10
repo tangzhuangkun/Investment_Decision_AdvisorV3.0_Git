@@ -1,7 +1,6 @@
 import threading
 import time
 import multiprocessing
-import os
 
 import sys
 sys.path.append("..")
@@ -19,12 +18,12 @@ class CalculateIndexHistoricalEstimations:
     def __init__(self):
 
         # 单个进程最大的计算线程数
-        self.max_threading_connections = 4
+        self.max_threading_connections = 6
         # 限制线程数量
         #self.threading_pool = threading.Semaphore(self.max_threading_connections)
         # 最大的线程数量
         # 所有进程同时可能存在的最大线程数 = 单个进程最大的计算线程数 * 最大的线程数量， 如 4*3 = 12
-        self.max_processing_connections = min(multiprocessing.cpu_count(),3)
+        self.max_processing_connections = min(multiprocessing.cpu_count(),6)
 
     def get_all_date(self):
         # 获取数据库中所有的日期
@@ -40,8 +39,6 @@ class CalculateIndexHistoricalEstimations:
         # param: index_code，指数代码，如 399997.XSHE
         # param: index_name，指数名称，如 中证白酒
         # param: day， 日期， 如 "2020-01-10"
-
-        print( index_code, index_name, day)
 
         # 指数滚动市盈率
         index_pe_ttm = 0
@@ -171,7 +168,6 @@ class CalculateIndexHistoricalEstimations:
                 custom_logger.CustomLogger().log_writter(msg, 'info')
                 continue
 
-        print(index_code,index_name,day, index_pe_ttm, index_pe_ttm_effective_weight)
         # 各指标仅保留小数点后4位
         index_pe_ttm = round(float(index_pe_ttm) / 100 / float(index_pe_ttm_effective_weight / 100), 4)
         index_pe_ttm_nonrecurring = round(
@@ -322,6 +318,10 @@ class CalculateIndexHistoricalEstimations:
 
         # 获取指数最新的成分股和权重
         index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        # 可能会因为数据库瞬时连接过多导致取不到数据，重新再取一次
+        if(len(index_constitute_stocks)==0):
+            index_constitute_stocks = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+
         # 限制线程的最大数量
         sem = threading.Semaphore(self.max_threading_connections)
         # 获取数据库中所有的日期
@@ -387,12 +387,12 @@ class CalculateIndexHistoricalEstimations:
 
         # 获取今天有更新的指数基金信息
         # 如 {'000932.XSHG': '中证主要消费', '399997.XSHE': '中证白酒'}
-        #updated_info_dict = common_index_operator.IndexOperator().get_today_updated_index_info()
-        updated_info_dict = {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
+        updated_info_dict = common_index_operator.IndexOperator().get_today_updated_index_info()
+        #updated_info_dict = {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
 
         # 获取当前日期
-        #today = time.strftime("%Y-%m-%d", time.localtime())
-        today = "2021-07-01"
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        #today = "2021-07-01"
 
         # 如果无任何指数基金信息更新
         if len(updated_info_dict) == 0:
@@ -415,7 +415,6 @@ class CalculateIndexHistoricalEstimations:
             # initargs：是要传给initializer的参数组。
             # process_pool = multiprocessing.Pool(multiprocessing.cpu_count(), initializer=self.init_lock,initargs=(process_lock,))
             # 启用进程池，限制线程池的数量
-            #process_pool = multiprocessing.Pool(multiprocessing.cpu_count())
             process_pool = multiprocessing.Pool(self.max_processing_connections)
 
             # 遍历目标指数
