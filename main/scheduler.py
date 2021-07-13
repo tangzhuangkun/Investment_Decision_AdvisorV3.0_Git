@@ -4,7 +4,6 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import sys
 sys.path.append('..')
 import log.custom_logger as custom_logger
-import target_pool.read_collect_target_fund as read_collect_target_fund
 import parsers.check_saved_IP_availability as check_saved_IP_availability
 import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
@@ -116,7 +115,7 @@ class Scheduler:
 
 		try:
 			# 每月初（1-30号），每天01：01收集所跟踪关注指数的成分及权重
-			scheduler.add_job(func=collect_index_weight.CollectIndexWeight().collect_tracking_index_weight(),
+			scheduler.add_job(func=collect_index_weight.CollectIndexWeight().collect_tracking_index_weight,
 							  trigger='cron', month='1-12', day='1-30',
 							  hour=1, minute=1, id='monthly1To10CollectIndexStocksAndWeight')
 		except Exception as e:
