@@ -26,7 +26,7 @@ class CalculateIndexHistoricalEstimations:
         self.max_processing_connections = min(multiprocessing.cpu_count(),6)
 
         # 获取当前日期
-        self.today = time.strftime("%Y-%m-%d", time.localtime())
+        #self.today = time.strftime("%Y-%m-%d", time.localtime())
         #self.today = "2021-08-04"
 
     def get_all_date(self):
@@ -215,9 +215,9 @@ class CalculateIndexHistoricalEstimations:
         # 多线程计算所有指数今天收盘后的估值
 
         # 获取当前日期
-        #today = time.strftime("%Y-%m-%d", time.localtime())
+        today = time.strftime("%Y-%m-%d", time.localtime())
         #today = "2021-08-05"
-        today = self.today
+        #today = self.today
 
         # 获取需要采集的目标指数
         # 如{ '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产', ,,,}
@@ -396,9 +396,9 @@ class CalculateIndexHistoricalEstimations:
         #updated_info_dict = {'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费','399986.XSHE': '中证银行指数', '000036.XSHG': '上证主要消费行业指数', '399997.XSHE': '中证白酒', '399965.XSHE': '中证800地产'}
 
         # 获取当前日期
-        #today = time.strftime("%Y-%m-%d", time.localtime())
+        today = time.strftime("%Y-%m-%d", time.localtime())
         #today = "2021-08-05"
-        today = self.today
+        #today = self.today
 
         # 如果无任何指数基金信息更新
         if len(updated_info_dict) == 0:
