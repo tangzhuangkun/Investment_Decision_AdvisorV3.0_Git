@@ -54,13 +54,14 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
 	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
-	`global_stock_code` VARCHAR(20) NOT NULL COMMENT '股票全球代码',
+	`global_stock_code` VARCHAR(20) DEFAULT NULL COMMENT '股票全球代码',
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
-	`stock_exchange_location` VARCHAR(20) NOT NULL COMMENT '股票上市地',
+	`stock_exchange_location` VARCHAR(20) DEFAULT NULL COMMENT '股票上市地',
 	`weight` DECIMAL(7,4) NOT NULL COMMENT '股票权重',
-	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
+	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
 	`submission_date` DATE NOT NULL COMMENT '提交的日期',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '指数构成及权重';	
