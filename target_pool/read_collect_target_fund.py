@@ -73,11 +73,26 @@ class ReadCollectTargetFund:
                 valuation_method_indexes_names_dict[index] = tracking_indexes_names_dict[index]
         return valuation_method_indexes_names_dict
 
+    def get_given_index_company_index(self,company_name):
+        # 获取特定指数公司开发的指数，指数代码及指数名称
+        # 输入：company_name，指数公司名称
+        # 输出：
+        # 如 查询 "中证"
+        # 如 {'000932.XSHG': '中证主要消费', '399997.XSHE': '中证白酒', ,,,}
+
+        target_index_funds = target.target_index_funds
+        given_index_company_target_indexes_names_dict = {}
+        for tracking_info in target_index_funds:
+            if target_index_funds.get(tracking_info).get('index_company') == company_name:
+                given_index_company_target_indexes_names_dict[target_index_funds.get(tracking_info).get('tracking_index_code')] = target_index_funds.get(tracking_info).get('tracking_index_name')
+        return given_index_company_target_indexes_names_dict
 
 if __name__ == '__main__':
     go = ReadCollectTargetFund()
     #go.get_indexes_and_their_names()
     #result = go.get_index_valuation_method()
     #print(result)
-    result = go.index_valuated_by_method('pe')
+    #result = go.index_valuated_by_method('pe')
+    #print(result)
+    result = go.get_given_index_company_index('中证')
     print(result)
