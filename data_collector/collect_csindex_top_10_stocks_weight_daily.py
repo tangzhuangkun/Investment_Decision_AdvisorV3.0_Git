@@ -124,6 +124,8 @@ class CollectCSIndexTop10StocksWeightDaily:
     def collect_target_index_stock_info(self):
         # 收集目标池中的中证指数每日前十大权重股构成,并存入数据库
 
+        # 获取今天日期
+        today = time.strftime("%Y-%m-%d", time.localtime())
         # 获取标的池中关于 中证公司的 指数代码及指数名称
         cs_target_indexes_names_dict = read_collect_target_fund.ReadCollectTargetFund().get_given_index_company_index("中证")
         # 遍历这些指数
@@ -143,8 +145,8 @@ class CollectCSIndexTop10StocksWeightDaily:
                 weight = stock_info[2]
                 try:
                     # 插入的SQL
-                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,weight,source)" \
-                                    "VALUES ('%s','%s','%s','%s','%s','%s')" % (index_code, index_name, stock_code, stock_name,weight, '中证')
+                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,weight,source,submission_date)" \
+                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s')" % (index_code, index_name, stock_code, stock_name,weight, '中证',today)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                 except Exception as e:

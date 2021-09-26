@@ -148,7 +148,7 @@ class CollectIndexWeight:
                                     "global_stock_code,stock_code,stock_name,stock_exchange_location," \
                                     "weight,source,submission_date)" \
                                     "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
-                                        index_code, index_name, global_stock_code, global_stock_code[:6], stock_name,
+                                        index_code[:-5], index_name, global_stock_code, global_stock_code[:6], stock_name,
                                         stock_exchange_location, weight, '聚宽', today)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
