@@ -129,6 +129,5 @@ inner join
 (select stock_code, stock_name, date, pe_ttm, pe_ttm_nonrecurring, pb, pb_wo_gw, ps_ttm, pcf_ttm, dividend_yield
 from stocks_main_estimation_indexes_historical_data) c
 on a.stock_code = c.stock_code
-and a.stock_name = c.stock_name
 group by c.date,a.index_code, a.index_name
 order by c.date desc;
