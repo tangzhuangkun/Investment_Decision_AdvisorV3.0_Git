@@ -30,8 +30,10 @@ class CalculateIndexHistoricalEstimations:
                 custom_logger.CustomLogger().log_writter(msg, 'error')
 
 
-
 if __name__ == '__main__':
+    time_start = time.time()
     go = CalculateIndexHistoricalEstimations()
     go.read_run_cal_index_his_estimation_file()
+    time_end = time.time()
+    print('Time Cost: ' + str(time_end - time_start))
 
