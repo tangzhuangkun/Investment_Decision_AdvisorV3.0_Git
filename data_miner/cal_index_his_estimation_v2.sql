@@ -76,19 +76,23 @@ group by a.index_code, index_name, stock_code, stock_name, weight, source, a.sub
 order by a.index_code, a.weight;
 
 
--- 可能可以，待验证
+select index_code, index_name, stock_code, stock_name, weight, source, submission_date from (
 -- 拼接中证的最新前十权重股
-(select id, index_code, index_name, stock_code, stock_name, weight, source, submission_date
+(select index_code, index_name, stock_code, stock_name, weight, source, submission_date
 from index_constituent_stocks_weight
 where source = '中证'
 and submission_date = (select max(submission_date) from index_constituent_stocks_weight))
 union all
 -- 取出视图中weight倒序，10名之后的
-select a.index_code, index_name, stock_code, stock_name, weight, source, a.submission_date from jq a
+(select a.index_code, index_name, stock_code, stock_name, weight, source, a.submission_date from jq a
 where
 ( select count(1) from jq b
 				where a.index_code = b.index_code
 				and a.weight<b.weight
-				order by b.weight desc) >= 10
+				order by b.weight desc) > 10
 group by a.index_code, index_name, stock_code, stock_name, weight, source, a.submission_date
-order by a.index_code, a.weight;
+order by a.index_code, a.weight)) x
+order by index_code, weight desc,stock_code;
+
+-- 将视图删除
+drop view jq;
