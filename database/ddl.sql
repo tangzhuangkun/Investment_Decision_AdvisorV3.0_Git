@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
 	`stock_exchange_location` VARCHAR(20) DEFAULT NULL COMMENT '股票上市地',
-	`weight` DECIMAL(7,4) NOT NULL COMMENT '股票权重',
+	`weight` DECIMAL(21,18) NOT NULL COMMENT '股票权重',
 	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
 	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',

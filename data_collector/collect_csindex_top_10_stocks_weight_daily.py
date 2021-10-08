@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import time
+import json
 
 import sys
 
@@ -25,13 +26,13 @@ class CollectCSIndexTop10StocksWeightDaily:
         # header，伪装的UA
         # proxy，伪装的IP
         # 返回 tuple (截止日期, [前十成份股代码，名称，权重])
-        # 如 ( '2021-09-24', [['600809', '山西汾酒', '17.95'], ['600519', '贵州茅台', '14.83'],,,,,])
+        # 如 ( '2021-09-24', [['600809', '山西汾酒', 'sh','16.766190846153634'], ['600519', '贵州茅台', 'sh','13.277568906087126'], ,,,,])
 
         # 地址模板
-        page_address = 'http://www.csindex.com.cn/zh-CN/indices/index-detail/' + index_id
+        page_address = 'https://www.csindex.com.cn/csindex-home/index/weight/top10/' + index_id
 
         # 返回的前十成份股信息，成份股代码，名称，权重
-        # [['600809', '山西汾酒', '17.95'], ['600519', '贵州茅台', '14.83'], ,,,,]
+        # [['600809', '山西汾酒', '16.766190846153634'], ['600519', '贵州茅台', '13.277568906087126'], ,,,,]
         top_10_stocks_detail_info_list = []
 
         # 递归算法，处理异常
@@ -48,33 +49,31 @@ class CollectCSIndexTop10StocksWeightDaily:
             # 得到页面的信息
             raw_page = requests.get(page_address, headers=header, proxies=proxy, verify=False, stream=False,
                                     timeout=10).text
-
-            # 使用BeautifulSoup解析页面
-            bs = BeautifulSoup(raw_page, "html.parser")
-
-            # 解析网页信息，获取截止日期
-            expiration_date_potential = bs.find_all("h2",attrs={'class': 't_3 mb-10 pr'})
-            expiration_date = expiration_date_potential[2].find("p").get_text()[5:]
-
-            # 解析网页信息，获取十大权重股信息
-            top_10_stocks_table = bs.find('table', attrs={'class': 'table table-even table-bg p_table tc'})
-            top_10_stocks_body = top_10_stocks_table.find('tbody')
-            for stock_info in top_10_stocks_body.find_all('tr'):
-                # 单个成份股的关键信息，如 ['600519', '贵州茅台', '14.83']
+            # 转换成字典数据
+            data_json = json.loads(raw_page)
+            # 获取更新日期
+            update_date = data_json['data']['updateDate']
+            # 遍历成分股权重列表
+            for stock_info in data_json['data']['weightList']:
+                # 单个成份股的关键信息，如 ['600519', '贵州茅台', 'sh','13.277568906087126']
                 stock_detail_info_list = []
-                stock_info_iterator = iter(stock_info.find_all('td'))
-                stock_detail_info_list.append(next(stock_info_iterator).get_text())
-                stock_detail_info_list.append(next(stock_info_iterator).get_text())
-                next(stock_info_iterator)
-                stock_detail_info_list.append(next(stock_info_iterator).get_text())
+                stock_detail_info_list.append(stock_info['securityCode'])
+                stock_detail_info_list.append(stock_info['securityName'])
+                if stock_info['marketNameEn'] == 'Shenzhen Stock Exchange':
+                    stock_detail_info_list.append('sz')
+                elif stock_info['marketNameEn'] == 'Shanghai Stock Exchange':
+                    stock_detail_info_list.append('sh')
+                else:
+                    stock_detail_info_list.append('unknown')
+                stock_detail_info_list.append(stock_info['preciseWeight'])
                 top_10_stocks_detail_info_list.append(stock_detail_info_list)
+            # 返回如 ( '2021-09-24', [['600809', '山西汾酒', 'sh','16.766190846153634'], ['600519', '贵州茅台', 'sh','13.277568906087126'], ,,,,])
+            return update_date, top_10_stocks_detail_info_list
+
 
             # 日志记录
             # msg = "从中证官网 " + page_address + '  ' + "获取了 " + expiration_date + "的前十成份股信息"
             # custom_logger.CustomLogger().log_writter(msg, lev='info')
-
-            # 返回如 ( '2021-09-24', [['600809', '山西汾酒', '17.95'], ['600519', '贵州茅台', '14.83'],,,,,])
-            return  expiration_date, top_10_stocks_detail_info_list
         
         # 如果读取超时，重新在执行一遍解析页面
         except requests.exceptions.ReadTimeout:
@@ -112,12 +111,12 @@ class CollectCSIndexTop10StocksWeightDaily:
         # 从中证官网获取单个指数最新的前十成份股和权重信息
         # index_id: 指数代码（6位数字， 如 399997）
         # 返回 tuple (截止日期, [前十成份股代码，名称，权重])
-        # 如 ( '2021-09-24', [['600809', '山西汾酒', '17.95'], ['600519', '贵州茅台', '14.83'],,,,,])
+        # 如 ( '2021-09-24', [['600809', '山西汾酒', 'sh','16.766190846153634'], ['600519', '贵州茅台', 'sh','13.277568906087126'],,,,,])
 
         # 伪装，隐藏UA和IP
         ip_address, ua = disguise.Disguise().get_one_IP_UA()
         header = {"user-agent": ua['ua'], 'Connection': 'close'}
-        proxy = {'https': 'https://' + ip_address['ip_address']}
+        proxy = {'http': 'https://' + ip_address['ip_address']}
 
         return self.parse_page_content(index_id, header, proxy)
 
@@ -141,12 +140,14 @@ class CollectCSIndexTop10StocksWeightDaily:
                 stock_code = stock_info[0]
                 # 股票名称，如 伊利股份
                 stock_name = stock_info[1]
-                # 权重，如 11.19
-                weight = stock_info[2]
+                # 股票交易所，如 sh，sz
+                stock_exchange = stock_info[2]
+                # 权重，如 16.766190846153634
+                weight = stock_info[3]
                 try:
                     # 插入的SQL
-                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,weight,source,submission_date)" \
-                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s')" % (index_code, index_name, stock_code, stock_name,weight, '中证',expiration_date)
+                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,stock_exchange_location,weight,source,submission_date)" \
+                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (index_code, index_name, stock_code, stock_name,stock_exchange,weight, '中证',expiration_date)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                 except Exception as e:
@@ -160,6 +161,7 @@ if __name__ == '__main__':
 
     time_start = time.time()
     go = CollectCSIndexTop10StocksWeightDaily()
+    #go.get_single_index_latest_constituent_stock_and_weight('399997')
     #real_time_pe_ttm = go.get_single_index_latest_constituent_stock_and_weight('399997')
     #print(real_time_pe_ttm)
     go.collect_target_index_stock_info()
