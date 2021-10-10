@@ -63,9 +63,6 @@ and mt10wb.submission_date = mm.submission_date
 group by mt10wb.index_code, index_name, mt10wb.stock_code, stock_name, weight, source, mt10wb.submission_date
 order by mt10wb.index_code, weight desc,mt10wb.stock_code);
 
-/* 插入数据之前，先进行清空操作 */
-truncate table aggregated_data.index_components_historical_estimations;
-
 /* 利用mysql，基于指数最新的成分股进行计算历史估值信息 */
 /* 将计算结果插入另外一个的表中 */
 insert into aggregated_data.index_components_historical_estimations (index_code, index_name, historical_date, pe_ttm, pe_ttm_effective_weight,

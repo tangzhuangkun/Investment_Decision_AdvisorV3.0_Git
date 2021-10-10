@@ -13,7 +13,7 @@ class CalculateIndexHistoricalEstimations:
     def __init__(self):
         pass
 
-    '''
+
     def truncate_table(self):
         # 清空已计算好的估值信息表
         # 插入数据之前，先进行清空操作
@@ -26,13 +26,15 @@ class CalculateIndexHistoricalEstimations:
             # 日志记录
             msg = '失败，无法清空 aggregated_data数据库中的index_components_historical_estimations表' + '  ' + str(e)
             custom_logger.CustomLogger().log_writter(msg, 'error')
-    '''
+
 
     def read_run_cal_index_his_estimation_file(self):
         # 读取并运行mysql脚本
 
         with open('cal_index_his_estimation.sql', encoding='utf-8', mode='r') as f:
             # 读取整个sql文件
+
+            # 分割sql文件中的执行语句，挨句执行
             sql_list = f.read().split(';')[:-1]
             for x in sql_list:
                 # 判断包含空行的
@@ -60,7 +62,7 @@ class CalculateIndexHistoricalEstimations:
 if __name__ == '__main__':
     time_start = time.time()
     go = CalculateIndexHistoricalEstimations()
-    #go.truncate_table()
+    go.truncate_table()
     go.read_run_cal_index_his_estimation_file()
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
