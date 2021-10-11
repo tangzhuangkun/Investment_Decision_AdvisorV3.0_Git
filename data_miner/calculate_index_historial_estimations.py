@@ -58,12 +58,14 @@ class CalculateIndexHistoricalEstimations:
                     msg = '失败，无法成功将指数的历史估值信息插入 aggregated_data数据库中的index_components_historical_estimations表' + '  ' + str(e)
                     custom_logger.CustomLogger().log_writter(msg, 'error')
 
+    def main(self):
+        self.truncate_table()
+        self.read_run_cal_index_his_estimation_file()
 
 if __name__ == '__main__':
     time_start = time.time()
     go = CalculateIndexHistoricalEstimations()
-    go.truncate_table()
-    go.read_run_cal_index_his_estimation_file()
+    go.main()
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
 
