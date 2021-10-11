@@ -12,7 +12,7 @@ import notification.notification_plan as notification_plan
 import data_collector.collect_trading_days as collect_trading_days
 import data_miner.calculate_index_historial_estimations as calculate_index_historial_estimations
 import data_collector.collect_index_weight as collect_index_weight
-
+import data_collector.collect_csindex_top_10_stocks_weight_daily as collect_csindex_top_10_stocks_weight_daily
 
 class Scheduler:
 	# 任务调度器，根据时间安排工作
@@ -77,20 +77,30 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每个交易日18：02收集所需的股票的估值信息
-			scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main, args=('2021-01-02',),
+			# 每个交易日18：02收集中证官网指数的最新构成信息
+			scheduler.add_job(func=collect_csindex_top_10_stocks_weight_daily.CollectCSIndexTop10StocksWeightDaily().main,
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=2,
+							  id='weekdayCollectCSIndexTop10StocksWeight')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+		try:
+			# 每个交易日18：04收集所需的股票的估值信息
+			scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main, args=('2021-01-02',),
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=4,
 							  id='weekdayCollectStockHistoricalEstimationInfo')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每个交易日18：05计算指数估值
-			scheduler.add_job(func=calculate_index_historial_estimations.CalculateIndexHistoricalEstimations().daily_check_and_cal_all_index_estimation_no_matter_updated_or_not,
+			# 每个交易日18：10计算指数估值
+			scheduler.add_job(func=calculate_index_historial_estimations.CalculateIndexHistoricalEstimations().main,
 							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=5,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=10,
 							  id='weekdayCalculateIndexHistoricalEstimations')
 		except Exception as e:
 			# 抛错
