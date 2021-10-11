@@ -155,6 +155,8 @@ class CollectCSIndexTop10StocksWeightDaily:
                     msg = 'Failed to insert index weights into DB' + '  ' + str(e)
                     custom_logger.CustomLogger().log_writter(msg, 'error')
 
+    def main(self):
+        self.collect_target_index_stock_info()
 
 
 if __name__ == '__main__':
