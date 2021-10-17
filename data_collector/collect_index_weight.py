@@ -51,8 +51,8 @@ class CollectIndexWeight:
         try:
             # 查询sql
             selecting_sql = "SELECT stock_code, stock_name, weight FROM index_constituent_stocks_weight WHERE index_code" \
-                            " = '%s' AND submission_date = (SELECT MAX(submission_date) FROM " \
-                            "index_constituent_stocks_weight WHERE index_code = '%s') " % (index_code, index_code)
+                            " = '%s' AND source = '聚宽' AND submission_date = (SELECT MAX(submission_date) FROM " \
+                            "index_constituent_stocks_weight WHERE source = '聚宽' AND index_code = '%s') " % (index_code[:-5], index_code[:-5])
             # 从数据库获取内容
             db_index_content = db_operator.DBOperator().select_all("financial_data", selecting_sql)
             return db_index_content
@@ -148,7 +148,7 @@ class CollectIndexWeight:
                                     "global_stock_code,stock_code,stock_name,stock_exchange_location," \
                                     "weight,source,submission_date)" \
                                     "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
-                                        index_code[:-5], index_name, global_stock_code, global_stock_code[:6], stock_name,
+                                        index_code, index_name, global_stock_code, global_stock_code[:6], stock_name,
                                         stock_exchange_location, weight, '聚宽', today)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
