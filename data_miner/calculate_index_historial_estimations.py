@@ -31,6 +31,34 @@ class CalculateIndexHistoricalEstimations:
     def read_run_cal_index_his_estimation_file(self):
         # 读取并运行mysql脚本
 
+        # 运行 创建中间层
+        with open('create_middle_views.sql', encoding='utf-8', mode='r') as view_f:
+            # 分割sql文件中的执行语句，挨句执行
+            sql_list = view_f.read().split(';')[:-1]
+            for x in sql_list:
+                # 判断包含空行的
+                if '\n' in x:
+                    # 替换空行为1个空格
+                    x = x.replace('\n', ' ')
+
+                # 判断多个空格时
+                if '    ' in x:
+                    # 替换为空
+                    x = x.replace('    ', '')
+
+                # sql语句添加分号结尾
+                view_inserting_sql = x + ';'
+
+                try:
+                    db_operator.DBOperator().operate("insert", "financial_data", view_inserting_sql)
+
+                except Exception as e:
+                    # 日志记录
+                    msg = '失败，无法成功创建中间视图层' + '  ' + str(e)
+                    custom_logger.CustomLogger().log_writter(msg, 'error')
+
+
+        # 运行计算脚本
         with open('cal_index_his_estimation.sql', encoding='utf-8', mode='r') as f:
             # 读取整个sql文件
 

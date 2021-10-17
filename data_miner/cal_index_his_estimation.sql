@@ -1,66 +1,3 @@
-/* 创建视图*/
-create view jq as
-/* 获取最新的数据库中，聚宽的最新指数构成信息 */
-(select a.index_code, index_name, stock_code, stock_name, weight, source, a.submission_date
-from
-/* 每个指数，构成成份，采集日期 */
-(select index_code, index_name, stock_code, stock_name, weight, source, submission_date
-from index_constituent_stocks_weight
-where source = '聚宽'
-group by index_code, index_name, stock_code, stock_name, weight, source, submission_date
-order by index_code, submission_date, weight desc) a
-inner join
-/* 每个指数及对应的最新采集日期 */
-(select index_code, max(submission_date) as submission_date
-from index_constituent_stocks_weight
-where source = '聚宽'
-group by index_code ) b
-on a.index_code = b.index_code
-and a.submission_date = b.submission_date
-group by a.index_code, index_name, stock_code, stock_name, weight, source, submission_date
-order by index_code, weight desc);
-
-/* 创建视图 */
-/* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股 */
-create view mix_top10_with_bottom as
-(select index_code, index_name, stock_code, stock_name, weight, source, submission_date from (
-/* 拼接中证的最新前十权重股 */
-(select index_code, index_name, stock_code, stock_name, weight, source, submission_date
-from index_constituent_stocks_weight
-where source = '中证'
-and submission_date = (select max(submission_date) from index_constituent_stocks_weight))
-union all
-/* 取出视图中weight倒序，10名之后的 */
-(select a.index_code, index_name, stock_code, stock_name, weight, source, a.submission_date from jq a
-where
-( select count(1) from jq b
-				where a.index_code = b.index_code
-				and a.weight<b.weight
-				order by b.weight desc) >= 10
-group by a.index_code, index_name, stock_code, stock_name, weight, source, a.submission_date
-order by a.index_code, a.weight)) x
-order by index_code, weight desc,stock_code);
-
-
-/* 创建视图 */
-/* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股,去除重复股票 */
-create view mix_top10_with_bottom_no_repeat as
-/* 如果视图（中证的最新前10权重股+每月聚宽中的10位之后的权重股）中股票有重复，以最新日期的为准，忽略旧日期的，去除重复股票 */
-(select mt10wb.index_code, index_name, mt10wb.stock_code, stock_name, weight, source, mt10wb.submission_date
-from mix_top10_with_bottom mt10wb
-inner join
-/* 取出视图（中证的最新前10权重股+每月聚宽中的10位之后的权重股）中每个指数及成分股的最新日期 */
-(select index_code, stock_code, max(submission_date) as submission_date
-from mix_top10_with_bottom
-group by index_code,stock_code
-order by index_code,stock_code
-) mm
-on mt10wb.index_code = mm.index_code
-and mt10wb.stock_code = mm.stock_code
-and mt10wb.submission_date = mm.submission_date
-group by mt10wb.index_code, index_name, mt10wb.stock_code, stock_name, weight, source, mt10wb.submission_date
-order by mt10wb.index_code, weight desc,mt10wb.stock_code);
-
 /* 利用mysql，基于指数最新的成分股进行计算历史估值信息 */
 /* 将计算结果插入另外一个的表中 */
 insert into aggregated_data.index_components_historical_estimations (index_code, index_name, historical_date, pe_ttm, pe_ttm_effective_weight,
@@ -184,9 +121,3 @@ from stocks_main_estimation_indexes_historical_data) c
 on a.stock_code = c.stock_code
 group by c.date,a.index_code, a.index_name
 order by c.date desc;
-
-
-/* 将视图删除 */
-drop view jq;
-drop view mix_top10_with_bottom;
-drop view mix_top10_with_bottom_no_repeat;
