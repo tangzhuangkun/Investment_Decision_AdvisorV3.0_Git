@@ -43,6 +43,9 @@ class FundStrategyPBEstimation:
         pb = 0
         pb_wo_gw = 0
 
+        # TODO 建立一张表，记录交易日
+        # TODO day判断，跳过非交易日, http://php-note.com/article/1854.html
+
         # 获取指数成分股及权重
         index_constitute_stocks_weight = self.get_index_constitute_stocks(index_code)
         for stock_info in index_constitute_stocks_weight:
@@ -106,7 +109,7 @@ class FundStrategyPBEstimation:
 
     def calculate_real_time_index_pb_multiple_threads(self,index_code):
         # 多线程计算指数的实时市净率
-        # index_code, 指数代码（6位数字 399997）
+        # index_code, 指数代码（1、6位数字+交易所代码；2、6位数字；例如： 399997.XSHE 或者 399997）
         # 输出，指数的实时市净率， 如 18.5937989
 
         # 统计指数实时的市净率
@@ -165,7 +168,7 @@ class FundStrategyPBEstimation:
         # return: 返回计算结果
 
         # 获取标的池中跟踪关注指数及他们的中文名称
-        # 字典形式。如，{'399396': '国证食品', '000932': '中证主要消费',,,,}
+        # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
         #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
         indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pb')
 
@@ -177,7 +180,7 @@ class FundStrategyPBEstimation:
         indexes_and_real_time_PB_msg = '指数实时动态市净率信息： \n\n'
         for index in indexes_and_their_names:
             # 获取 实时市净率
-            index_real_time_pb = self.calculate_real_time_index_pb_multiple_threads(index)
+            index_real_time_pb = self.calculate_real_time_index_pb_multiple_threads(index[:-5])
             indexes_and_real_time_PB_msg += indexes_and_their_names[index] + ": "+ str(index_real_time_pb) + "\n"
             # 日志记录
             log_msg = 'Just got the '+indexes_and_their_names[index] + ' real time PB'
