@@ -144,10 +144,19 @@ class CollectCSIndexTop10StocksWeightDaily:
                 stock_exchange = stock_info[2]
                 # 权重，如 16.766190846153634
                 weight = stock_info[3]
+                # 股票全球代码
+                global_stock_code = ""
+                if stock_exchange =='sh':
+                    global_stock_code = stock_code+'.XSHG'
+                elif stock_exchange == 'sz':
+                    global_stock_code = stock_code + '.XSHE'
+                else:
+                    global_stock_code = stock_code
+
                 try:
                     # 插入的SQL
-                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,stock_code,stock_name,stock_exchange_location,weight,source,submission_date)" \
-                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (index_code, index_name, stock_code, stock_name,stock_exchange,weight, '中证',expiration_date)
+                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,global_stock_code,stock_code,stock_name,stock_exchange_location,weight,source,submission_date)" \
+                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (index_code, index_name, global_stock_code, stock_code, stock_name,stock_exchange,weight, '中证',expiration_date)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                 except Exception as e:
