@@ -87,7 +87,7 @@ class FundStrategyPEEstimation:
 
     def calculate_real_time_index_pe_multiple_threads(self,index_code):
         # 多线程计算指数的实时市盈率
-        # index_code, 指数代码（1、6位数字+交易所代码；2、6位数字；例如： 399997.XSHE 或者 399997）
+        # index_code, 指数代码（6位数字；例如： 399997）
         # 输出，指数的实时市盈率， 如 70.5937989
 
         # 统计指数实时的市盈率
@@ -156,10 +156,10 @@ class FundStrategyPEEstimation:
         # return: 返回讯息
 
         # 获取标的池中跟踪关注指数及他们的中文名称
-        # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
+        # 字典形式。如，{'399396': '国证食品', '000932': '中证主要消费',,,,}
         #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
         indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pe')
-        #indexes_and_their_names = {'399396.XSHE': '国证食品'}
+        #indexes_and_their_names = {'399396': '国证食品'}
 
         # 拼接需要发送的指数实时动态市盈率信息
         indexes_and_real_time_PE_msg = '指数实时动态市盈率和历史百分位： \n\n'
@@ -177,7 +177,7 @@ class FundStrategyPEEstimation:
 
     def get_last_trading_day_PE(self, index_code):
         # 获取当前指数上一个交易日的  PETTM 和 扣非市盈率
-        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
+        # index_code: 指数代码, 必须如 399965, 仅数字，代码后面不带上市地
         # return： 如果有值，则返回tuple，(PETTM, 扣非市盈率)
         #          如果无值，则返回tuple，(0, 0)
 
@@ -206,7 +206,7 @@ class FundStrategyPEEstimation:
 
     def cal_the_PE_percentile_in_history(self, index_code):
         # 获取当前指数的实时PETTM， 并计算当前实时市盈率TTM在历史上的百分位水平，预估扣非市盈率，历史百分位，同比上个交易日涨跌幅
-        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
+        # index_code: 指数代码, 必须如 399965, 仅数字，代码后面不带上市地
         # return: 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
         #         如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
 
@@ -290,18 +290,18 @@ if __name__ == '__main__':
     #print(result)
     #pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399965","2020-10-19")
     #print(pe_ttm, pe_ttm_nonrecurring)
-    #result = go.calculate_real_time_index_pe_multiple_threads("399965.XSHE")
+    #result = go.calculate_real_time_index_pe_multiple_threads("399965")
     #print(result)
     #msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     #print(msg)
-    #index_all_historical_pe_info = go.cal_the_real_time_PE_percentile_in_hisstory("399997.XSHE")
+    #index_all_historical_pe_info = go.cal_the_real_time_PE_percentile_in_hisstory("399997")
     #print(index_all_historical_pe_info)
     #print(index_all_historical_pe_info)
     #result = go.calculate_a_historical_date_index_PE("399997","2021-05-31")
     #print(result)
-    #result = go.get_last_trading_day_PE("399997.XSHE")
+    #result = go.get_last_trading_day_PE("399997")
     #print(result)
-    #result = go.cal_the_PE_percentile_in_history("399965.XSHE")
+    #result = go.cal_the_PE_percentile_in_history("399965")
     #print(result)
     result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     print(result)
