@@ -9,6 +9,7 @@ class IndexOperator:
     def __init__(self):
         pass
 
+    '''
     def get_index_constitute_stocks(self, index_code):
         # 获取数据库中的指数最新的构成股和比例
         # param: index_code 指数代码，如 399997 或者 399997.XSHE
@@ -22,6 +23,18 @@ class IndexOperator:
                         "ORDER BY submission_date DESC LIMIT 1)" % (index_code+'%', index_code+'%')
         index_constitute_stocks_weight = db_operator.DBOperator().select_all("financial_data", selecting_sql)
         return index_constitute_stocks_weight
+    '''
+    def get_index_constitute_stocks(self, index_code):
+        # 获取数据库中的指数最新的构成股和比例
+        # param: index_code 指数代码，如 399997 或者 399997.XSHE
+        # 返回： 指数构成股及其权重,
+        # 如 [{'global_stock_code': '000568.XSHE', 'stock_code': '000568', 'stock_name': '泸州老窖', 'weight': Decimal('14.8100')},
+        # {'global_stock_code': '000596.XSHE', 'stock_code': '000596', 'stock_name': '古井贡酒', 'weight': Decimal('3.6940')}]
+        selecting_sql = "SELECT global_stock_code, stock_code, stock_name, weight FROM mix_top10_with_bottom_no_repeat " \
+                        "WHERE index_code LIKE '%s' " % (index_code + '%')
+        index_constitute_stocks_weight = db_operator.DBOperator().select_all("financial_data", selecting_sql)
+        return index_constitute_stocks_weight
+
 
     def get_index_name(self, index_code):
         # 根据指数代码获取指数名称
@@ -50,9 +63,9 @@ class IndexOperator:
 
 if __name__ == '__main__':
     go = IndexOperator()
-    #index_constitute_stocks_weight = go.get_index_constitute_stocks('399997')
-    #print(index_constitute_stocks_weight)
+    index_constitute_stocks_weight = go.get_index_constitute_stocks('399997.XSHE')
+    print(index_constitute_stocks_weight)
     #index_name = go.get_index_name("399997.XSHE")
     #print(index_name)
-    result = go.get_today_updated_index_info()
-    print(result)
+    #result = go.get_today_updated_index_info()
+    #print(result)
