@@ -16,12 +16,22 @@ class FundStrategyPBEstimation:
     def __init__(self):
         pass
 
+    '''
     def get_index_constitute_stocks(self, index_code):
         # 获取数据库中的指数最新的构成股和比例
         # param: index_code 指数代码，如 399997
         # 返回： 指数构成股及其权重, 如[{'stock_code': '000002', 'stock_name': '万科A', 'weight': Decimal('15.5390')}, {'stock_code': '000031', 'stock_name': '大悦城', 'weight': Decimal('0.9320')}, {'stock_code': '001914', 'stock_name': '招商积余', 'weight': Decimal('1.7160')}, {'stock_code': '000069', 'stock_name': '华侨城A', 'weight': Decimal('4.2780')}]
         selecting_sql = "SELECT stock_code, stock_name, weight FROM index_constituent_stocks_weight WHERE index_code LIKE '%s' AND submission_date = (SELECT submission_date FROM index_constituent_stocks_weight WHERE index_code LIKE '%s' ORDER BY submission_date DESC LIMIT 1)" % (index_code+'%', index_code+'%')
         index_constitute_stocks_weight = db_operator.DBOperator().select_all("financial_data", selecting_sql)
+        return index_constitute_stocks_weight
+    '''
+
+    def get_index_constitute_stocks(self, index_code):
+        # 获取数据库中的指数最新的构成股和比例
+        # param: index_code 指数代码，如 399997
+        # 返回： 指数构成股及其权重, 如[{'stock_code': '000002', 'stock_name': '万科A', 'weight': Decimal('15.5390')}, {'stock_code': '000031', 'stock_name': '大悦城', 'weight': Decimal('0.9320')}, {'stock_code': '001914', 'stock_name': '招商积余', 'weight': Decimal('1.7160')}, {'stock_code': '000069', 'stock_name': '华侨城A', 'weight': Decimal('4.2780')}]
+        # 获取指数成分股及权重
+        index_constitute_stocks_weight = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
         return index_constitute_stocks_weight
 
 
