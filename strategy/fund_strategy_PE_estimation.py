@@ -166,7 +166,7 @@ class FundStrategyPEEstimation:
         for index_code in indexes_and_their_names:
             # 获取 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
             # 如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
-            pe_result_list = self.cal_the_PE_percentile_in_history(index_code[:-5])
+            pe_result_list = self.cal_the_PE_percentile_in_history(index_code)
             # 生成 讯息
             indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  \n"+ "动态市盈率 "+\
                                             str(pe_result_list[0])+ "       历史百分位: "+str(decimal.Decimal(pe_result_list[1]*100).quantize(decimal.Decimal('0.00')))+"%"+\
