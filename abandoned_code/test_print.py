@@ -1,14 +1,10 @@
-#! /usr/bin/env python3
-#coding:utf-8
-
-class TestPrint:
-    def __init__(self):
-        pass
-
-    def test(self):
-        print("testing,,,,")
+# https://hq.sinajs.cn/list=s_sz399997
 
 
-if __name__ == '__main__':
-    go = TestPrint()
-    go.test()
+import requests
+import json
+
+url = 'https://hq.sinajs.cn/list=s_sz399997'
+
+r = requests.get(url)
+print(r.text)
