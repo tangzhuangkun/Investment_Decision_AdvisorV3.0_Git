@@ -6,8 +6,8 @@ sys.path.append("..")
 import database.db_operator as db_operator
 import log.custom_logger as custom_logger
 
-class CommonDBOperation:
-    # 通用，常用的数据库操作
+class DataMinerCommonDBOperation:
+    # 通用，常用的（非基金或股票信息）数据库操作
 
     def __init__(self):
         pass
@@ -40,6 +40,6 @@ class CommonDBOperation:
 
 
 if __name__ == '__main__':
-    go = CommonDBOperation()
+    go = DataMinerCommonDBOperation()
     last_trade_day = go.get_the_last_trading_date("2001-05-06")
     print(last_trade_day)
