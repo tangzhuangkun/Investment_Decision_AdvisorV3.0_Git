@@ -3,8 +3,8 @@ sys.path.append("..")
 import database.db_operator as db_operator
 
 
-class IndexOperator:
-    # 对指数的通用操作
+class DataMinerCommonIndexOperator:
+    # 对数据库中指数信息的通用操作
 
     def __init__(self):
         pass
@@ -62,7 +62,7 @@ class IndexOperator:
 
 
 if __name__ == '__main__':
-    go = IndexOperator()
+    go = DataMinerCommonIndexOperator()
     index_constitute_stocks_weight = go.get_index_constitute_stocks('399997.XSHE')
     print(index_constitute_stocks_weight)
     #index_name = go.get_index_name("399997.XSHE")
