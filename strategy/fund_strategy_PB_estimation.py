@@ -8,7 +8,7 @@ import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
-import data_miner.common_index_operator as index_operator
+import data_miner.data_miner_common_index_operator as data_miner_common_index_operator
 
 class FundStrategyPBEstimation:
     # 指数基金策略，市净率率估值法
@@ -31,7 +31,7 @@ class FundStrategyPBEstimation:
         # param: index_code 指数代码，如 399997
         # 返回： 指数构成股及其权重, 如[{'stock_code': '000002', 'stock_name': '万科A', 'weight': Decimal('15.5390')}, {'stock_code': '000031', 'stock_name': '大悦城', 'weight': Decimal('0.9320')}, {'stock_code': '001914', 'stock_name': '招商积余', 'weight': Decimal('1.7160')}, {'stock_code': '000069', 'stock_name': '华侨城A', 'weight': Decimal('4.2780')}]
         # 获取指数成分股及权重
-        index_constitute_stocks_weight = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        index_constitute_stocks_weight = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_constitute_stocks(index_code)
         return index_constitute_stocks_weight
 
 
@@ -126,7 +126,7 @@ class FundStrategyPBEstimation:
         self.index_real_time_pb = 0
 
         # 获取指数的成分股和权重
-        stocks_and_their_weights = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        stocks_and_their_weights = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_constitute_stocks(index_code)
 
         # 启用多线程
         running_threads = []
