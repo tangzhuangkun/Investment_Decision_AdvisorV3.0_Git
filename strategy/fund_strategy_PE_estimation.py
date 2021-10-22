@@ -1,15 +1,16 @@
 import decimal
 import time
-import sys
 import threading
-import requests
+
+import sys
 sys.path.append("..")
 import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
-import data_miner.common_index_operator as index_operator
-import data_miner.common_db_operation as common_db_operation
+import data_miner.data_miner_common_index_operator as data_miner_common_index_operator
+import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
+import data_collector.data_collector_common_index_collector as data_collector_common_index_collector
 
 
 class FundStrategyPEEstimation:
@@ -33,7 +34,7 @@ class FundStrategyPEEstimation:
 
     def calculate_a_historical_date_index_PE(self, index_code, day):
         # 基于当前指数构成，计算过去某一天该指数市盈率TTM, 扣非市盈率TTM
-        # param: index_code 指数代码，如 399997
+        # param: index_code 指数代码，如 399997 或者 399997.XSHE
         # param: day, 日期， 如 2020-09-01
         # 返回 指数市盈率TTM, 扣非市盈率TTM, 均保留3位小数,
         # 例如，8.181 10.281
@@ -41,13 +42,15 @@ class FundStrategyPEEstimation:
         pe_ttm_nonrecurring = 0
 
         # 获取指数成分股及权重
-        index_constitute_stocks_weight = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        index_constitute_stocks_weight = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_constitute_stocks(index_code)
         for stock_info in index_constitute_stocks_weight:
             # 获取指数市盈率信息
             pe_info = self.get_stock_historical_pe(stock_info['stock_code'], stock_info['stock_name'], day)
-            # 计算市盈率TTM, 扣非市盈率TTM
-            pe_ttm += decimal.Decimal(pe_info[0]["pe_ttm"])*decimal.Decimal(stock_info["weight"])/100
-            pe_ttm_nonrecurring += decimal.Decimal(pe_info[0]["pe_ttm_nonrecurring"])*decimal.Decimal(stock_info["weight"])/100
+            # 计算市盈率TTM, 扣非市盈率TTM，仅考虑为正的情况
+            if pe_info[0]["pe_ttm"] >= 0:
+                pe_ttm += decimal.Decimal(pe_info[0]["pe_ttm"])*decimal.Decimal(stock_info["weight"])/100
+            if pe_info[0]["pe_ttm_nonrecurring"] >=0:
+                pe_ttm_nonrecurring += decimal.Decimal(pe_info[0]["pe_ttm_nonrecurring"])*decimal.Decimal(stock_info["weight"])/100
         return round(pe_ttm,4), round(pe_ttm_nonrecurring,4)
 
     def is_a_number(self, input_str):
@@ -83,6 +86,7 @@ class FundStrategyPEEstimation:
         self.index_real_time_positive_pe_ttm += stock_weight * decimal.Decimal(stock_real_time_pe_ttm)
         # 累加有效（即为正值的）市盈率成分股权重
         self.index_positive_pe_ttm_weight += stock_weight
+
         # 释放锁，开启下一个线程
         threadLock.release()
 
@@ -97,7 +101,7 @@ class FundStrategyPEEstimation:
         self.index_positive_pe_ttm_weight = 0
 
         # 获取指数的成分股和权重
-        stocks_and_their_weights = index_operator.IndexOperator().get_index_constitute_stocks(index_code)
+        stocks_and_their_weights = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_constitute_stocks(index_code)
 
         # 启用多线程
         running_threads = []
@@ -143,7 +147,7 @@ class FundStrategyPEEstimation:
         index_real_time_effective_pe_ttm = self.index_real_time_positive_pe_ttm/self.index_positive_pe_ttm_weight
 
         # 获取指数名称
-        index_name = index_operator.IndexOperator().get_index_name(index_code)
+        index_name = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_name(index_code)
 
         # 日志记录
         log_msg = '已获取 ' + index_name + ' 实时 PE TTM'
@@ -151,30 +155,6 @@ class FundStrategyPEEstimation:
 
         # （市盈率为正值的成分股）累加市盈率/（市盈率为正值的成分股）有效权重
         return round(index_real_time_effective_pe_ttm,4)
-
-    def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
-        # 返回包含 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅 的讯息
-        # return: 返回讯息
-
-        # 获取标的池中跟踪关注指数及他们的中文名称
-        # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
-        #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
-        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pe')
-        #indexes_and_their_names = {'399396.XSHE': '国证食品'}
-
-        # 拼接需要发送的指数实时动态市盈率信息
-        indexes_and_real_time_PE_msg = '指数实时动态市盈率和历史百分位： \n\n'
-        for index_code in indexes_and_their_names:
-            # 获取 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
-            # 如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
-            pe_result_list = self.cal_the_PE_percentile_in_history(index_code)
-            # 生成 讯息
-            indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  \n"+ "动态市盈率 "+\
-                                            str(pe_result_list[0])+ "       历史百分位: "+str(decimal.Decimal(pe_result_list[1]*100).quantize(decimal.Decimal('0.00')))+"%"+\
-                                            ";\n预估扣非市盈率: "+str(pe_result_list[2])+ "   历史百分位: "+\
-                                            str(decimal.Decimal(pe_result_list[3]*100).quantize(decimal.Decimal('0.00')))+"%"+ ";\n同比上一个交易日: "+str(pe_result_list[4])+"%"+"\n\n"
-        return indexes_and_real_time_PE_msg
-
 
     def get_last_trading_day_PE(self, index_code):
         # 获取当前指数上一个交易日的  PETTM 和 扣非市盈率
@@ -185,7 +165,7 @@ class FundStrategyPEEstimation:
         # 获取当前日期
         today = time.strftime("%Y-%m-%d", time.localtime())
         #today = "2021-06-17"
-        the_last_trading_date = common_db_operation.CommonDBOperation().get_the_last_trading_date(today)
+        the_last_trading_date = data_miner_common_db_operator.DataMinerCommonDBOperation().get_the_last_trading_date(today)
 
         # 获取指数上一个交易日的动态市盈率和扣非市盈率
         # 整体市盈率除以有效权重得到有效市盈率
@@ -203,25 +183,6 @@ class FundStrategyPEEstimation:
             log_msg = "无法获取日期 " + today +" 的上一个交易日 "+ the_last_trading_date+" 的PETTM 和 扣非市盈率数据"
             custom_logger.CustomLogger().log_writter(log_msg, 'error')
             return (0,0)
-
-    def get_index_latest_increasement_decreasement_rate(self, index_code):
-        # 获取指数最新的涨跌率
-        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
-        # return: 最新的涨跌幅, 如 0.39% 即返回为 0.39
-        location_index_code = ''
-        if index_code[-5:] == '.XSHE':
-            location_index_code = 'sz'+index_code[:6]
-        elif index_code[-5:] == '.XSHG':
-            location_index_code = 'sh' + index_code[:6]
-        # 接口地址
-        # 接口返回: 指数名称，当前点数，当前价格，涨跌率，成交量（手），成交额（万元）；
-        # 接口返回如： var hq_str_s_sz399997="中证白酒,17305.78,66.408,0.39,1882235,1917906";
-        # 只取 涨跌率
-        url = 'https://hq.sinajs.cn/list=s_'+location_index_code
-        content = requests.get(url)
-        content_split = content.text.split(',')
-        #return float(content_split[3])
-        return decimal.Decimal(content_split[3])
 
     def cal_the_PE_percentile_in_history(self, index_code):
         # 获取当前指数的实时PETTM， 并计算当前实时市盈率TTM在历史上的百分位水平，预估扣非市盈率，历史百分位，同比上个交易日涨跌幅
@@ -274,7 +235,7 @@ class FundStrategyPEEstimation:
         last_trading_day_pe_ttm, last_trading_day_pe_ttm_nonrecurring = self.get_last_trading_day_PE(index_code)
 
         # 获取指数最新的涨跌率
-        index_latest_increasement_decreasement_rate = self.get_index_latest_increasement_decreasement_rate(index_code)
+        index_latest_increasement_decreasement_rate = data_collector_common_index_collector.DataCollectorCommonIndexCollector().get_index_latest_increasement_decreasement_rate(index_code)
 
         # 根据PETTM的同比涨跌幅，预估实时的扣非市盈率
         index_real_time_predictive_pe_ttm_nonrecurring = round(index_real_time_effective_pe_ttm * (1 + index_latest_increasement_decreasement_rate), 4)
@@ -301,6 +262,30 @@ class FundStrategyPEEstimation:
 
         return result_list
 
+    def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
+        # 返回包含 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅 的讯息
+        # return: 返回讯息
+
+        # 获取标的池中跟踪关注指数及他们的中文名称
+        # 字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
+        #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pe')
+        #indexes_and_their_names = {'399396.XSHE': '国证食品'}
+
+        # 拼接需要发送的指数实时动态市盈率信息
+        indexes_and_real_time_PE_msg = '指数实时动态市盈率和历史百分位： \n\n'
+        for index_code in indexes_and_their_names:
+            # 获取 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
+            # 如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
+            pe_result_list = self.cal_the_PE_percentile_in_history(index_code)
+            # 生成 讯息
+            indexes_and_real_time_PE_msg += indexes_and_their_names[index_code] + ":  \n"+ "动态市盈率 "+\
+                                            str(pe_result_list[0])+ "       历史百分位: "+str(decimal.Decimal(pe_result_list[1]*100).quantize(decimal.Decimal('0.00')))+"%"+\
+                                            ";\n预估扣非市盈率: "+str(pe_result_list[2])+ "   历史百分位: "+\
+                                            str(decimal.Decimal(pe_result_list[3]*100).quantize(decimal.Decimal('0.00')))+"%"+ ";\n同比上一个交易日: "+str(pe_result_list[4])+"%"+"\n\n"
+        return indexes_and_real_time_PE_msg
+
+
 if __name__ == '__main__':
     time_start = time.time()
     go = FundStrategyPEEstimation()
@@ -308,10 +293,10 @@ if __name__ == '__main__':
     #print(result)
     #result = go.get_stock_historical_pe("000596", "古井贡酒", "2020-11-16")
     #print(result)
-    #pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399965","2020-10-19")
+    #pe_ttm, pe_ttm_nonrecurring = go.calculate_a_historical_date_index_PE("399997","2021-02-10")
     #print(pe_ttm, pe_ttm_nonrecurring)
-    #result = go.calculate_real_time_index_pe_multiple_threads("399965.XSHE")
-    #print(result)
+    result = go.calculate_real_time_index_pe_multiple_threads("399997.XSHE")
+    print(result)
     #msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     #print(msg)
     #index_all_historical_pe_info = go.cal_the_real_time_PE_percentile_in_hisstory("399997.XSHE")
@@ -323,10 +308,8 @@ if __name__ == '__main__':
     #print(result)
     #result = go.cal_the_PE_percentile_in_history("399965.XSHE")
     #print(result)
-    #result = go.get_index_latest_increasement_decreasement_rate('399997.XSHE')
+    #result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     #print(result)
-    result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
-    print(result)
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
