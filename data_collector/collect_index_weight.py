@@ -50,9 +50,9 @@ class CollectIndexWeight:
 
         try:
             # 查询sql
-            selecting_sql = "SELECT stock_code, stock_name, weight FROM index_constituent_stocks_weight WHERE index_code" \
+            selecting_sql = "SELECT stock_code, stock_name, round(weight,4) as weight  FROM index_constituent_stocks_weight WHERE index_code" \
                             " = '%s' AND source = '聚宽' AND submission_date = (SELECT MAX(submission_date) FROM " \
-                            "index_constituent_stocks_weight WHERE source = '聚宽' AND index_code = '%s') " % (index_code[:-5], index_code[:-5])
+                            "index_constituent_stocks_weight WHERE source = '聚宽' AND index_code = '%s') " % (index_code, index_code)
             # 从数据库获取内容
             db_index_content = db_operator.DBOperator().select_all("financial_data", selecting_sql)
             return db_index_content
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     # go.save_index_stocks_weight_to_db("399997.XSHE","中证白酒")
     #result = go.get_query_count()
     # result = go.get_db_index_stocks_weight('399997.XSHE')
-    # result = go.is_the_db_containing_the_same_index_content('399997.XSHE')
+    #result = go.is_the_db_containing_the_same_index_content('399997.XSHE')
     #print(result)
     # print(type(result))
     # print(len(result))
