@@ -6,9 +6,9 @@ import sys
 sys.path.append("..")
 import database.db_operator as db_operator
 import target_pool.read_collect_target_fund as read_collect_target_fund
-import data_miner.common_index_operator as index_operator
+import data_miner.data_miner_common_index_operator as index_operator
 import log.custom_logger as custom_logger
-import data_miner.common_index_operator as common_index_operator
+import data_miner.data_miner_common_index_operator as common_index_operator
 
 
 class CalculateIndexHistoricalEstimations:
