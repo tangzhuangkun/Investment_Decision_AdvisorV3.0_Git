@@ -6,7 +6,7 @@ import sys
 sys.path.append("..")
 import parsers.disguise as disguise
 
-class CommonIndexCollector:
+class DataCollectorCommonIndexCollector:
     # 一些通用的，用于收集指数某些属性的方法
 
     def __init__(self):
@@ -39,7 +39,7 @@ class CommonIndexCollector:
 
 if __name__ == '__main__':
     time_start = time.time()
-    go = CommonIndexCollector()
+    go = DataCollectorCommonIndexCollector()
     result = go.get_index_latest_increasement_decreasement_rate('399997.XSHE')
     print(result)
     time_end = time.time()
