@@ -139,7 +139,7 @@ class CollectCSIndexTop10StocksWeightDaily:
                 # 股票代码，如 600887
                 stock_code = stock_info[0]
                 # 股票名称，如 伊利股份
-                stock_name = stock_info[1]
+                stock_name = stock_info[1].replace(' ', '')
                 # 股票交易所，如 sh，sz
                 stock_exchange = stock_info[2]
                 # 权重，如 16.766190846153634
