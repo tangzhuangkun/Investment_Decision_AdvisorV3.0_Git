@@ -37,7 +37,7 @@ from index_constituent_stocks_weight
 where source = '中证官网' and index_company= '中证'
 and submission_date = (select max(submission_date) from index_constituent_stocks_weight))
 union all
-/* 取出视图中weight倒序，10名之后的 */
+/* 取出视图中中证公司weight倒序，10名之后的 */
 (select a.index_code, index_name, global_stock_code, stock_code, stock_name, weight, source, index_company, a.submission_date from jq a
 where
 index_company= '中证'
@@ -48,6 +48,7 @@ and ( select count(1) from jq b
 group by a.index_code, index_name, global_stock_code, stock_code, stock_name, weight, source, index_company, a.submission_date
 order by a.index_code, a.weight)
 union all
+/* 拼接国证公司的指数信息 */
 select c.index_code, index_name, global_stock_code, stock_code, stock_name, weight, source, index_company, c.submission_date from jq c
 where c.index_company = '国证'
     ) x
