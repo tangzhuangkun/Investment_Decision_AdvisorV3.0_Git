@@ -87,6 +87,18 @@ class ReadCollectTargetFund:
                 given_index_company_target_indexes_names_dict[target_index_funds.get(tracking_info).get('tracking_index_code')] = target_index_funds.get(tracking_info).get('tracking_index_name')
         return given_index_company_target_indexes_names_dict
 
+    def get_indexes_names_companies(self):
+        # 获取标的池中跟踪关注指数,他们的中文名称及指数开发公司
+        # 输入：无
+        # 输出：获取标的池中跟踪关注指数,他们的中文名称及指数开发公司,字典形式。
+        # 如，{'399997.XSHE': ('中证白酒', '中证'), '399396.XSHE': ('国证食品', '国证'),,,,}}
+
+        target_index_funds = target.target_index_funds
+        tracking_indexes_names_companies_dict = {}
+        for tracking_info in target_index_funds:
+            tracking_indexes_names_companies_dict[target_index_funds.get(tracking_info).get('tracking_index_code')] = target_index_funds.get(tracking_info).get('tracking_index_name'),target_index_funds.get(tracking_info).get('index_company')
+        return tracking_indexes_names_companies_dict
+
 if __name__ == '__main__':
     go = ReadCollectTargetFund()
     #go.get_indexes_and_their_names()
@@ -94,5 +106,6 @@ if __name__ == '__main__':
     #print(result)
     #result = go.index_valuated_by_method('pe')
     #print(result)
-    result = go.get_given_index_company_index('中证')
+    #result = go.get_given_index_company_index('中证')
+    result = go.get_indexes_names_companies()
     print(result)
