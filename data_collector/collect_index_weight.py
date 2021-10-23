@@ -109,10 +109,11 @@ class CollectIndexWeight:
         custom_logger.CustomLogger().log_writter(msg, 'info')
         return True
 
-    def save_index_stocks_weight_to_db(self, index_code, index_name):
+    def save_index_stocks_weight_to_db(self, index_code, index_name, index_company):
         # 存入数据库
         # 输入：index_code，指数代码，例如：399997.XSHE
         # 		index_name，指数名称，例如：中证白酒指数
+        #       index_company, 指数开发公司，例如：国证
         # 输出：指数成分股存入数据库
         index_stocks_weight_str = self.get_index_stocks_weight(index_code)
         # 将聚宽传回的指数成分股及其权重信息，由string转化为list，便于处理
@@ -146,10 +147,10 @@ class CollectIndexWeight:
                     # 插入的SQL
                     inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name," \
                                     "global_stock_code,stock_code,stock_name,stock_exchange_location," \
-                                    "weight,source,submission_date)" \
-                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
+                                    "weight,source,index_company,submission_date)" \
+                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
                                         index_code, index_name, global_stock_code, global_stock_code[:6], stock_name,
-                                        stock_exchange_location, weight, '聚宽', today)
+                                        stock_exchange_location, weight, '聚宽', index_company, today)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                 except Exception as e:
@@ -161,28 +162,29 @@ class CollectIndexWeight:
         msg = 'Save ' + index_code + ' ' + index_name + '\'s constituent stocks and weights into DB'
         custom_logger.CustomLogger().log_writter(msg, 'info')
 
-    def main(self, index_code, index_name):
+    def main(self, index_code, index_name, index_company):
         # 收集指数信息
         # 输入：index_code，指数代码，例如：399997.XSHE
         # 		index_name，指数名称，例如：中证白酒指数
+        #       index_company, 指数开发公司，例如：国证
         # 输出：指数成分股存入数据库
 
         # 数据库中是否已包含相同的指数信息
         is_containing = self.is_the_db_containing_the_same_index_content(index_code)
         # 如果没有包含相同的信息，则收集
         if not is_containing:
-            self.save_index_stocks_weight_to_db(index_code, index_name)
+            self.save_index_stocks_weight_to_db(index_code, index_name, index_company)
 
     def collect_tracking_index_weight(self):
         # 收集所跟踪关注指数的成分及权重
         # 输入：无
         # 输出：存入数据
 
-        # 获取标的池中跟踪关注指数及他们的中文名称,字典形式。如，{'399396.XSHE': '国证食品', '000932.XSHG': '中证主要消费',,,,}
-        tracking_indexes_names_dict = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
+        # 获取标的池中跟踪关注指数,他们的中文名称及指数开发公司,字典形式。如，{'399997.XSHE': ('中证白酒', '中证'), '399396.XSHE': ('国证食品', '国证'),,,,}}
+        tracking_indexes_names_companies_dict = read_collect_target_fund.ReadCollectTargetFund().get_indexes_names_companies()
         # 收集指数的成分及权重
-        for index in tracking_indexes_names_dict:
-            self.main(index, tracking_indexes_names_dict.get(index))
+        for index in tracking_indexes_names_companies_dict:
+            self.main(index, tracking_indexes_names_companies_dict.get(index)[0],tracking_indexes_names_companies_dict.get(index)[1])
         # 日志记录
         msg = 'Just collected tracking index stocks and weight'
         custom_logger.CustomLogger().log_writter(msg, 'info')
