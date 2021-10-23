@@ -273,7 +273,7 @@ class FundStrategyPEEstimation:
         #indexes_and_their_names = {'399396.XSHE': '国证食品'}
 
         # 拼接需要发送的指数实时动态市盈率信息
-        indexes_and_real_time_PE_msg = '指数实时动态市盈率和历史百分位： \n\n'
+        indexes_and_real_time_PE_msg = '指数实时动态市盈率和自2010年来历史百分位： \n\n'
         for index_code in indexes_and_their_names:
             # 获取 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅
             # 如 [Decimal('58.7022'), 0.6686, Decimal('58.7844'), 0.3837, Decimal('0.0014')]
