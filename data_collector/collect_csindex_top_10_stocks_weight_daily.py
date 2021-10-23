@@ -156,7 +156,7 @@ class CollectCSIndexTop10StocksWeightDaily:
                 try:
                     # 插入的SQL
                     inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,global_stock_code,stock_code,stock_name,stock_exchange_location,weight,source,index_company,submission_date)" \
-                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (target_index_code, index_name, global_stock_code, stock_code, stock_name,stock_exchange,weight, '中证','中证',expiration_date)
+                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (target_index_code, index_name, global_stock_code, stock_code, stock_name,stock_exchange,weight, '中证官网','中证',expiration_date)
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                 except Exception as e:
