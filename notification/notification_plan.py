@@ -20,9 +20,9 @@ class NotificationPlan:
         # 估值信息, 邮件通知
 
         # 计算指数的动态市盈率
-        indexes_and_real_time_PE_msg = fund_strategy_PE_estimation.FundStrategyPEEstimation().calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+        indexes_and_real_time_PE_msg = fund_strategy_PE_estimation.FundStrategyPEEstimation().generate_PE_strategy_msg()
         # 计算指数的市净率
-        indexes_and_real_time_PB_msg = fund_strategy_PB_estimation.FundStrategyPBEstimation().calculate_all_tracking_index_funds_real_time_PB_and_generate_msg()
+        indexes_and_real_time_PB_msg = fund_strategy_PB_estimation.FundStrategyPBEstimation().generate_PB_strategy_msg()
 
         # 估值信息汇总
         estimation_msg = indexes_and_real_time_PE_msg + '\n\n' + indexes_and_real_time_PB_msg
