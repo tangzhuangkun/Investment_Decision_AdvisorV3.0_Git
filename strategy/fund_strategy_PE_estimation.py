@@ -275,7 +275,7 @@ class FundStrategyPEEstimation:
 
         return result_list
 
-    def calculate_all_tracking_index_funds_real_time_PE_and_generate_msg(self):
+    def generate_PE_strategy_msg(self):
         # 返回包含 当前指数的实时PETTM， 在历史上的百分位水平，预估的实时扣非市盈率，历史百分位，同比上个交易日涨跌幅 的讯息
         # return: 返回讯息
 
@@ -296,6 +296,10 @@ class FundStrategyPEEstimation:
                                             str(pe_result_list[0])+ "\n"+"历史百分位: "+str(decimal.Decimal(pe_result_list[1]*100).quantize(decimal.Decimal('0.00')))+"%;"+"\n"+\
                                             "--------"+"\n"+"预估扣非市盈率: "+str(pe_result_list[2])+ "\n"+"历史百分位: "+\
                                             str(decimal.Decimal(pe_result_list[3]*100).quantize(decimal.Decimal('0.00')))+"%;"+ "\n\n"
+
+        # 日志记录
+        log_msg = '市盈率策略执行完毕'
+        custom_logger.CustomLogger().log_writter(log_msg, 'debug')
         return indexes_and_real_time_PE_msg
 
 
