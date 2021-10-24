@@ -28,7 +28,7 @@ group by a.index_code, index_name, global_stock_code, stock_code, stock_name, we
 order by index_code, weight desc);
 
 /* 创建视图 */
-/* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股 */
+/* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股+国证指数 */
 create view mix_top10_with_bottom as
 (select index_code, index_name, global_stock_code,stock_code, stock_name, weight, source, index_company, submission_date from (
 /* 拼接中证的最新前十权重股 */
@@ -56,7 +56,7 @@ order by index_code, weight desc,stock_code);
 
 
 /* 创建视图 */
-/* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股,去除重复股票 */
+/* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股,去除重复股票+国证指数 */
 create view mix_top10_with_bottom_no_repeat as
 /* 如果视图（中证的最新前10权重股+每月聚宽中的10位之后的权重股）中股票有重复，以最新日期的为准，忽略旧日期的，去除重复股票 */
 (select mt10wb.index_code, index_name, mt10wb.global_stock_code, mt10wb.stock_code, stock_name, weight, source, index_company, mt10wb.submission_date
