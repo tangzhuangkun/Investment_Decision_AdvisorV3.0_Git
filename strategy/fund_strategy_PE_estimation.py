@@ -184,7 +184,7 @@ class FundStrategyPEEstimation:
         # 整体市盈率除以有效权重得到有效市盈率
         selecting_sql = "select pe_ttm/(pe_ttm_effective_weight/100) as pe_ttm, pe_ttm_nonrecurring/(pe_ttm_nonrecurring_effective_weight/100) as pe_ttm_nonrecurring from " \
                         "index_components_historical_estimations where index_code = '%s' and historical_date = '%s'" \
-                        "order by pe_ttm" % (index_code, the_last_trading_date)
+                        % (index_code, the_last_trading_date)
         # pe_info 如 {'pe_ttm': Decimal('61.27220'), 'pe_ttm_nonrecurring': Decimal('66.16330')}
         pe_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
         # 如果pe_info为空
@@ -321,10 +321,10 @@ if __name__ == '__main__':
     #print(result)
     #result = go.cal_the_PE_percentile_in_history("399997.XSHE")
     #print(result)
-    #result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
-    #print(result)
-    result = go.get_a_historical_date_index_PE('399997.XSHE','2021-10-22')
+    result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     print(result)
+    #result = go.get_a_historical_date_index_PE('399997.XSHE','2021-10-22')
+    #print(result)
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
