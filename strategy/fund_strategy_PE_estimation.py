@@ -31,12 +31,13 @@ class FundStrategyPEEstimation:
         pe_info = db_operator.DBOperator().select_all("financial_data", selecting_sql)
         return pe_info
 
-
+    '''
     def calculate_a_historical_date_index_PE(self, index_code, day):
+        # 废弃，应该从已算好的数据库中获取某个历史日期的市盈率 
         # 基于当前指数构成，计算过去某一天该指数市盈率TTM, 扣非市盈率TTM
         # param: index_code 指数代码，如 399997 或者 399997.XSHE
         # param: day, 日期， 如 2020-09-01
-        # 返回 指数市盈率TTM, 扣非市盈率TTM, 均保留3位小数,
+        # 返回 指数市盈率TTM, 扣非市盈率TTM, 均保留4位小数,
         # 例如，8.181 10.281
         pe_ttm = 0
         pe_ttm_nonrecurring = 0
@@ -52,6 +53,18 @@ class FundStrategyPEEstimation:
             if pe_info[0]["pe_ttm_nonrecurring"] >=0:
                 pe_ttm_nonrecurring += decimal.Decimal(pe_info[0]["pe_ttm_nonrecurring"])*decimal.Decimal(stock_info["weight"])/100
         return round(pe_ttm,4), round(pe_ttm_nonrecurring,4)
+    '''
+
+    def get_a_historical_date_index_PE(self, index_code, day):
+        # 从已算好的数据库中获取某个历史日期的市盈率
+        # param: index_code 指数代码，399997.XSHE
+        # param: day, 日期， 如 2020-09-01
+        # 返回 指数市盈率TTM, 扣非市盈率TTM
+        # 如 (Decimal('56.39008'), Decimal('53.32287'))
+        selecting_sql = "select pe_ttm, pe_ttm_nonrecurring from index_components_historical_estimations" \
+                        " where index_code = '%s' and historical_date = '%s' " % (index_code, day)
+        index_pe_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
+        return index_pe_info['pe_ttm'],index_pe_info['pe_ttm_nonrecurring']
 
     def is_a_number(self, input_str):
         # 判断字符串是否为数字，int，float，负数（如：1，-32.34，-45, 34.65）
@@ -297,8 +310,8 @@ if __name__ == '__main__':
     #print(pe_ttm, pe_ttm_nonrecurring)
     #result = go.calculate_real_time_index_pe_multiple_threads("399997.XSHE")
     #print(result)
-    msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
-    print(msg)
+    #msg = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
+    #print(msg)
     #index_all_historical_pe_info = go.cal_the_real_time_PE_percentile_in_hisstory("399997.XSHE")
     #print(index_all_historical_pe_info)
     #print(index_all_historical_pe_info)
@@ -310,6 +323,8 @@ if __name__ == '__main__':
     #print(result)
     #result = go.calculate_all_tracking_index_funds_real_time_PE_and_generate_msg()
     #print(result)
+    result = go.get_a_historical_date_index_PE('399997.XSHE','2021-10-22')
+    print(result)
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
