@@ -10,6 +10,7 @@ import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
 import data_miner.data_miner_common_index_operator as data_miner_common_index_operator
 import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
+import data_collector.data_collector_common_index_collector as data_collector_common_index_collector
 
 class FundStrategyPBEstimation:
     # 指数基金策略，市净率率估值法
@@ -158,7 +159,7 @@ class FundStrategyPBEstimation:
         log_msg = '已获取 ' + index_name + ' 实时 PB'
         custom_logger.CustomLogger().log_writter(log_msg, 'info')
 
-        return round(self.index_real_time_pb,4)
+        return round(self.index_real_time_pb,5)
 
     def get_last_trading_day_PB(self, index_code):
         # 获取当前指数上一个交易日的  市净率 和 扣商誉市净率
@@ -176,7 +177,7 @@ class FundStrategyPBEstimation:
         # 整体市净率除以有效权重得到有效市净率
         selecting_sql = "select pb/(pb_effective_weight/100) as pb, pb_wo_gw/(pb_wo_gw_effective_weight/100) as pb_wo_gw from " \
                         "index_components_historical_estimations where index_code = '%s' and historical_date = '%s'" \
-                        "order by pb" % (index_code, the_last_trading_date)
+                        % (index_code, the_last_trading_date)
         # index_pb_info 如 {'pb': Decimal('16.581174467'), 'pb_wo_gw': Decimal('16.616582865')}
         index_pb_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
         # 如果pe_info为空
@@ -188,8 +189,86 @@ class FundStrategyPBEstimation:
             custom_logger.CustomLogger().log_writter(log_msg, 'error')
             return (0,0)
 
-    def calculate_all_tracking_index_funds_real_time_PB_and_generate_msg(self):
-        # 计算所有指数基金的实时市净率
+    def cal_the_PB_percentile_in_history(self, index_code):
+        # 获取当前指数的实时市净率， 并计算当前实时PB在历史上的百分位水平，预估扣商誉市净率，历史百分位，同比上个交易日涨跌幅
+        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
+        # return: 当前指数的实时PB， 在历史上的百分位水平，预估的实时扣商誉市净率，历史百分位，同比上个交易日涨跌幅
+        #         如 [Decimal('1.0617'), 0.0063, Decimal('1.1857'), 0.0237, Decimal('1.96')]
+
+        # 返回的字段列表
+        result_list = []
+
+        # 获取指数历史上所有日期的市净率 和 扣商誉市净率
+        # 整体市净率除以有效权重得到有效市净率
+        selecting_sql = "select pb/(pb_effective_weight/100) as pb, pb_wo_gw/(pb_wo_gw_effective_weight/100) as pb_wo_gw" \
+                        ", historical_date from index_components_historical_estimations where index_code = '%s' " \
+                        "order by pb/(pb_effective_weight/100)" %(index_code)
+        # {'pb': Decimal('2.534098060'), 'pb_wo_gw': Decimal('2.540534756'), 'historical_date': datetime.date(2014, 5, 20)}, {'pb': Decimal('2.538920014'), 'pb_wo_gw': Decimal('2.545312165'), 'historical_date': datetime.date(2014, 6, 4)},,,,]
+        index_all_historical_pb_info_list = db_operator.DBOperator().select_all("aggregated_data", selecting_sql)
+
+        pb_list = []
+        pb_wo_gw_list = []
+        # 获取 历史上 市净率 和 扣商誉市净率 的列表，由小到大排序
+        for info_unit in index_all_historical_pb_info_list:
+            # pb_list已经是由小到大排序的
+            pb_list.append(info_unit["pb"])
+            pb_wo_gw_list.append(info_unit["pb_wo_gw"])
+
+        # 扣商誉市净率，由小到大排序
+        pb_wo_gw_list.sort()
+        # 获取实时的有效市净率
+        index_real_time_effective_pb = self.calculate_real_time_index_pb_multiple_threads(index_code)
+        # 返回结果，添加 当前指数的实时市净率
+        result_list.append(index_real_time_effective_pb)
+
+        # 返回结果，添加 当前指数的实时市净率在历史上的百分位
+        # 如果历史上最小的市净率值都大于当前的实时值，即处于 0%
+        if (pb_list[0] >= index_real_time_effective_pb):
+            result_list.append(0)
+        # 如果历史上最大的市净率值都小于当前的实时值，即处于 100%
+        elif (pb_list[len(pb_list) - 1] < index_real_time_effective_pb):
+            result_list.append(1)
+        for i in range(len(pb_list)):
+            # 如果历史上某个市净率值大于当前的实时值，则返回其位置
+            if(pb_list[i]>=index_real_time_effective_pb):
+                result_list.append(round(i / len(pb_list), 5))
+                break
+
+        # 获取上个交易日的收盘 市净率 和 扣商誉市净率
+        last_trading_day_pb, last_trading_day_pb_wo_gw= self.get_last_trading_day_PB(index_code)
+
+        # 获取指数最新的涨跌率
+        index_latest_increasement_decreasement_rate = data_collector_common_index_collector.DataCollectorCommonIndexCollector().get_index_latest_increasement_decreasement_rate(index_code)
+
+        # 根据市净率的同比涨跌幅，预估实时的扣商誉市净率
+        index_real_time_predictive_pb_wo_gw = round(last_trading_day_pb_wo_gw * (1 + index_latest_increasement_decreasement_rate/100), 5)
+
+        # 返回结果，添加 当前指数的预估的实时扣商誉市净率
+        result_list.append(index_real_time_predictive_pb_wo_gw)
+
+        # 返回结果，添加 当前指数的预估的实时扣商誉市净率在历史上的百分位
+        # 如果历史上最小的扣商誉市净率值都大于当前的实时预估值，即处于 0%
+        if (pb_wo_gw_list[0] >= index_real_time_predictive_pb_wo_gw):
+            result_list.append(0)
+        # 如果历史上最大的扣商誉市净率值都小于当前的实时预估值，即处于 100%
+        elif (pb_wo_gw_list[len(pb_wo_gw_list) - 1] < index_real_time_predictive_pb_wo_gw):
+            result_list.append(1)
+        else:
+            for i in range(len(pb_wo_gw_list)):
+                # 如果历史上某个扣商誉市净率值大于当前的实时预估值，则返回其位置
+                if (pb_wo_gw_list[i] >= index_real_time_predictive_pb_wo_gw):
+                    result_list.append(round(i / len(pb_wo_gw_list), 5))
+                    break
+
+        # 返回结果，添加 同比上个交易日涨跌幅
+        result_list.append(index_latest_increasement_decreasement_rate)
+
+        return result_list
+
+
+    #def calculate_all_tracking_index_funds_real_time_PB_and_generate_msg(self):
+    def generate_PB_strategy_msg(self):
+        # 组装市净率策略信息
         # return: 返回计算结果
 
         # 获取标的池中跟踪关注指数及他们的中文名称
@@ -197,19 +276,26 @@ class FundStrategyPBEstimation:
         #indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().get_indexes_and_their_names()
         indexes_and_their_names = read_collect_target_fund.ReadCollectTargetFund().index_valuated_by_method('pb')
 
-        # 获取当前日期
-        today = time.strftime("%Y-%m-%d", time.localtime())
-        #today = "2021-06-17"
+        # 拼接需要发送的指数实时市净率信息
+        indexes_and_real_time_PB_msg = '指数实时市净率和自2010年来历史百分位： \n\n'
+        for index_code in indexes_and_their_names:
+            # 获取 当前指数的实时市净率， 在历史上的百分位水平，预估的实时扣商誉市净率，历史百分位，同比上个交易日涨跌幅
+            # 如 [Decimal('1.0617'), 0.0063, Decimal('1.1857'), 0.0237, Decimal('1.96')]
+            pb_result_list = self.cal_the_PB_percentile_in_history(index_code)
+            # 生成 讯息
+            indexes_and_real_time_PB_msg += indexes_and_their_names[index_code] + ":  \n" + "同比上一个交易日: " + str(
+                pb_result_list[4]) + "%;" + "\n" + "--------" + "\n" + "实时市净率: " + \
+                                            str(pb_result_list[0]) + "\n" + "历史百分位: " + str(
+                decimal.Decimal(pb_result_list[1] * 100).quantize(decimal.Decimal('0.00'))) + "%;" + "\n" + \
+                                            "--------" + "\n" + "预估扣商誉市净率: " + str(
+                pb_result_list[2]) + "\n" + "历史百分位: " + \
+                                            str(decimal.Decimal(pb_result_list[3] * 100).quantize(
+                                                decimal.Decimal('0.00'))) + "%;" + "\n\n"
 
-        # 拼接需要发送的指数实时动态市净率信息
-        indexes_and_real_time_PB_msg = '指数实时动态市净率信息： \n\n'
-        for index in indexes_and_their_names:
-            # 获取 实时市净率
-            index_real_time_pb = self.calculate_real_time_index_pb_multiple_threads(index[:-5])
-            indexes_and_real_time_PB_msg += indexes_and_their_names[index] + ": "+ str(index_real_time_pb) + "\n"
-            # 日志记录
-            log_msg = 'Just got the '+indexes_and_their_names[index] + ' real time PB'
-            custom_logger.CustomLogger().log_writter(log_msg, 'debug')
+
+        # 日志记录
+        log_msg = '市净率策略执行完毕'
+        custom_logger.CustomLogger().log_writter(log_msg, 'debug')
         return indexes_and_real_time_PB_msg
 
 
@@ -223,11 +309,15 @@ if __name__ == '__main__':
     #print(result)
     #pb, pb_wo_gw = go.get_a_historical_date_index_PB("399997.XSHE", "2021-10-22")
     #print(pb, pb_wo_gw)
-    result = go.get_last_trading_day_PB("399997.XSHE")
-    print(result)
+    #result = go.get_last_trading_day_PB("399997.XSHE")
+    #print(result)
     #go.calculate_index_pb_in_a_period_time("399965",0.5)
-    #msg = go.calculate_all_tracking_index_funds_real_time_PB_and_generate_msg()
-    #print(msg)
+    #result = go.cal_the_PB_percentile_in_history("399997.XSHE")
+    #result = go.cal_the_PB_percentile_in_history("399965.XSHE")
+    #result = go.calculate_real_time_index_pb_multiple_threads("399965.XSHE")
+    #print(result)
+    msg = go.generate_PB_strategy_msg()
+    print(msg)
     time_end = time.time()
     print('time:')
     print(time_end - time_start)
