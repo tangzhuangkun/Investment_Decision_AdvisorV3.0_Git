@@ -167,7 +167,7 @@ class FundStrategyPEEstimation:
         custom_logger.CustomLogger().log_writter(log_msg, 'info')
 
         # （市盈率为正值的成分股）累加市盈率/（市盈率为正值的成分股）有效权重
-        return round(index_real_time_effective_pe_ttm,4)
+        return round(index_real_time_effective_pe_ttm,5)
 
     def get_last_trading_day_PE(self, index_code):
         # 获取当前指数上一个交易日的  PETTM 和 扣非市盈率
@@ -210,7 +210,7 @@ class FundStrategyPEEstimation:
         # 整体市盈率除以有效权重得到有效市盈率
         selecting_sql = "select pe_ttm/(pe_ttm_effective_weight/100) as pe_ttm, pe_ttm_nonrecurring/(pe_ttm_nonrecurring_effective_weight/100) as pe_ttm_nonrecurring, historical_date from " \
                         "index_components_historical_estimations where index_code = '%s' " \
-                        "order by pe_ttm" %(index_code)
+                        "order by pe_ttm/(pe_ttm_effective_weight/100)" %(index_code)
         index_all_historical_pe_info_list = db_operator.DBOperator().select_all("aggregated_data", selecting_sql)
 
         # 获取指数名称
@@ -232,16 +232,16 @@ class FundStrategyPEEstimation:
         result_list.append(index_real_time_effective_pe_ttm)
 
         # 返回结果，添加 当前指数的实时PETTM在历史上的百分位
-        # 如果历史上最小的动态市盈率值都大于当前的实时值
+        # 如果历史上最小的动态市盈率值都大于当前的实时值，即处于 0%
         if (pe_ttm_list[0] >= index_real_time_effective_pe_ttm):
             result_list.append(0)
-        # 如果历史上最大的动态市盈率值都小于当前的实时值
+        # 如果历史上最大的动态市盈率值都小于当前的实时值，即处于 100%
         elif (pe_ttm_list[len(pe_ttm_list) - 1] < index_real_time_effective_pe_ttm):
             result_list.append(1)
         for i in range(len(pe_ttm_list)):
             # 如果历史上某个动态市盈率值大于当前的实时值，则返回其位置
             if(pe_ttm_list[i]>=index_real_time_effective_pe_ttm):
-                result_list.append(round(i / len(pe_ttm_list), 4))
+                result_list.append(round(i / len(pe_ttm_list), 5))
                 break
 
         # 获取上个交易日的收盘PETTM，扣非市盈率
@@ -251,23 +251,23 @@ class FundStrategyPEEstimation:
         index_latest_increasement_decreasement_rate = data_collector_common_index_collector.DataCollectorCommonIndexCollector().get_index_latest_increasement_decreasement_rate(index_code)
 
         # 根据PETTM的同比涨跌幅，预估实时的扣非市盈率
-        index_real_time_predictive_pe_ttm_nonrecurring = round(last_trading_day_pe_ttm_nonrecurring * (1 + index_latest_increasement_decreasement_rate/100), 4)
+        index_real_time_predictive_pe_ttm_nonrecurring = round(last_trading_day_pe_ttm_nonrecurring * (1 + index_latest_increasement_decreasement_rate/100), 5)
 
         # 返回结果，添加 当前指数的预估的实时扣非市盈率
         result_list.append(index_real_time_predictive_pe_ttm_nonrecurring)
 
         # 返回结果，添加 当前指数的预估的实时扣非市盈率在历史上的百分位
-        # 如果历史上最小的扣非市盈率值都大于当前的实时预估值
+        # 如果历史上最小的扣非市盈率值都大于当前的实时预估值，即处于 0%
         if (pe_ttm_nonrecurring_list[0] >= index_real_time_predictive_pe_ttm_nonrecurring):
             result_list.append(0)
-        # 如果历史上最大的扣非市盈率值都小于当前的实时预估值
+        # 如果历史上最大的扣非市盈率值都小于当前的实时预估值，即处于 100%
         elif (pe_ttm_nonrecurring_list[len(pe_ttm_nonrecurring_list) - 1] < index_real_time_predictive_pe_ttm_nonrecurring):
             result_list.append(1)
         else:
             for i in range(len(pe_ttm_nonrecurring_list)):
                 # 如果历史上某个扣非市盈率值大于当前的实时预估值，则返回其位置
                 if (pe_ttm_nonrecurring_list[i] >= index_real_time_predictive_pe_ttm_nonrecurring):
-                    result_list.append(round(i / len(pe_ttm_nonrecurring_list), 4))
+                    result_list.append(round(i / len(pe_ttm_nonrecurring_list), 5))
                     break
 
         # 返回结果，添加 同比上个交易日涨跌幅
