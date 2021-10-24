@@ -9,6 +9,7 @@ import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
 import data_miner.data_miner_common_index_operator as data_miner_common_index_operator
+import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
 
 class FundStrategyPBEstimation:
     # 指数基金策略，市净率率估值法
@@ -150,7 +151,42 @@ class FundStrategyPBEstimation:
         # 整体市净率除以100，因为之前的权重没有除以100
         self.index_real_time_pb = self.index_real_time_pb / 100
 
+        # 获取指数名称
+        index_name = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_name(index_code)
+
+        # 日志记录
+        log_msg = '已获取 ' + index_name + ' 实时 PB'
+        custom_logger.CustomLogger().log_writter(log_msg, 'info')
+
         return round(self.index_real_time_pb,4)
+
+    def get_last_trading_day_PB(self, index_code):
+        # 获取当前指数上一个交易日的  市净率 和 扣商誉市净率
+        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
+        # return： 如果有值，则返回tuple，( PB , 扣商誉市净率)
+        #          如： (Decimal('16.581174467'), Decimal('16.616582865'))
+        #          如果无值，则返回tuple，(0, 0)
+
+        # 获取当前日期
+        today = time.strftime("%Y-%m-%d", time.localtime())
+        #today = "2021-06-17"
+        the_last_trading_date = data_miner_common_db_operator.DataMinerCommonDBOperation().get_the_last_trading_date(today)
+
+        # 获取指数上一个交易日的市净率 和 扣商誉市净率
+        # 整体市净率除以有效权重得到有效市净率
+        selecting_sql = "select pb/(pb_effective_weight/100) as pb, pb_wo_gw/(pb_wo_gw_effective_weight/100) as pb_wo_gw from " \
+                        "index_components_historical_estimations where index_code = '%s' and historical_date = '%s'" \
+                        "order by pb" % (index_code, the_last_trading_date)
+        # index_pb_info 如 {'pb': Decimal('16.581174467'), 'pb_wo_gw': Decimal('16.616582865')}
+        index_pb_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
+        # 如果pe_info为空
+        if index_pb_info is not None:
+            return (index_pb_info["pb"],index_pb_info["pb_wo_gw"])
+        else:
+            # 日志记录
+            log_msg = "无法获取日期 " + today +" 的上一个交易日 "+ the_last_trading_date+" 的市净率 和 扣商誉市净率数据"
+            custom_logger.CustomLogger().log_writter(log_msg, 'error')
+            return (0,0)
 
     def calculate_all_tracking_index_funds_real_time_PB_and_generate_msg(self):
         # 计算所有指数基金的实时市净率
@@ -185,8 +221,10 @@ if __name__ == '__main__':
     #print(result)
     #result = go.get_stock_historical_pb("000002", "万科A", "2020-05-24")
     #print(result)
-    pb, pb_wo_gw = go.get_a_historical_date_index_PB("399997.XSHE", "2021-10-22")
-    print(pb, pb_wo_gw)
+    #pb, pb_wo_gw = go.get_a_historical_date_index_PB("399997.XSHE", "2021-10-22")
+    #print(pb, pb_wo_gw)
+    result = go.get_last_trading_day_PB("399997.XSHE")
+    print(result)
     #go.calculate_index_pb_in_a_period_time("399965",0.5)
     #msg = go.calculate_all_tracking_index_funds_real_time_PB_and_generate_msg()
     #print(msg)
