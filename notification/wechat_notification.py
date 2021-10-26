@@ -44,10 +44,12 @@ class WechatNotification:
 
         # 获取虾推啥token，决定需要推送给哪些人
         tokens = notification_account.xtuis_tokens
+        # 获取当前时间
+        today = time.strftime("%Y-%m-%d", time.localtime())
 
         # 推送给所有人
         for token in tokens:
-            self.push_customized_content(token, object, send_content)
+            self.push_customized_content(token, today+object, send_content)
 
 
 if __name__ == '__main__':
@@ -55,6 +57,6 @@ if __name__ == '__main__':
     go = WechatNotification()
     # 获取当前时间
     today = time.strftime("%Y-%m-%d", time.localtime())
-    go.push_to_all( today+' 基金行情分析', 'hello FC')
+    go.push_to_all(' 基金行情分析test', 'good night FC')
     time_end = time.time()
     print(time_end-time_start)
