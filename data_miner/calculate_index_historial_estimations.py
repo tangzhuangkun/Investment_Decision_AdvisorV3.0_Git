@@ -28,11 +28,13 @@ class CalculateIndexHistoricalEstimations:
             custom_logger.CustomLogger().log_writter(msg, 'error')
 
 
-    def read_run_cal_index_his_estimation_file(self):
+    def run_file_to_create_middle_views(self):
         # 读取并运行mysql脚本
+        print("enter create_middle_views")
 
         # 运行 创建中间层
-        with open('create_middle_views.sql', encoding='utf-8', mode='r') as view_f:
+        # 相对路径，是相对于程序执行命令所在的目录，./ 表示的不是脚本所在的目录，而是程序执行命令所在的目录，也就是所谓的当前目录。
+        with open("../data_miner/create_middle_views.sql", encoding='utf-8', mode='r') as view_f:
             # 分割sql文件中的执行语句，挨句执行
             sql_list = view_f.read().split(';')[:-1]
             for x in sql_list:
@@ -57,9 +59,12 @@ class CalculateIndexHistoricalEstimations:
                     msg = '失败，无法成功创建中间视图层' + '  ' + str(e)
                     custom_logger.CustomLogger().log_writter(msg, 'error')
 
-
+    def run_file_to_cal_index_his_estimation(self):
         # 运行计算脚本
-        with open('cal_index_his_estimation.sql', encoding='utf-8', mode='r') as f:
+
+        print("enter cal_index_his_estimation")
+        # 相对路径，是相对于程序执行命令所在的目录，./ 表示的不是脚本所在的目录，而是程序执行命令所在的目录，也就是所谓的当前目录。
+        with open("../data_miner/cal_index_his_estimation.sql", encoding='utf-8', mode='r') as f:
             # 读取整个sql文件
 
             # 分割sql文件中的执行语句，挨句执行
@@ -88,7 +93,8 @@ class CalculateIndexHistoricalEstimations:
 
     def main(self):
         self.truncate_table()
-        self.read_run_cal_index_his_estimation_file()
+        self.run_file_to_create_middle_views()
+        self.run_file_to_cal_index_his_estimation()
 
 if __name__ == '__main__':
     time_start = time.time()
