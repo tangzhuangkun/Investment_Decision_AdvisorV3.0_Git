@@ -238,11 +238,13 @@ class FundStrategyPEEstimation:
         # 如果历史上最大的动态市盈率值都小于当前的实时值，即处于 100%
         elif (pe_ttm_list[len(pe_ttm_list) - 1] < index_real_time_effective_pe_ttm):
             result_list.append(1)
-        for i in range(len(pe_ttm_list)):
-            # 如果历史上某个动态市盈率值大于当前的实时值，则返回其位置
-            if(pe_ttm_list[i]>=index_real_time_effective_pe_ttm):
-                result_list.append(round(i / len(pe_ttm_list), 5))
-                break
+        # 如果处于 0% - 100%
+        else:
+            for i in range(len(pe_ttm_list)):
+                # 如果历史上某个动态市盈率值大于当前的实时值，则返回其位置
+                if(pe_ttm_list[i]>=index_real_time_effective_pe_ttm):
+                    result_list.append(round(i / len(pe_ttm_list), 5))
+                    break
 
         # 获取上个交易日的收盘PETTM，扣非市盈率
         last_trading_day_pe_ttm, last_trading_day_pe_ttm_nonrecurring = self.get_last_trading_day_PE(index_code)

@@ -228,11 +228,12 @@ class FundStrategyPBEstimation:
         # 如果历史上最大的市净率值都小于当前的实时值，即处于 100%
         elif (pb_list[len(pb_list) - 1] < index_real_time_effective_pb):
             result_list.append(1)
-        for i in range(len(pb_list)):
-            # 如果历史上某个市净率值大于当前的实时值，则返回其位置
-            if(pb_list[i]>=index_real_time_effective_pb):
-                result_list.append(round(i / len(pb_list), 5))
-                break
+        else:
+            for i in range(len(pb_list)):
+                # 如果历史上某个市净率值大于当前的实时值，则返回其位置
+                if(pb_list[i]>=index_real_time_effective_pb):
+                    result_list.append(round(i / len(pb_list), 5))
+                    break
 
         # 获取上个交易日的收盘 市净率 和 扣商誉市净率
         last_trading_day_pb, last_trading_day_pb_wo_gw= self.get_last_trading_day_PB(index_code)
@@ -253,6 +254,7 @@ class FundStrategyPBEstimation:
         # 如果历史上最大的扣商誉市净率值都小于当前的实时预估值，即处于 100%
         elif (pb_wo_gw_list[len(pb_wo_gw_list) - 1] < index_real_time_predictive_pb_wo_gw):
             result_list.append(1)
+        # 如果处于 0% - 100%
         else:
             for i in range(len(pb_wo_gw_list)):
                 # 如果历史上某个扣商誉市净率值大于当前的实时预估值，则返回其位置
