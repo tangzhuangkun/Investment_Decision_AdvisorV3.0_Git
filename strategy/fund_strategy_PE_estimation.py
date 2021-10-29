@@ -15,6 +15,8 @@ import data_collector.data_collector_common_index_collector as data_collector_co
 
 class FundStrategyPEEstimation:
     # 指数基金策略，市盈率估值法
+    # 用于非周期性行业
+    # 频率：每个交易日，盘中
 
     def __init__(self):
         pass
