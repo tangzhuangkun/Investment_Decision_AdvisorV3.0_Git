@@ -28,10 +28,10 @@ class Scheduler:
 
 
 
-		#########  盘前  #########
+		#########  盘前(00:00-9:29)  #########
 
 
-		#########  盘中  #########
+		#########  盘中(9:30-15:00)  #########
 
 		try:
 			# 每日14：39检查已存储的IP的可用性，删除不可用的
@@ -52,7 +52,7 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每个交易日14：49计算并通过邮件发送指数的动态估值信息
+			# 每个交易日14：49计算并通过邮件/微信发送指数的动态估值信息
 			scheduler.add_job(func=notification_plan.NotificationPlan().
 							  estimation_notification,
 							  trigger='cron',
@@ -65,7 +65,7 @@ class Scheduler:
 
 
 
-		#########  盘后  #########
+		#########  盘后(15:00-23:59)  #########
 		try:
 			# 每个交易日18：01收集交易日信息
 			scheduler.add_job(func=collect_trading_days.CollectTradingDays().save_all_trading_days_into_db,
