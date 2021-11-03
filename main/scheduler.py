@@ -77,16 +77,6 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每个交易日18：02收集中证官网指数的最新构成信息
-			scheduler.add_job(func=collect_csindex_top_10_stocks_weight_daily.CollectCSIndexTop10StocksWeightDaily().main,
-							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=2,
-							  id='weekdayCollectCSIndexTop10StocksWeight')
-		except Exception as e:
-			# 抛错
-			custom_logger.CustomLogger().log_writter(e, 'error')
-
-		try:
 			# 每个交易日18：04收集所需的股票的估值信息
 			scheduler.add_job(func=collect_stock_historical_estimation_info.CollectStockHistoricalEstimationInfo().main, args=('2021-01-02',),
 							  trigger='cron',
@@ -97,10 +87,20 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每个交易日18：10计算指数估值
+			# 每个交易日20：05收集中证官网指数的最新构成信息
+			scheduler.add_job(func=collect_csindex_top_10_stocks_weight_daily.CollectCSIndexTop10StocksWeightDaily().main,
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=5,
+							  id='weekdayCollectCSIndexTop10StocksWeight')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+		try:
+			# 每个交易日20：08计算指数估值
 			scheduler.add_job(func=calculate_index_historial_estimations.CalculateIndexHistoricalEstimations().main,
 							  trigger='cron',
-							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=10,
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=8,
 							  id='weekdayCalculateIndexHistoricalEstimations')
 		except Exception as e:
 			# 抛错
@@ -119,15 +119,13 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 
-
-
 		#####################      每月运行    ###################################################
 
 		try:
-			# 每月初（1-30号），每天01：01收集所跟踪关注指数的成分及权重
+			# 每月初（1-10号），每天20：01收集所跟踪关注指数的成分及权重
 			scheduler.add_job(func=collect_index_weight.CollectIndexWeight().collect_tracking_index_weight,
-							  trigger='cron', month='1-12', day='1-30',
-							  hour=1, minute=1, id='monthly1To10CollectIndexStocksAndWeight')
+							  trigger='cron', month='1-12', day='1-10',
+							  hour=20, minute=1, id='monthly1To10CollectIndexStocksAndWeight')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
