@@ -165,6 +165,34 @@ COMMENT '交易日期';
 
 
 
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，chn_gov_bonds_rates_di，用于存储 中国国债到期收益率，日增表*/
+
+USE financial_data;
+CREATE TABLE IF NOT EXISTS `chn_gov_bonds_rates_di`(
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`1m` VARCHAR(20) NOT NULL COMMENT '1月期限到期利率',
+	`2m` VARCHAR(20) DEFAULT NULL COMMENT '2月期限到期利率',
+	`3m` VARCHAR(20) DEFAULT NULL COMMENT '3月期限到期利率',
+	`6m` VARCHAR(20) DEFAULT NULL COMMENT '6月期限到期利率',
+	`9m` VARCHAR(20) DEFAULT NULL COMMENT '9月期限到期利率',
+	`1y` VARCHAR(20) DEFAULT NULL COMMENT '1年期限到期利率',
+	`2y` VARCHAR(20) DEFAULT NULL COMMENT '2年期限到期利率',
+	`3y` VARCHAR(20) DEFAULT NULL COMMENT '3年期限到期利率',
+	`5y` VARCHAR(20) DEFAULT NULL COMMENT '5年期限到期利率',
+	`7y` VARCHAR(20) DEFAULT NULL COMMENT '7年期限到期利率',
+	`10y` VARCHAR(20) DEFAULT NULL COMMENT '10年期限到期利率',
+	`p_day` DATE NOT NULL COMMENT '日期',
+	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
+	UNIQUE INDEX(p_day),
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '中国国债到期收益率';
+
+
+
 
 
 /* --------- user：investor1 ------ */
