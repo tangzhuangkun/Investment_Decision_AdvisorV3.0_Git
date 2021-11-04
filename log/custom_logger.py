@@ -48,22 +48,23 @@ class CustomLogger:
 			# 为logger添加的日志处理器
 			logger.addHandler(fh)
 			logger.addHandler(ch)
-			
-		# 输出不同级别的log,严重级别依次递增
-		if lev=='debug':
-			# 如果级别为debug，略过
-			#logger.debug("	DEBUG  "+working_dir+"  "+msg+"\n")
-			pass
-		elif lev=='info':
-			logger.info("	INFO  "+working_dir+"  "+msg+"\n")
-		elif lev=='warning':
-			logger.warning("	WARNING  "+working_dir+"  "+msg+"\n")
-		elif lev=='error':
-			logger.error("	ERROR  "+working_dir+"  "+msg+"\n")
-		elif lev=='critical':
-			logger.critical("	CRITICAL  "+working_dir+"  "+msg+"\n")
+
 		else:
-			print('WRONG LEVEL')
+			# 输出不同级别的log,严重级别依次递增
+			if lev=='debug':
+				# 如果级别为debug，略过
+				#logger.debug("	DEBUG  "+working_dir+"  "+msg+"\n")
+				pass
+			elif lev=='info':
+				logger.info("	INFO  "+working_dir+"  "+msg+"\n")
+			elif lev=='warning':
+				logger.warning("	WARNING  "+working_dir+"  "+msg+"\n")
+			elif lev=='error':
+				logger.error("	ERROR  "+working_dir+"  "+msg+"\n")
+			elif lev=='critical':
+				logger.critical("	CRITICAL  "+working_dir+"  "+msg+"\n")
+			else:
+				print('WRONG LEVEL')
 	
 	
 	
