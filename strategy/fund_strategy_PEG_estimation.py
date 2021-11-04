@@ -8,6 +8,5 @@ class FundStrategyPEGEstimation:
     def __init__(self):
         pass
 
-    # 通过 joinquant get_fundamentals() 接口获取 净利润同比增长率，净利润环比增长率
-
-    # 通过joinquant接口  get_factor_effect(security, start_date, end_date, period, factor, group_num=5) 获取PEG 因子
+    # PEG = PE / (归母公司净利润(TTM)增长率 * 100) # 如果 PE 或 增长率为负，则为 nan
+    # PEG=  PE/（企业年盈利增长率*100）
