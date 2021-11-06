@@ -21,16 +21,16 @@ class CollectCHNGovBondsRates:
         # millis, 13位时间戳
         return time.strftime('%Y-%m-%d', time.localtime(millis / 1000))
 
-    def call_bonds_interface_to_collect_all_historical_data(self, startDay, endDay, isOnlyToday=0):
+    def call_bonds_interface_to_collect_all_historical_data(self, start_day, end_day, is_only_today=0):
         # 调用中国债券信息网接口,收集国债各到期品种的过往到期收益率
 
         # header，伪装的UA
         # proxy，伪装的IP
-        # startDay, 开始日期， 如 2021-11-01
-        # endDay, 结束日期， 如 2021-11-04（startDay和endDay不可相同）
-        # isOnlyToday,是否只收集今天，默认 否（0），选是（1）
+        # start_day, 开始日期， 如 2021-11-01
+        # end_day, 结束日期， 如 2021-11-04（start_day和end_day不可相同）
+        # is_only_today,是否只收集今天，默认 否（0），选是（1）
 
-        bonds_interface_address = "https://yield.chinabond.com.cn/cbweb-mn/yc/queryYz?bjlx=no&&dcq=0.083333,1m;0.166667,2m;0.25,3m;0.5,6m;0.75,9m;1,1y;2,2y;3,3y;5,5y;7,7y;10,10y;&&startTime="+startDay+"&&endTime="+endDay+"&&qxlx=0,&&yqqxN=N&&yqqxK=K&&par=day&&ycDefIds=2c9081e50a2f9606010a3068cae70001,&&locale=zh_CN"
+        bonds_interface_address = "https://yield.chinabond.com.cn/cbweb-mn/yc/queryYz?bjlx=no&&dcq=0.083333,1m;0.166667,2m;0.25,3m;0.5,6m;0.75,9m;1,1y;2,2y;3,3y;5,5y;7,7y;10,10y;&&startTime="+start_day+"&&endTime="+end_day+"&&qxlx=0,&&yqqxN=N&&yqqxK=K&&par=day&&ycDefIds=2c9081e50a2f9606010a3068cae70001,&&locale=zh_CN"
 
         # 解决报错 InsecureRequestWarning: Unverified HTTPS request is being made
         requests.packages.urllib3.disable_warnings()
@@ -58,7 +58,7 @@ class CollectCHNGovBondsRates:
             # 第一组到期信息，需要插入数据库
             if i == 0:
                 # 优先插入最新日期的数据
-                for j in range(len(data_json_list[i]["seriesData"]) - 1, -1+isOnlyToday, -1):
+                for j in range(len(data_json_list[i]["seriesData"]) - 1, -1+is_only_today, -1):
                     # 时间和利率信息如下
                     # [[1633622400000,1.776],[1633708800000,1.7659],,,]
                     trading_day = self.millisecond_to_time(data_json_list[i]["seriesData"][j][0])
@@ -78,7 +78,7 @@ class CollectCHNGovBondsRates:
             # 其它组到期信息，需要更新数据库
             else:
                 # 优先更新最新日期的数据
-                for j in range(len(data_json_list[i]["seriesData"]) - 1, -1+isOnlyToday, -1):
+                for j in range(len(data_json_list[i]["seriesData"]) - 1, -1+is_only_today, -1):
                     # 时间和利率信息如下
                     # [[1633622400000,1.776],[1633708800000,1.7659],,,]
                     trading_day = self.millisecond_to_time(data_json_list[i]["seriesData"][j][0])
@@ -114,7 +114,7 @@ class CollectCHNGovBondsRates:
 
         # 如果表格为空，收集从 2010-01-01至今的数据
         if selecting_result["total_rows"] == 0:
-            self.call_bonds_interface_to_collect_all_historical_data(startDay = "2010-01-01", endDay = self.today, isOnlyToday=0)
+            self.call_bonds_interface_to_collect_all_historical_data(start_day = "2010-01-01", end_day = self.today, is_only_today=0)
         else:
             # 获取中国国债到期收益率表chn_gov_bonds_rates_di已收集的最新交易日
             try:
@@ -123,20 +123,23 @@ class CollectCHNGovBondsRates:
                 # 查询
                 selecting_max_date = db_operator.DBOperator().select_one("financial_data", selecting_max_date_sql)
 
+                self.call_bonds_interface_to_collect_all_historical_data(start_day=str(selecting_max_date["max_day"]),
+                                                                         end_day=self.today, is_only_today=1)
+
             except Exception as e:
                 # 日志记录
                 msg = "无法从中国国债到期收益率表chn_gov_bonds_rates_di已收集的最新交易日信息 " + '  ' + str(e)
                 custom_logger.CustomLogger().log_writter(msg, 'error')
                 return None
 
-            self.call_bonds_interface_to_collect_all_historical_data(startDay = str(selecting_max_date["max_day"]), endDay = self.today, isOnlyToday=1)
+
 
 
 
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectCHNGovBondsRates()
-    #go.call_bonds_interface_to_collect_all_historical_data("2021-11-04","2021-11-05",isOnlyToday=1)
+    #go.call_bonds_interface_to_collect_all_historical_data("2021-11-04","2021-11-05",is_only_today=1)
     go.main()
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
