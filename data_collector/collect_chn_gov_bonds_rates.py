@@ -10,6 +10,7 @@ import database.db_operator as db_operator
 
 class CollectCHNGovBondsRates:
     # 从中国债券信息网收集 中国债券到期收益率
+    # 运行频率：每个交易日收盘后
 
     def __init__(self):
         # 获取当前时间
@@ -60,18 +61,18 @@ class CollectCHNGovBondsRates:
                 for j in range(len(data_json_list[i]["seriesData"]) - 1, -1+isOnlyToday, -1):
                     # 时间和利率信息如下
                     # [[1633622400000,1.776],[1633708800000,1.7659],,,]
-                    p_day = self.millisecond_to_time(data_json_list[i]["seriesData"][j][0])
+                    trading_day = self.millisecond_to_time(data_json_list[i]["seriesData"][j][0])
                     rate = data_json_list[i]["seriesData"][j][1]
                     try:
                         # 插入的SQL
-                        inserting_sql = "INSERT INTO chn_gov_bonds_rates_di (1m,p_day,submission_date)" \
-                                        "VALUES ('%s','%s','%s')" % (
-                                        rate,p_day,self.today)
+                        inserting_sql = "INSERT INTO chn_gov_bonds_rates_di (1m,trading_day,source,submission_date)" \
+                                        "VALUES ('%s','%s','%s','%s')" % (
+                                        rate,trading_day,'中国债券信息网',self.today)
                         db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                     except Exception as e:
                         # 日志记录
-                        msg = '收集国债到期收益率(1月期)， 插入 '+str(p_day)+'的数据 失败' + '  ' + str(e)
+                        msg = '收集国债到期收益率(1月期)， 插入 '+str(trading_day)+'的数据 失败' + '  ' + str(e)
                         custom_logger.CustomLogger().log_writter(msg, 'error')
 
             # 其它组到期信息，需要更新数据库
@@ -80,16 +81,16 @@ class CollectCHNGovBondsRates:
                 for j in range(len(data_json_list[i]["seriesData"]) - 1, -1+isOnlyToday, -1):
                     # 时间和利率信息如下
                     # [[1633622400000,1.776],[1633708800000,1.7659],,,]
-                    p_day = self.millisecond_to_time(data_json_list[i]["seriesData"][j][0])
+                    trading_day = self.millisecond_to_time(data_json_list[i]["seriesData"][j][0])
                     rate = data_json_list[i]["seriesData"][j][1]
                     try:
                         # 更新的SQL
-                        updating_sql = "UPDATE chn_gov_bonds_rates_di SET "+ term_order_dict[i]+" = '%s' where p_day = '%s'" % (rate, p_day)
+                        updating_sql = "UPDATE chn_gov_bonds_rates_di SET "+ term_order_dict[i]+" = '%s' WHERE trading_day = '%s' AND source = '%s' " % (rate, trading_day, '中国债券信息网')
                         db_operator.DBOperator().operate("update", "financial_data", updating_sql)
 
                     except Exception as e:
                         # 日志记录
-                        msg = '更新国债到期收益率('+term_order_dict[i] +'期)， 插入 '+str(p_day)+'的数据 失败' + '  ' + str(e)
+                        msg = '更新国债到期收益率('+term_order_dict[i] +'期)， 插入 '+str(trading_day)+'的数据 失败' + '  ' + str(e)
                         custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def main(self):
@@ -118,7 +119,7 @@ class CollectCHNGovBondsRates:
             # 获取中国国债到期收益率表chn_gov_bonds_rates_di已收集的最新交易日
             try:
                 # 查询sql
-                selecting_max_date_sql = "SELECT max(p_day) max_day FROM chn_gov_bonds_rates_di"
+                selecting_max_date_sql = "SELECT max(trading_day) max_day FROM chn_gov_bonds_rates_di"
                 # 查询
                 selecting_max_date = db_operator.DBOperator().select_one("financial_data", selecting_max_date_sql)
 
