@@ -1,5 +1,4 @@
-from datetime import datetime
-
+import datetime
 import requests
 import json
 import time
@@ -21,7 +20,7 @@ class CollectIndexEstimationFromLXR:
     def __init__(self):
 
         # 要从理杏仁采集估值的指数
-        self.index_code_name_dict = {"000300":"沪深300", "1000002":"沪深A股"}
+        self.index_code_name_dict = { "1000002":"沪深A股","000300":"沪深300"}
         # 获取当前时间
         self.today = time.strftime("%Y-%m-%d", time.localtime())
 
@@ -292,7 +291,7 @@ class CollectIndexEstimationFromLXR:
                 # 数据库中的已收集的最大日期
                 max_trading_day = selecting_max_date["max_day"]
                 # 今天的日期
-                current_day = datetime.today().date()
+                current_day = datetime.datetime.today().date()
                 # 相差天数
                 day_diff = (current_day - max_trading_day).days
 
@@ -301,7 +300,8 @@ class CollectIndexEstimationFromLXR:
                     self.collect_index_estimation_in_a_special_date(self.today)
                 # 日期相差2天及以上
                 else:
-                    self.collect_index_estimation_in_a_period_time(start_date = str(selecting_max_date["max_day"]), end_date = self.today)
+                    self.collect_index_estimation_in_a_period_time(start_date = str(selecting_max_date["max_day"]+datetime.timedelta(days=1)), end_date = self.today)
+
 
             except Exception as e:
                 # 日志记录
