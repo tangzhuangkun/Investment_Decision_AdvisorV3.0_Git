@@ -258,7 +258,7 @@ class CollectIndexEstimationFromLXR:
             dyr_median = piece['dyr']['median']
 
             # 存入数据库
-            inserting_sql = "INSERT INTO index_estimation_from_lxr_di (index_code, index_name, pe_ttm_mcw,pe_ttm_ew,pe_ttm_ewpvo,pe_ttm_avg,pe_ttm_median,pb_mcw,pb_ew,pb_ewpvo,pb_avg,pb_median,ps_ttm_mcw,ps_ttm_ew,ps_ttm_ewpvo,ps_ttm_avg,ps_ttm_median,dyr_mcw,dyr_ew,dyr_ewpvo,dyr_avg,dyr_median,trading_date,source,submission_date) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s' )" % (index_code,index_name,pe_ttm_mcw,pe_ttm_ew,pe_ttm_ewpvo,pe_ttm_avg,pe_ttm_median,pb_mcw,pb_ew,pb_ewpvo,pb_avg,pb_median,ps_ttm_mcw,ps_ttm_ew,ps_ttm_ewpvo,ps_ttm_avg,ps_ttm_median,dyr_mcw,dyr_ew,dyr_ewpvo,dyr_avg,dyr_median,trading_date,'理杏仁',self.today)
+            inserting_sql = "INSERT INTO index_estimation_from_lxr_di (index_code, index_name, trading_date,pe_ttm_mcw,pe_ttm_ew,pe_ttm_ewpvo,pe_ttm_avg,pe_ttm_median,pb_mcw,pb_ew,pb_ewpvo,pb_avg,pb_median,ps_ttm_mcw,ps_ttm_ew,ps_ttm_ewpvo,ps_ttm_avg,ps_ttm_median,dyr_mcw,dyr_ew,dyr_ewpvo,dyr_avg,dyr_median,source,submission_date) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s' )" % (index_code,index_name,trading_date,pe_ttm_mcw,pe_ttm_ew,pe_ttm_ewpvo,pe_ttm_avg,pe_ttm_median,pb_mcw,pb_ew,pb_ewpvo,pb_avg,pb_median,ps_ttm_mcw,ps_ttm_ew,ps_ttm_ewpvo,ps_ttm_avg,ps_ttm_median,dyr_mcw,dyr_ew,dyr_ewpvo,dyr_avg,dyr_median,'理杏仁',self.today)
             db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
 
