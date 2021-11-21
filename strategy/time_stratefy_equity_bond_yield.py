@@ -12,8 +12,8 @@ class TimeStrategyEquityBondYield:
 
     '''
     steps
-    1、收集政府债券利率历史数据，1年，3年，5年，10年期利率
-    2、收集沪深300 历史市盈率
+    1、收集政府债券利率历史数据，1年，3年，5年，10年期利率， done
+    2、收集沪深300 历史市盈率, done
     3、收集沪深300成分股
     4、盘中，采集债券实时利率
     5、盘中，采集沪深300实时市盈率
@@ -52,27 +52,6 @@ class TimeStrategyEquityBondYield:
     
     '''
 
-
-
-    '''
-    
-        -- 创建 VIEW 用于存储 历史所有的估值比
-        create view stock_bond_ratio as
-        select pe, round(1/pe,6) as stock_rate, 10y, round(10y/100,6) as bond_rate,  round(1/pe,6)/round(10y/100,6) as ratio , trading_date
-        from 
-        (
-        (select index_code, index_name, pe_ttm_mcw as pe,trading_date
-        from index_estimation_from_lxr_di
-        where index_code = '000300'
-        order by trading_date desc) a
-        join 
-        (select 10y, trading_day
-        from chn_gov_bonds_rates_di cgbrd
-        order by trading_day desc) b
-        on a.trading_date = b.trading_day);
-    
-    
-    '''
 
 
     # 股债比大于3，

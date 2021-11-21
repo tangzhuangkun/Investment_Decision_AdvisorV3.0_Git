@@ -292,4 +292,25 @@ COMMENT '每日股债比';
 
 
 
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，CSI_300_index_stocks，用于存储 中证沪深300指数的成分股*/
 
+USE financial_data;
+CREATE TABLE IF NOT EXISTS `CSI_300_index_stocks`(
+	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
+	`index_code_global` VARCHAR(12) NOT NULL COMMENT '指数代码,含交易所',
+	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
+	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
+	`stock_code_global` VARCHAR(20) DEFAULT NULL COMMENT '股票全球代码',
+	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
+	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`stock_exchange_location` VARCHAR(20) DEFAULT NULL COMMENT '股票上市地',
+	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
+	`index_company` VARCHAR(20) DEFAULT NULL COMMENT '指数开发公司',
+	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
+	UNIQUE INDEX (index_code, stock_code),
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '沪深300指数的成分股';
