@@ -284,7 +284,6 @@ CREATE TABLE IF NOT EXISTS `stock_bond_ratio_di`(
 	`stock_yield_rate` DECIMAL(9,6) DEFAULT NULL COMMENT '股票收益率，市盈率倒数',
 	`10y_bond_rate` DECIMAL(9,6) DEFAULT NULL COMMENT '10年期国债收益率',
 	`ratio` DECIMAL(13,10) DEFAULT NULL COMMENT '股债收益比',
-	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
 	UNIQUE INDEX (index_code, trading_date),
 	PRIMARY KEY ( `id` )
