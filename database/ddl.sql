@@ -203,6 +203,7 @@ CREATE TABLE IF NOT EXISTS `index_estimation_from_lxr_di`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code` VARCHAR(20) NOT NULL COMMENT '指数代码',
 	`index_name` VARCHAR(20) NOT NULL COMMENT '指数名称',
+	`trading_date` DATE NOT NULL COMMENT '交易日期',
 	`pe_ttm_mcw` DECIMAL(22,17) NOT NULL COMMENT '滚动市盈率市值加权，所有样品公司市值之和 / 所有样品公司归属于母公司净利润之和',
 	`pe_ttm_ew` DECIMAL(22,17) NOT NULL COMMENT '滚动市盈率等权，算出所有公司的PE-TTM，然后通过(n / ∑(1 / PE.i))计算出来',
 	`pe_ttm_ewpvo` DECIMAL(22,17) NOT NULL COMMENT '滚动市盈率正数等权，剔除所有不赚钱的企业',
@@ -223,7 +224,6 @@ CREATE TABLE IF NOT EXISTS `index_estimation_from_lxr_di`(
 	`dyr_ewpvo` DECIMAL(23,20) NOT NULL COMMENT '股息率正数等权，剔除所有不分红的企业',
 	`dyr_avg` DECIMAL(23,20) NOT NULL COMMENT '股息率平均值',
 	`dyr_median` DECIMAL(23,20) NOT NULL COMMENT '股息率中位数，算出所有样品公司的股息率，然后排序，然后取最中间的那个数；如果是偶数，那么取中间的两个，加和求半',
-	`trading_date` DATE NOT NULL COMMENT '交易日期',
 	`source` VARCHAR(10) NOT NULL COMMENT '数据来源',
 	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
@@ -267,6 +267,29 @@ CREATE TABLE IF NOT EXISTS `index_components_historical_estimations`(
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '基于指数最新成分股及权重得到的历史每日估值';
+
+
+/* --------- user：investor1 ------ */
+/* --------- db：aggregated_data ------ */
+/*创建一个表，stock_bond_ratio_di，用于存储 每日股债比*/
+
+USE aggregated_data;
+DROP TABLE IF EXISTS `stock_bond_ratio_di`;
+CREATE TABLE IF NOT EXISTS `stock_bond_ratio_di`(
+	`id` int(10) NOT NULL AUTO_INCREMENT,
+	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
+	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
+	`trading_date` DATE NOT NULL COMMENT '交易日期',
+	`pe` DECIMAL(22,17) DEFAULT NULL COMMENT '市盈率',
+	`stock_yield_rate` DECIMAL(9,6) DEFAULT NULL COMMENT '股票收益率，市盈率倒数',
+	`10y_bond_rate` DECIMAL(9,6) DEFAULT NULL COMMENT '10年期国债收益率',
+	`ratio` DECIMAL(13,10) DEFAULT NULL COMMENT '股债收益比',
+	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
+	UNIQUE INDEX (index_code, trading_date),
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '每日股债比';
 
 
 
