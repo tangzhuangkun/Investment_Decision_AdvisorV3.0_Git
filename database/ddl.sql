@@ -308,9 +308,9 @@ CREATE TABLE IF NOT EXISTS `CSI_300_index_stocks`(
 	`stock_exchange_location` VARCHAR(20) DEFAULT NULL COMMENT '股票上市地',
 	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
 	`index_company` VARCHAR(20) DEFAULT NULL COMMENT '指数开发公司',
-	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
+	`p_month` DATE DEFAULT NULL COMMENT '所属月份',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
-	UNIQUE INDEX (index_code, stock_code),
+	UNIQUE INDEX (index_code, stock_code,p_month),
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '沪深300指数的成分股';
