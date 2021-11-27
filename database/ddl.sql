@@ -297,6 +297,7 @@ COMMENT '每日股债比';
 /*创建一个表，CSI_300_index_stocks，用于存储 中证沪深300指数的成分股*/
 
 USE financial_data;
+DROP TABLE IF EXISTS `CSI_300_index_stocks`;
 CREATE TABLE IF NOT EXISTS `CSI_300_index_stocks`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code_global` VARCHAR(12) NOT NULL COMMENT '指数代码,含交易所',
@@ -305,12 +306,22 @@ CREATE TABLE IF NOT EXISTS `CSI_300_index_stocks`(
 	`stock_code_global` VARCHAR(20) DEFAULT NULL COMMENT '股票全球代码',
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`stock_weight` DECIMAL(3,2) DEFAULT NULL COMMENT '股票权重',
 	`stock_exchange_location` VARCHAR(20) DEFAULT NULL COMMENT '股票上市地',
+	`current_price` DECIMAL(12,2) DEFAULT NULL COMMENT '最新价格',
+	`eps` DECIMAL(12,2) DEFAULT NULL COMMENT '每股收益',
+	`bps` DECIMAL(12,2) DEFAULT NULL COMMENT '每股净资产',
+	`roe` DECIMAL(12,2) DEFAULT NULL COMMENT '净资产收益率',
+	`total_shares` DECIMAL(12,2) DEFAULT NULL COMMENT '总股本（亿股）',
+	`free_shares` DECIMAL(12,2) DEFAULT NULL COMMENT '流通股本（亿股）',
+	`free_cap` DECIMAL(12,2) DEFAULT NULL COMMENT '流通市值（亿元）',
+	`industry` VARCHAR(20) DEFAULT NULL COMMENT '所属行业',
+	`region` VARCHAR(20) DEFAULT NULL COMMENT '地区',
 	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
 	`index_company` VARCHAR(20) DEFAULT NULL COMMENT '指数开发公司',
-	`p_month` DATE DEFAULT NULL COMMENT '所属月份',
+	`p_day` DATE DEFAULT NULL COMMENT '所属日期',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
-	UNIQUE INDEX (index_code, stock_code,p_month),
+	UNIQUE INDEX (index_code, stock_code,p_day),
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '沪深300指数的成分股';
