@@ -63,8 +63,8 @@ class CollectCsi300IndexInfo:
             stock_name = data_list[i]['SECURITY_NAME_ABBR']
             # 股票权重
             stock_weight = data_list[i]['WEIGHT']
-            # 股票上市地
-            stock_exchange_location = data_list[i]['SECUCODE'][-2:]
+            # 股票上市地,转为小写
+            stock_exchange_location = str.lower(data_list[i]['SECUCODE'][-2:])
             # 最新价格
             current_price = data_list[i]['CLOSE_PRICE']
             # 每股收益
