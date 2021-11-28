@@ -11,9 +11,9 @@ select index_code,
 from (
     /*  使用沪深300市值加权的市盈率作为参考 */
       (select index_code, index_name, pe_ttm_mcw as pe, trading_date
-       from index_estimation_from_lxr_di
-       where index_code = '000300'
-       order by trading_date desc) a
+      from index_estimation_from_lxr_di
+      where index_code = '000300'
+      order by trading_date desc) a
          join
      /* 获取 10年期国债收益率 */
          (select 10y, trading_day
