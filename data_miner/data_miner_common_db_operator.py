@@ -19,7 +19,7 @@ class DataMinerCommonDBOperation:
         #         如果不存在，则返回 0000-00-00
 
         # 查询SQL
-        selecting_sql = "SELECT trading_date FROM trading_days WHERE trading_date < '%s' ORDER BY " \
+        selecting_sql = "SELECT trading_date FROM trading_days WHERE trading_date <= '%s' ORDER BY " \
                         "ABS(DATEDIFF(trading_date, '%s')) ASC LIMIT 1" % (day,day)
 
         # 查询

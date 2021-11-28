@@ -5,6 +5,7 @@ import database.db_operator as db_operator
 import log.custom_logger as custom_logger
 import data_collector.collect_chn_gov_bonds_rates as collect_chn_gov_bonds_rates
 import data_collector.collect_index_estimation_from_lxr as collect_index_estimation_from_lxr
+import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
 
 class TimeStrategyEquityBondYield:
     # 择时策略，股债收益率
@@ -68,12 +69,14 @@ class TimeStrategyEquityBondYield:
                     custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def cal_the_ratio_percentile_in_history(self):
-        # 计算当前日期市盈率，10年期国债收益率，股债比，及历史百分位
+        # 计算最新交易日期市盈率，10年期国债收益率，股债比，及历史百分位
         # 返回：如 {'trading_date': '2021-11-26', 'pe': Decimal('13.0141'), 'bond': Decimal('2.8200'), 'ratio': Decimal('2.7248'), 'percent': 74.47}
 
         # 获取当前日期
-        # today = time.strftime("%Y-%m-%d", time.localtime())
-        today = "2021-11-26"
+        today = time.strftime("%Y-%m-%d", time.localtime())
+
+        # 获取最新交易日期
+        lastest_trading_date = str(data_miner_common_db_operator.DataMinerCommonDBOperation().get_the_last_trading_date(today))
 
         # 返回的字典
         today_info_dict = {}
@@ -87,16 +90,16 @@ class TimeStrategyEquityBondYield:
         date_counter = len(trading_date_and_ratio_list)
 
         for i in range(len(trading_date_and_ratio_list)):
-            # 日期与今天一致
+            # 日期与最新交易日期一致
             # 股债比，及历史百分位 均只保留4位小数
-            if str(trading_date_and_ratio_list[i]["trading_date"]) == today:
-                # 返回中存入今天日期
-                today_info_dict["trading_date"] = today
-                # 返回中存入今天沪深300的市盈率
+            if str(trading_date_and_ratio_list[i]["trading_date"]) == str(lastest_trading_date):
+                # 返回中存入最新交易日期日期
+                today_info_dict["trading_date"] = trading_date_and_ratio_list[i]["trading_date"]
+                # 返回中存入最新交易日期沪深300的市盈率
                 today_info_dict["pe"] = trading_date_and_ratio_list[i]["pe"]
-                # 返回中存入今天国债收益率
+                # 返回中存入最新交易日期国债收益率
                 today_info_dict["bond"] = trading_date_and_ratio_list[i]["bond"]
-                # 返回中存入今天股债收益比
+                # 返回中存入最新交易日期股债收益比
                 today_info_dict["ratio"] = trading_date_and_ratio_list[i]["ratio"]
 
                 # 返回中存入所处历史百分位
@@ -122,7 +125,7 @@ class TimeStrategyEquityBondYield:
         国债收益率: 2.8200
         '''
 
-        # 今天市盈率，10年期国债收益率，股债比，及历史百分位信息
+        # 最新交易日期市盈率，10年期国债收益率，股债比，及历史百分位信息
         # {'trading_date': '2021-11-26', 'pe': Decimal('13.0141'), 'bond': Decimal('2.8200'), 'ratio': Decimal('2.7248'), 'percent': 0.7447}
         today_info_dict = self.cal_the_ratio_percentile_in_history()
 
@@ -130,7 +133,7 @@ class TimeStrategyEquityBondYield:
         # 如果股债收益比大于等于3 或者 大于等于历史百分位94
         if today_info_dict['ratio'] >= 3 or today_info_dict['percent']>=94:
             msg += "需特别注意，已进入重点投资区间\n\n"
-        msg += today_info_dict['trading_date'] + ': \n'
+        msg += str(today_info_dict['trading_date']) + ': \n'
         msg += '股债比: ' + str(today_info_dict['ratio']) + '\n'
         msg += '自2010年百分位: ' + str(today_info_dict['percent'])+'%' + '\n'
         msg += '沪深300市盈率: ' + str(today_info_dict['pe']) + '\n'
