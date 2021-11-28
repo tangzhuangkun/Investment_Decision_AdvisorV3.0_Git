@@ -54,7 +54,7 @@ class CollectCsi300IndexInfo:
             msg = '调用东方财富网接口，获取沪深300的指数内容失败 ' + '  ' + str(e)
             msg += '  重新再调用东方财富网接口尝试获取沪深300的指数内容'
             custom_logger.CustomLogger().log_writter(msg, 'error')
-            return self.call_interface_to_get_CSI_300_info()
+            return []
 
 
     def parse_and_save(self,data_list):
