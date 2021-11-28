@@ -9,10 +9,12 @@ import parsers.collect_proxy_IP as collect_proxy_IP
 import parsers.generate_save_user_agent as generate_save_user_agent
 import data_collector.collect_stock_historical_estimation_info as collect_stock_historical_estimation_info
 import notification.notification_plan_during_trading as notification_plan_during_trading
+import notification.notification_plan_after_trading as notification_plan_after_trading
 import data_collector.collect_trading_days as collect_trading_days
 import data_miner.calculate_index_historial_estimations as calculate_index_historial_estimations
 import data_collector.collect_index_weight as collect_index_weight
 import data_collector.collect_csindex_top_10_stocks_weight_daily as collect_csindex_top_10_stocks_weight_daily
+
 
 class Scheduler:
 	# 任务调度器，根据时间安排工作
@@ -57,7 +59,7 @@ class Scheduler:
 							  estimation_notification,
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=49,
-							  id='weekdayEmailEstimation')
+							  id='weekdayDuringTradingEstimationNotification')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
@@ -102,6 +104,16 @@ class Scheduler:
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=8,
 							  id='weekdayCalculateIndexHistoricalEstimations')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+		try:
+			# 每个交易日20：10计算并通过邮件/微信发送股当日债收益比
+			scheduler.add_job(func=notification_plan_after_trading.NotificationPlanAfterTrading().equity_bond_yield_strategy_estimation_notification,
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=20, minute=10,
+							  id='weekdayAfterTradingNotification')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
