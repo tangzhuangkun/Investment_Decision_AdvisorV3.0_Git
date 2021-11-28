@@ -10,8 +10,8 @@ import notification.email_notification as email_notification
 import notification.wechat_notification as wechat_notification
 
 
-class NotificationPlan:
-    # 发送通知计划
+class NotificationPlanDuringTrading:
+    # 盘中发送通知计划
 
     def __init__(self):
         pass
