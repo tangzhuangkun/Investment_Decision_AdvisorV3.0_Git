@@ -141,17 +141,14 @@ class TimeStrategyEquityBondYield:
         self.prepare_index_estimation_and_bond_rate()
         self.truncate_table()
         self.run_sql_script_and_cal_ratio()
-        self.generate_strategy_msg()
-
-
-    # 股债比大于3，
-    # 处于历史百分位，如果低于8%，反复提醒
+        msg = self.generate_strategy_msg()
+        return msg
 
 
 if __name__ == '__main__':
     time_start = time.time()
     go = TimeStrategyEquityBondYield()
-    #go.main()
-    go.generate_strategy_msg()
+    msg = go.main()
+    print(msg)
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
