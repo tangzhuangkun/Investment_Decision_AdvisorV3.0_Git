@@ -38,15 +38,24 @@ class CollectCsi300IndexInfo:
 
         # 忽略警告
         requests.packages.urllib3.disable_warnings()
-        # 得到页面的信息
-        raw_page = requests.get(interface_address, headers=header, proxies=proxy, verify=False, stream=False,
-                                timeout=10).text
-        # 去除不必要信息，转换成符合json格式数据
-        data_json = json.loads(raw_page[43:-2])
-        # 去除data部分的内容
-        data_list = data_json["result"]['data']
 
-        return data_list
+        try:
+            # 得到页面的信息
+            raw_page = requests.get(interface_address, headers=header, proxies=proxy, verify=False, stream=False,
+                                    timeout=10).text
+            # 去除不必要信息，转换成符合json格式数据
+            data_json = json.loads(raw_page[43:-2])
+            # 去除data部分的内容
+            data_list = data_json["result"]['data']
+            return data_list
+
+        except Exception as e:
+            #日志记录
+            msg = '调用东方财富网接口，获取沪深300的指数内容失败 ' + '  ' + str(e)
+            msg += '  重新再调用东方财富网接口尝试获取沪深300的指数内容'
+            custom_logger.CustomLogger().log_writter(msg, 'error')
+            return self.call_interface_to_get_CSI_300_info()
+
 
     def parse_and_save(self,data_list):
         # 解析数据内容，并存入数据库
