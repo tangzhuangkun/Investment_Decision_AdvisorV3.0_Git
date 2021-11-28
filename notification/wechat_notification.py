@@ -45,11 +45,11 @@ class WechatNotification:
         # 获取虾推啥token，决定需要推送给哪些人
         tokens = notification_account.xtuis_tokens
         # 获取当前时间
-        today = time.strftime("%Y-%m-%d", time.localtime())
+        # today = time.strftime("%Y-%m-%d", time.localtime())
 
         # 推送给所有人
         for token in tokens:
-            self.push_customized_content(token, today+object, send_content)
+            self.push_customized_content(token, object, send_content)
 
 
 if __name__ == '__main__':

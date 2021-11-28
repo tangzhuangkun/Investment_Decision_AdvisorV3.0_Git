@@ -19,7 +19,7 @@ class NotificationPlanAfterTrading:
         # 获取当前时间
         today = time.strftime("%Y-%m-%d", time.localtime())
         # 通知的标题
-        title = ' 股债收益率'
+        title = today+' 股债收益率'
 
         # 股债收益率
         time_strategy_msg = time_strategy_equity_bond_yield.TimeStrategyEquityBondYield().main()

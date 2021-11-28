@@ -29,7 +29,7 @@ class EmailNotification:
 		# 获取当前时间
 		self.today= time.strftime("%Y-%m-%d", time.localtime())
 		# 设置邮件主题
-		self.subject = self.today
+		#self.subject = self.today
 
 	
 	def send_customized_content(self, object, send_content):
@@ -46,7 +46,7 @@ class EmailNotification:
 		# 收件人
 		message['To'] = ",".join(self.email_receivers)
 		# 主题
-		message['Subject'] = Header(self.subject + object, 'utf-8')
+		message['Subject'] = Header(object, 'utf-8')
 	
 		try:
 			# 创建实例

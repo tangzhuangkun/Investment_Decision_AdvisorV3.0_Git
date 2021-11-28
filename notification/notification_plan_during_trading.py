@@ -31,7 +31,7 @@ class NotificationPlanDuringTrading:
 
         # 邮件发送所有估值信息
         try:
-            email_notification.EmailNotification().send_customized_content(' 指数基金估值数据', estimation_msg)
+            email_notification.EmailNotification().send_customized_content(today+' 指数基金估值数据', estimation_msg)
             # 日志记录
             log_msg = '成功, 成功发送'+today+'指数基金估值数据至邮件'
             custom_logger.CustomLogger().log_writter(log_msg, 'info')
@@ -43,7 +43,7 @@ class NotificationPlanDuringTrading:
 
         # 微信推送所有估值信息
         try:
-            wechat_notification.WechatNotification().push_to_all(' 指数基金估值数据', estimation_msg)
+            wechat_notification.WechatNotification().push_to_all(today+' 指数基金估值数据', estimation_msg)
             # 日志记录
             log_msg = '成功, 成功推送'+today+'指数基金估值数据至微信'
             custom_logger.CustomLogger().log_writter(log_msg, 'info')
