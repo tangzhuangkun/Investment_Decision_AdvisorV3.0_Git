@@ -1,4 +1,3 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
 import time
 
 import sys
@@ -17,7 +16,7 @@ class NotificationPlanDuringTrading:
         pass
 
     def estimation_notification(self):
-        # 估值信息, 邮件通知
+        # 估值信息, 邮件通知，微信通知
 
         # 计算指数的动态市盈率
         indexes_and_real_time_PE_msg = fund_strategy_PE_estimation.FundStrategyPEEstimation().generate_PE_strategy_msg()
@@ -59,7 +58,7 @@ class NotificationPlanDuringTrading:
 
 if __name__ == '__main__':
     time_start = time.time()
-    go = NotificationPlan()
+    go = NotificationPlanDuringTrading()
     go.estimation_notification()
     time_end = time.time()
     print(time_end - time_start)

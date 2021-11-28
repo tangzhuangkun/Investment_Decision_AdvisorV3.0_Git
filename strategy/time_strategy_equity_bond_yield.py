@@ -9,7 +9,7 @@ import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
 
 class TimeStrategyEquityBondYield:
     # 择时策略，股债收益率
-    # 沪深全A股PE/十年国债收益率
+    # 沪深300指数市值加权估值PE/十年国债收益率
     # 用于判断股市收益率与无风险收益之间的比值
     # 频率：每个交易日，盘后
 
