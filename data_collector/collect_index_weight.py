@@ -13,6 +13,7 @@ import target_pool.read_collect_target_fund as read_collect_target_fund
 class CollectIndexWeight:
     # 从聚宽获取指数的权重数据，并存入数据库
     # 运行频率：每月底
+    # TODO 数据来源，从聚宽改为中证或者国证的官网
 
     def __init__(self):
         pass
