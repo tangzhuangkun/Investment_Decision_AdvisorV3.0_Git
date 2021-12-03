@@ -3,7 +3,7 @@
 /* 将视图删除 */
 drop view if exists jq;
 drop view if exists mix_top10_with_bottom;
-drop view if exists mix_top10_with_bottom_no_repeat;
+truncate table mix_top10_with_bottom_no_repeat;
 
 /* 创建视图*/
 create view jq as
@@ -55,11 +55,11 @@ where c.index_company = '国证'
 order by index_code, weight desc,stock_code);
 
 
-/* 创建视图 */
+/* 插入表格中 */
 /* 拼接中证的最新前10权重股+每月聚宽中的10位之后的权重股,去除重复股票+国证指数 */
-create view mix_top10_with_bottom_no_repeat as
+insert into mix_top10_with_bottom_no_repeat (index_code, index_name, global_stock_code, stock_code, stock_name, weight, source, index_company, submission_date)
 /* 如果视图（中证的最新前10权重股+每月聚宽中的10位之后的权重股）中股票有重复，以最新日期的为准，忽略旧日期的，去除重复股票 */
-(select mt10wb.index_code, index_name, mt10wb.global_stock_code, mt10wb.stock_code, stock_name, weight, source, index_company, mt10wb.submission_date
+select mt10wb.index_code, index_name, mt10wb.global_stock_code, mt10wb.stock_code, stock_name, weight, source, index_company, mt10wb.submission_date
 from mix_top10_with_bottom mt10wb
 inner join
 /* 取出视图（中证的最新前10权重股+每月聚宽中的10位之后的权重股）中每个指数及成分股的最新日期 */
@@ -72,4 +72,4 @@ on mt10wb.index_code = mm.index_code
 and mt10wb.stock_code = mm.stock_code
 and mt10wb.submission_date = mm.submission_date
 group by mt10wb.index_code, index_name, mt10wb.global_stock_code, mt10wb.stock_code, stock_name, weight, source, index_company, mt10wb.submission_date
-order by mt10wb.index_code, weight desc,mt10wb.stock_code);
+order by mt10wb.index_code, weight desc,mt10wb.stock_code;

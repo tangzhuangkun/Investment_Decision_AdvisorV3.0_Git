@@ -68,6 +68,28 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 COMMENT '指数构成及权重';	
 
 
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，mix_top10_with_bottom_no_repeat，用于存储 指数成分股及权重构成，最新top10与其它成分股，无重复股*/
+
+USE financial_data;
+CREATE TABLE IF NOT EXISTS `mix_top10_with_bottom_no_repeat`(
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
+	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
+	`global_stock_code` VARCHAR(20) DEFAULT NULL COMMENT '股票全球代码',
+	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
+	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`weight` DECIMAL(21,18) NOT NULL COMMENT '股票权重',
+	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
+	`index_company` VARCHAR(20) DEFAULT NULL COMMENT '指数开发公司',
+	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '指数成分股及权重构成，最新top10与其它成分股，无重复股';
+
+
+
 
 /* --------- user：investor1 ------ */
 /* --------- db：financial_data ------ */
@@ -234,9 +256,6 @@ COMMENT '理杏仁的指数估值信息';
 
 
 
-
-
-
 /* --------- user：investor1 ------ */
 /* --------- db：aggregated_data ------ */
 /*创建一个表，index_components_historical_estimations，用于存储 基于指数最新成分股及权重得到的历史每日估值*/
@@ -289,6 +308,7 @@ CREATE TABLE IF NOT EXISTS `stock_bond_ratio_di`(
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '每日股债比';
+
 
 
 
