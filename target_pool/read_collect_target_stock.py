@@ -26,16 +26,28 @@ class ReadCollectTargetStock:
         # 输出：字典形式。如，{'000002': {'pb': (0.95, 0.5), 'pe': (1, 2)}, '600048': {'pb': (0.95, 0.5)}}
 
         target_stocks = target.target_stocks
-        tracking_stocks_valuation_method_and_trigger = {}
+        tracking_stocks_valuation_method_and_trigger_dict = {}
         for tracking_info in target_stocks:
-            tracking_stocks_valuation_method_and_trigger[tracking_info] = target_stocks.get(tracking_info).get(
+            tracking_stocks_valuation_method_and_trigger_dict[tracking_info] = target_stocks.get(tracking_info).get(
                 'valuation_method_and_trigger')
-        return tracking_stocks_valuation_method_and_trigger
+        return tracking_stocks_valuation_method_and_trigger_dict
 
+    def get_stocks_monitoring_frequency(self):
+        # 获取标的池中跟踪关注股票及对应的监控频率策略
+        # 输入：无
+        # 输出：字典形式。如 {'000002': ['minutely'], '600048': ['minutely']}
+
+        target_stocks = target.target_stocks
+        tracking_stocks_monitoring_frequency_dict = {}
+        for tracking_info in target_stocks:
+            tracking_stocks_monitoring_frequency_dict[tracking_info] = target_stocks.get(tracking_info).get(
+                'monitoring_frequency_list')
+        return tracking_stocks_monitoring_frequency_dict
 
 
 if __name__ == '__main__':
     go = ReadCollectTargetStock()
     # result = go.get_stocks_and_their_names()
-    result = go.get_stocks_valuation_method_and_trigger()
+    # result = go.get_stocks_valuation_method_and_trigger()
+    result = go.get_stocks_monitoring_frequency()
     print(result)
