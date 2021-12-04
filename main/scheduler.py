@@ -54,9 +54,20 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
+			# 每一分钟执行一次股票的监控策略
+			scheduler.add_job(func=notification_plan_during_trading.NotificationPlanDuringTrading().minutely_estimation_notification,
+							  trigger='cron',
+							  hour='9,10,11,13,14',minute='0-59', second='0',day_of_week='mon,tue,wed,thu,fri',
+							  id='tradingdaymonitorstocksestimationsandtriggers')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+
+		try:
 			# 每个交易日14：49计算并通过邮件/微信发送指数的动态估值信息
 			scheduler.add_job(func=notification_plan_during_trading.NotificationPlanDuringTrading().
-							  estimation_notification,
+							  daily_estimation_notification,
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=14, minute=49,
 							  id='weekdayDuringTradingEstimationNotification')
