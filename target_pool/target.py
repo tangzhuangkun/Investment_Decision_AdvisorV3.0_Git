@@ -7,10 +7,11 @@
 # tracking_index_code : 跟踪指数代码， https://www.joinquant.com/help/api/help?name=index#%E4%B8%8A%E6%B5%B7%E5%B8%82%E5%9C%BA%E6%8C%87%E6%95%B0%E5%88%97%E8%A1%A8
 # index_company: 指数开发公司
 # hold_or_not :  当前是否持有,True为持有，False不持有
-# valuation_method_list :  估值方法
+# valuation_method_list ： 估值方法
+# valuation_method_and_trigger :  估值方法与触发条件(估值，低于等于历史百分位)
 # B&H_strategy_list : 买入持有策略
 # sell_out_strategy_list :  卖出策略
-# monitoring_frequency_list :  监控频率, daily, weekly, monthly, seasonly, yearly, periodically
+# monitoring_frequency_list :  监控频率, secondly, minutely, hourly, daily, weekly, monthly, seasonly, yearly, periodically
 
 target_index_funds = {
 	'161725': {'fund_name': '招商中证白酒指数分级', 'fund_type': '股票指数', 'tracking_index_name': '中证白酒',
@@ -42,4 +43,14 @@ target_index_funds = {
                'tracking_index_code': '000036.XSHG', 'index_company': '中证', 'hold_or_not': False,
                'valuation_method_list': ['pe'], 'B&H_strategy_list': [], 'sell_out_strategy_list': [],
                'monitoring_frequency_list': ['daily']}
+}
+
+
+target_stocks = {
+	'000002': {'stock_name': '万科A', 'exchange_location': 'sz',  'hold_or_not': True,
+			   'valuation_method_and_trigger': {'pb':(0.95, 0.5), 'pe':(1,2)},  'B&H_strategy_list': [], 'sell_out_strategy_list': [],
+			   'monitoring_frequency_list': ['minutely']},
+    '600048': {'stock_name': '保利发展', 'exchange_location': 'sh',  'hold_or_not': True,
+			   'valuation_method_and_trigger': {'pb':(0.95, 0.5)},  'B&H_strategy_list': [], 'sell_out_strategy_list': [],
+			   'monitoring_frequency_list': ['minutely']}
 }
