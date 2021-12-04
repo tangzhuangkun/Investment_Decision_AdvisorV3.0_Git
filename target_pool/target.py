@@ -48,7 +48,7 @@ target_index_funds = {
 
 target_stocks = {
 	'000002': {'stock_name': '万科A', 'exchange_location': 'sz',  'hold_or_not': True,
-			   'valuation_method_and_trigger': {'pb':(0.95, 0.5), 'pe':(1,2)},  'B&H_strategy_list': [], 'sell_out_strategy_list': [],
+			   'valuation_method_and_trigger': {'pb':(0.95, 0.5)},  'B&H_strategy_list': [], 'sell_out_strategy_list': [],
 			   'monitoring_frequency_list': ['minutely']},
     '600048': {'stock_name': '保利发展', 'exchange_location': 'sh',  'hold_or_not': True,
 			   'valuation_method_and_trigger': {'pb':(0.95, 0.5)},  'B&H_strategy_list': [], 'sell_out_strategy_list': [],
