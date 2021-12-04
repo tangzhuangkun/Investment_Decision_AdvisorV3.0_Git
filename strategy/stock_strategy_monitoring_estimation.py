@@ -16,8 +16,8 @@ class StockStrategyMonitoringEstimation:
         pass
 
 
-    def get_tracking_stocks_realtime_indicators_single_thread(self):
-        # 获取所有跟踪股票的实时指标, 单线程
+    def get_tracking_stocks_realtime_indicators_trigger_result_single_thread(self):
+        # 获取所有跟踪股票的实时指标的对预设条件的触发结果, 单线程
         # 返回 所有触发了条件的股票及信息的字典
         # 如 {'000002': [('sz000002', '万科A', 'pb', '0.98', '小于设定估值 0.99'), ('sz000002', '万科A', 'pe_ttm', '5.84', '3.39% 小于设定估值百分位 12%')], '600048': [('sh600048', '保利发展', 'pb', '1.07', '小于设定估值 1.1')]}
 
@@ -50,12 +50,18 @@ class StockStrategyMonitoringEstimation:
                     # 如果之前已保存过该股票的触发条件返回信息
                     else:
                         triggered_stocks_info_dict[stock_code].append(result)
+                        
+        # 如果有返回信息
+        if len(triggered_stocks_info_dict) != 0:
+            # 日志记录
+            log_msg = '获取所有跟踪股票的实时指标的对预设条件的触发结果为' + str(triggered_stocks_info_dict)
+            custom_logger.CustomLogger().log_writter(log_msg, 'info')
 
         # 返回 所有触发了条件的股票
         return triggered_stocks_info_dict
 
-    def get_tracking_stocks_realtime_indicators_multi_thread(self):
-        # 获取所有跟踪股票的实时指标, 多线程
+    def get_tracking_stocks_realtime_indicators_trigger_result_multi_thread(self):
+        # 获取所有跟踪股票的实时指标的对预设条件的触发结果, 多线程
         # 返回 所有触发了条件的股票及信息的字典
         # 如 {'000002': [('sz000002', '万科A', 'pb', '0.98', '小于设定估值 0.99'), ('sz000002', '万科A', 'pe_ttm', '5.84', '3.39% 小于设定估值百分位 12%')], '600048': [('sh600048', '保利发展', 'pb', '1.07', '小于设定估值 1.1')]}
 
@@ -96,6 +102,12 @@ class StockStrategyMonitoringEstimation:
         # 等待所有线程完成
         for mem in running_threads:
             mem.join()
+
+        # 如果有返回信息
+        if len(triggered_stocks_info_dict)!=0:
+            # 日志记录
+            log_msg = '获取所有跟踪股票的实时指标的对预设条件的触发结果为'+str(triggered_stocks_info_dict)
+            custom_logger.CustomLogger().log_writter(log_msg, 'info')
 
         # 所有触发了条件的股票返回信息
         return triggered_stocks_info_dict
@@ -197,9 +209,9 @@ class StockStrategyMonitoringEstimation:
 
     def main(self):
         # 单线程方式
-        # return self.get_tracking_stocks_realtime_indicators_single_thread()
+        # return self.get_tracking_stocks_realtime_indicators_trigger_result_single_thread()
         # 多线程方式
-        return self.get_tracking_stocks_realtime_indicators_multi_thread()
+        return self.get_tracking_stocks_realtime_indicators_trigger_result_multi_thread()
 
 if __name__ == '__main__':
     time_start = time.time()
