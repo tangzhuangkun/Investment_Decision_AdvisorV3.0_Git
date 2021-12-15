@@ -6,6 +6,7 @@ import threading
 sys.path.append("..")
 import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_xueqiu as xueqiu
+import data_collector.get_stock_real_time_indicator_from_interfaces as get_stock_real_time_indicator_from_interfaces
 import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
 import data_miner.data_miner_common_index_operator as data_miner_common_index_operator
@@ -91,7 +92,8 @@ class FundStrategyPBEstimation:
         # threadLock：线程锁
 
         # 通过抓取数据雪球页面，获取单个股票的实时滚动市净率
-        stock_real_time_pb = xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator(stock_id, 'pb')
+        #stock_real_time_pb = xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator(stock_id, 'pb')
+        stock_real_time_pb = get_stock_real_time_indicator_from_interfaces.GetStockRealTimeIndicatorFromInterfaces().get_single_stock_real_time_indicator(stock_id, 'pb')
 
         # 获取锁，用于线程同步
         threadLock.acquire()
@@ -130,6 +132,7 @@ class FundStrategyPBEstimation:
             # 获取成分股权重
             stock_weight = stocks_and_their_weights[i]["weight"]
 
+            # todo 获取股票的上市地出错
             # 将股票代码进行转换，
             # 由 6位数字+4位上市地（如 000596.XSHE） ---> 2位上市地+6位数字（如 sz000596）
             if stock_exchange == 'XSHG':
