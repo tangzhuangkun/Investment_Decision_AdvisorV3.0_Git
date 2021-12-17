@@ -1,8 +1,9 @@
 import requests
 import time
-import sys
 import threading
+import os
 
+import sys
 sys.path.append("..")
 import parsers.disguise as disguise
 import data_miner.data_miner_common_target_index_operator as target_index_operator
@@ -14,6 +15,8 @@ class CollectIndexWeightFromCSIndex:
     def __init__(self):
         # 当天的日期
         self.today = time.strftime("%Y-%m-%d", time.localtime())
+        # 权重文件存放路径
+        self.index_weight_samples_path = "../data_collector/index_weight_samples/"
 
 
     def download_index_weight_file(self, index_code, index_name, header, proxy):
@@ -56,7 +59,7 @@ class CollectIndexWeightFromCSIndex:
             file_data = requests.get(interface_address, headers=header, proxies=proxy, verify=False, stream=False,
                                     timeout=10)
             # open打开excel文件，报存为后缀为xls的文件
-            fp = open("../data_collector/index_weight_samples/"+index_code+"_"+index_name+"_"+self.today+".xls", "wb")
+            fp = open(self.index_weight_samples_path+index_code+"_"+index_name+"_"+self.today+".xls", "wb")
             fp.write(file_data.content)
             fp.close()
             # 日志记录
@@ -89,7 +92,7 @@ class CollectIndexWeightFromCSIndex:
 
         except Exception as e:
             # 日志记录
-            msg = msg = "从中证指数官网"+interface_address+"下载 " + index_code + index_name + "指数的权重文件失败 " + str(e)+" 正在重试"
+            msg = "从中证指数官网"+interface_address+"下载 " + index_code + index_name + "指数的权重文件失败 " + str(e)+" 正在重试"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
             return self.download_index_weight_file_from_cs_index(index_code,index_name)
@@ -130,6 +133,7 @@ class CollectIndexWeightFromCSIndex:
         # 返回： 下载文件
 
         # 从标的池中获取中证公司的指数，指数代码及对应的指数名称的字典
+        # {'399997': '中证白酒指数', '000932': '中证主要消费', '399965': '中证800地产', '399986': '中证银行指数', '000036': '上证主要消费行业指数'}
         target_cs_index_dict = self.get_cs_index_from_index_target()
         for index_code in target_cs_index_dict:
             # 下载权重文件
@@ -140,6 +144,7 @@ class CollectIndexWeightFromCSIndex:
         # 返回： 下载文件
 
         # 从标的池中获取中证公司的指数，指数代码及对应的指数名称的字典
+        # {'399997': '中证白酒指数', '000932': '中证主要消费', '399965': '中证800地产', '399986': '中证银行指数', '000036': '上证主要消费行业指数'}
         target_cs_index_dict = self.get_cs_index_from_index_target()
 
         # 启用多线程
@@ -158,10 +163,61 @@ class CollectIndexWeightFromCSIndex:
         for mem in running_threads:
             mem.join()
 
+    def get_all_sample_files_name(self):
+        # 获取全部指数权重文件存放路径下的文件
+        # 返回：全部文件名称
+        # 如 ['000036_上证主要消费行业指数_2021-12-17.xls', '399997_中证白酒指数_2021-12-17.xls', ，，，]
+        for root, dirs, files in os.walk(self.index_weight_samples_path):
+            return files
+
+    def the_sample_file_names_that_expected_to_be_collected(self):
+        # 预计被下载的并生成的文件名称
+        # 返回 预计被下载的并生成的文件名称列表
+        # 如 ['399997_中证白酒指数_2021-12-18.xls', '000932_中证主要消费_2021-12-18.xls', '399965_中证800地产_2021-12-18.xls', '399986_中证银行指数_2021-12-18.xls', '000036_上证主要消费行业指数_2021-12-18.xls']
+
+        # 预计被下载的并生成的文件名称列表
+        # 如 ['399997_中证白酒指数_2021-12-18.xls', '000932_中证主要消费_2021-12-18.xls', '399965_中证800地产_2021-12-18.xls', '399986_中证银行指数_2021-12-18.xls', '000036_上证主要消费行业指数_2021-12-18.xls']
+        expected_file_name_list = []
+
+        # 从标的池中获取中证公司的指数，指数代码及对应的指数名称的字典
+        # {'399997': '中证白酒指数', '000932': '中证主要消费', '399965': '中证800地产', '399986': '中证银行指数', '000036': '上证主要消费行业指数'}
+        target_cs_index_dict = self.get_cs_index_from_index_target()
+        for index_code in target_cs_index_dict:
+            index_name = target_cs_index_dict[index_code]
+            expected_file_name_list.append(index_code+"_"+index_name+"_"+self.today+'.xls')
+        return expected_file_name_list
+
+    def read_and_save_single_file_contetn(self,file_name):
+        # 读取并储存文件内容
+        # file_name, 文件名称，如 399997_中证白酒指数_2021-12-18.xls
+        pass
+
+
+    def read_and_save_the_all_expected_sample_files_content(self):
+        # 读取并存储所有的预计下载文件内容
+
+        # 获取全部指数权重文件存放路径下的文件名称
+        all_saved_files_name_list = self.get_all_sample_files_name()
+        # 预计被下载的并生成的文件名称
+        expected_to_be_collected_file_name_list = self.the_sample_file_names_that_expected_to_be_collected()
+
+        for file_name_str in expected_to_be_collected_file_name_list:
+            # 如果存放路径下也包含了该文件名称
+            if file_name_str  in all_saved_files_name_list:
+                print(file_name_str +" in ")
+            # 如果存放路径下未包含该文件名称
+            else:
+                # 日志记录
+                msg = "读取 "+file_name_str+" 文件失败，从中证指数官网下载该指数权重文件失败"
+                custom_logger.CustomLogger().log_writter(msg, lev='warning')
+                print(file_name_str + " not in")
+
 
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectIndexWeightFromCSIndex()
-    go.download_all_target_cs_index_weight_multi_threads()
+    go.read_and_save_the_all_expected_sample_files_content()
+    #result = go.the_sample_file_names_that_expected_to_be_collected()
+    #print(result)
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
