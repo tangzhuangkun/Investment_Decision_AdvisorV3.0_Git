@@ -2,6 +2,7 @@ import requests
 import time
 import threading
 import os
+import xlrd
 
 import sys
 sys.path.append("..")
@@ -187,11 +188,70 @@ class CollectIndexWeightFromCSIndex:
             expected_file_name_list.append(index_code+"_"+index_name+"_"+self.today+'.xls')
         return expected_file_name_list
 
-    def read_and_save_single_file_contetn(self,file_name):
-        # 读取并储存文件内容
+    def read_single_file_content(self, file_name):
+        # 读取文件内容，按成分股权重从大到小排序
         # file_name, 文件名称，如 399997_中证白酒指数_2021-12-18.xls
-        pass
+        # 返回： list[list[]], 按成分股权重从大到小排序
+        # 如： [['2021-11-30', '399997', '中证白酒', '600809', '山西汾酒', 'sh', 'XSHG', 15.983],
+        #       ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619],,,]
 
+
+        # 读取存储excel中每行的信息，按权重从大到小排序
+        # [['2021-11-30', '399997', '中证白酒', '600809', '山西汾酒', 'sh', 'XSHG', 15.983],
+        #   ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619],,,]
+        file_content_list = []
+
+        # 打开xls文件,xlrd用于读取xld
+        workbook = xlrd.open_workbook(self.index_weight_samples_path+file_name)
+        # 打开第一张表
+        sheet = workbook.sheet_by_index(0)
+        # 逐行遍历
+        # 表头：日期Date	指数代码 Index Code	指数名称 Index Name	指数英文名称Index Name(Eng)	成分券代码Constituent Code	成分券名称Constituent Name	成分券英文名称Constituent Name(Eng)	交易所Exchange	交易所英文名称Exchange(Eng)	权重(%)weight
+        # 从第二行开始
+        for r in range(1, sheet.nrows):
+            row_content_list = []
+            for c in range(sheet.ncols):
+                cell = sheet.row_values(r)[c]
+                if c==0:
+                    # 业务日期
+                    p_day = sheet.row_values(r)[c][:4]+'-'+sheet.row_values(r)[c][4:6]+'-'+sheet.row_values(r)[c][6:8]
+                    row_content_list.append(p_day)
+                elif c==1:
+                    # 指数代码
+                    index_code = sheet.row_values(r)[c]
+                    row_content_list.append(index_code)
+                elif c==2:
+                    # 指数名称
+                    index_name = sheet.row_values(r)[c]
+                    row_content_list.append(index_name)
+                elif c==4:
+                    # 股票代码
+                    stock_code = sheet.row_values(r)[c]
+                    row_content_list.append(stock_code)
+                elif c==5:
+                    # 股票名称
+                    stock_name = sheet.row_values(r)[c]
+                    row_content_list.append(stock_name)
+                elif c==8:
+                    # 股票上市地
+                    # 股票上市地市场代码
+                    if "Shanghai" in sheet.row_values(r)[c]:
+                        stock_exchange_location = 'sh'
+                        sotck_market_code = 'XSHG'
+                        row_content_list.append(stock_exchange_location)
+                        row_content_list.append(sotck_market_code)
+                    elif "Shenzhen" in sheet.row_values(r)[c]:
+                        stock_exchange_location = 'sz'
+                        sotck_market_code = 'XSHE'
+                        row_content_list.append(stock_exchange_location)
+                        row_content_list.append(sotck_market_code)
+                elif c==9:
+                    # 权重
+                    weight = sheet.row_values(r)[c]
+                    row_content_list.append(weight)
+            file_content_list.append(row_content_list)
+        # 按成分股权重从大到小排序
+        file_content_list.sort(key=lambda x: x[7], reverse=True)
 
     def read_and_save_the_all_expected_sample_files_content(self):
         # 读取并存储所有的预计下载文件内容
@@ -216,7 +276,7 @@ class CollectIndexWeightFromCSIndex:
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectIndexWeightFromCSIndex()
-    go.read_and_save_the_all_expected_sample_files_content()
+    go.read_single_file_content('399997_中证白酒指数_2021-12-18.xls')
     #result = go.the_sample_file_names_that_expected_to_be_collected()
     #print(result)
     time_end = time.time()
