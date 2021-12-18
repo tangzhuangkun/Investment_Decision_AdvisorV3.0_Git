@@ -21,22 +21,22 @@ CREATE TABLE IF NOT EXISTS `index_target`(
 COMMENT '跟踪指数及跟踪策略标的池';
 
 insert into index_target (index_code, index_name, exchange_location_1, exchange_location_2, index_company, valuation_method, p_day )
-values ('399997','中证白酒指数','sz','XSHE','中证','pe','2021-12-16');
+values ('399997','中证白酒','sz','XSHE','中证','pe','2021-12-16');
 
 insert into index_target (index_code, index_name, exchange_location_1, exchange_location_2, index_company, valuation_method, p_day )
-values ('399396','国证食品饮料行业指数','sz','XSHE','国证','pe','2021-12-16');
+values ('399396','国证食品饮料行业','sz','XSHE','国证','pe','2021-12-16');
 
 insert into index_target (index_code, index_name, exchange_location_1, exchange_location_2, index_company, valuation_method, p_day )
-values ('000932','中证主要消费','sh','XSHG','中证','pe','2021-12-16');
+values ('000932','中证消费','sh','XSHG','中证','pe','2021-12-16');
 
 insert into index_target (index_code, index_name, exchange_location_1, exchange_location_2, index_company, valuation_method, p_day )
-values ('399965','中证800地产','sz','XSHE','中证','pb','2021-12-16');
+values ('399965','800地产','sz','XSHE','中证','pb','2021-12-16');
 
 insert into index_target (index_code, index_name, exchange_location_1, exchange_location_2, index_company, valuation_method, p_day )
-values ('399986','中证银行指数','sz','XSHE','中证','pb','2021-12-16');
+values ('399986','中证银行','sz','XSHE','中证','pb','2021-12-16');
 
 insert into index_target (index_code, index_name, exchange_location_1, exchange_location_2, index_company, valuation_method, p_day )
-values ('000036','上证主要消费行业指数','sh','XSHG','中证','pe','2021-12-16');
+values ('000036','上证消费','sh','XSHG','中证','pe','2021-12-16');
 
 
 /* --------- user：investor1 ------ */
