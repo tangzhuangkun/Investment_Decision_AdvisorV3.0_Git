@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import requests
 import time
 import threading
@@ -9,9 +12,10 @@ sys.path.append("..")
 import parsers.disguise as disguise
 import data_miner.data_miner_common_target_index_operator as target_index_operator
 import log.custom_logger as custom_logger
+import database.db_operator as db_operator
 
-class CollectIndexWeightFromCSIndex:
-    # 从中证官网获取指数成分股及权重信息
+class CollectIndexWeightFromCSIndexFile:
+    # 从中证官网获取指数成分股及权重文件，并收集信息
 
     def __init__(self):
         # 当天的日期
@@ -64,13 +68,13 @@ class CollectIndexWeightFromCSIndex:
             fp.write(file_data.content)
             fp.close()
             # 日志记录
-            msg = "从中证指数官网下载" + index_code+ index_name + " 指数的权重文件成功"
+            msg = "从中证指数官网下载" + index_code+" "+index_name + " 指数的权重文件成功"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
 
         # 如果读取超时，重新在执行一遍解析页面
         except requests.exceptions.ReadTimeout:
             # 日志记录
-            msg = "从中证指数官网"+interface_address+"下载 " + index_code + index_name + "指数的权重文件失败" + "ReadTimeout。正在重试"
+            msg = "从中证指数官网"+interface_address+"下载 " + index_code +" "+ index_name + "指数的权重文件失败" + "ReadTimeout。正在重试"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
             return self.download_index_weight_file_from_cs_index(index_code,index_name)
@@ -78,7 +82,7 @@ class CollectIndexWeightFromCSIndex:
         # 如果连接请求超时，重新在执行一遍解析页面
         except requests.exceptions.ConnectTimeout:
             # 日志记录
-            msg = "从中证指数官网"+interface_address+"下载 " + index_code + index_name + "指数的权重文件失败" + "ConnectTimeout。正在重试"
+            msg = "从中证指数官网"+interface_address+"下载 " + index_code +" "+ index_name + "指数的权重文件失败" + "ConnectTimeout。正在重试"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
             return self.download_index_weight_file_from_cs_index(index_code,index_name)
@@ -86,19 +90,17 @@ class CollectIndexWeightFromCSIndex:
         # 如果请求超时，重新在执行一遍解析页面
         except requests.exceptions.Timeout:
             # 日志记录
-            msg = "从中证指数官网"+interface_address+"下载 " + index_code + index_name + "指数的权重文件失败" + "Timeout。正在重试"
+            msg = "从中证指数官网"+interface_address+"下载 " + index_code +" "+ index_name + "指数的权重文件失败" + "Timeout。正在重试"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
             return self.download_index_weight_file_from_cs_index(index_code,index_name)
 
         except Exception as e:
             # 日志记录
-            msg = "从中证指数官网"+interface_address+"下载 " + index_code + index_name + "指数的权重文件失败 " + str(e)+" 正在重试"
+            msg = "从中证指数官网"+interface_address+"下载 " + index_code +" "+ index_name + "指数的权重文件失败 " + str(e)+" 正在重试"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
             # 返回解析页面得到的股票指标
             return self.download_index_weight_file_from_cs_index(index_code,index_name)
-
-
 
     def download_index_weight_file_from_cs_index(self,index_code, index_name):
         # 从中证官网下载 指数成份股及权重信息的文件
@@ -192,8 +194,7 @@ class CollectIndexWeightFromCSIndex:
         # 读取文件内容，按成分股权重从大到小排序
         # file_name, 文件名称，如 399997_中证白酒指数_2021-12-18.xls
         # 返回： list[list[]], 按成分股权重从大到小排序
-        # 如： [['2021-11-30', '399997', '中证白酒', '600809', '山西汾酒', 'sh', 'XSHG', 15.983],
-        #       ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619],,,]
+        # 如： [['2021-11-30', '399997', '中证白酒', '600809', '山西汾酒', 'sh', 'XSHG', 15.983], ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619], ['2021-11-30', '399997', '中证白酒', '000568', '泸州老窖', 'sz', 'XSHE', 14.922], ['2021-11-30', '399997', '中证白酒', '000858', '五 粮 液', 'sz', 'XSHE', 12.799], ['2021-11-30', '399997', '中证白酒', '002304', '洋河股份', 'sz', 'XSHE', 12.586], ['2021-11-30', '399997', '中证白酒', '000799', '酒鬼酒', 'sz', 'XSHE', 6.119], ['2021-11-30', '399997', '中证白酒', '603369', '今世缘', 'sh', 'XSHG', 4.241], ['2021-11-30', '399997', '中证白酒', '000596', '古井贡酒', 'sz', 'XSHE', 3.725], ['2021-11-30', '399997', '中证白酒', '600779', '水井坊', 'sh', 'XSHG', 3.05], ['2021-11-30', '399997', '中证白酒', '603589', '口子窖', 'sh', 'XSHG', 2.853], ['2021-11-30', '399997', '中证白酒', '000860', '顺鑫农业', 'sz', 'XSHE', 1.997], ['2021-11-30', '399997', '中证白酒', '603198', '迎驾贡酒', 'sh', 'XSHG', 1.963], ['2021-11-30', '399997', '中证白酒', '600559', '老白干酒', 'sh', 'XSHG', 1.718], ['2021-11-30', '399997', '中证白酒', '600199', '金种子酒', 'sh', 'XSHG', 0.906], ['2021-11-30', '399997', '中证白酒', '600197', '伊力特', 'sh', 'XSHG', 0.853], ['2021-11-30', '399997', '中证白酒', '603919', '金徽酒', 'sh', 'XSHG', 0.665]]
 
 
         # 读取存储excel中每行的信息，按权重从大到小排序
@@ -253,6 +254,62 @@ class CollectIndexWeightFromCSIndex:
         # 按成分股权重从大到小排序
         file_content_list.sort(key=lambda x: x[7], reverse=True)
 
+        return file_content_list
+
+    def save_file_content_into_db(self, file_content_list):
+        # 将文件内容存入数据库
+        # file_content_list, 按成分股权重从大到小排序
+        # 如： [['2021-11-30', '399997', '中证白酒', '600809', '山西汾酒', 'sh', 'XSHG', 15.983], ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619], ['2021-11-30', '399997', '中证白酒', '000568', '泸州老窖', 'sz', 'XSHE', 14.922], ['2021-11-30', '399997', '中证白酒', '000858', '五 粮 液', 'sz', 'XSHE', 12.799], ['2021-11-30', '399997', '中证白酒', '002304', '洋河股份', 'sz', 'XSHE', 12.586], ['2021-11-30', '399997', '中证白酒', '000799', '酒鬼酒', 'sz', 'XSHE', 6.119], ['2021-11-30', '399997', '中证白酒', '603369', '今世缘', 'sh', 'XSHG', 4.241], ['2021-11-30', '399997', '中证白酒', '000596', '古井贡酒', 'sz', 'XSHE', 3.725], ['2021-11-30', '399997', '中证白酒', '600779', '水井坊', 'sh', 'XSHG', 3.05], ['2021-11-30', '399997', '中证白酒', '603589', '口子窖', 'sh', 'XSHG', 2.853], ['2021-11-30', '399997', '中证白酒', '000860', '顺鑫农业', 'sz', 'XSHE', 1.997], ['2021-11-30', '399997', '中证白酒', '603198', '迎驾贡酒', 'sh', 'XSHG', 1.963], ['2021-11-30', '399997', '中证白酒', '600559', '老白干酒', 'sh', 'XSHG', 1.718], ['2021-11-30', '399997', '中证白酒', '600199', '金种子酒', 'sh', 'XSHG', 0.906], ['2021-11-30', '399997', '中证白酒', '600197', '伊力特', 'sh', 'XSHG', 0.853], ['2021-11-30', '399997', '中证白酒', '603919', '金徽酒', 'sh', 'XSHG', 0.665]]
+        # 返回：内容存入数据库
+
+        for row_content in file_content_list:
+
+            # 插入的SQL
+            inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name," \
+                            "stock_code,stock_name,stock_exchange_location,stock_market_code," \
+                            "weight,source,index_company,p_day)" \
+                            "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
+                                row_content[1], row_content[2], row_content[3], row_content[4], row_content[5],
+                                row_content[6], row_content[7], '中证权重文件', '中证', row_content[0])
+            db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
+
+    def check_if_saved_before(self, index_code, file_content_list):
+        # 与数据库的内容对比，是否已存过
+        # file_content_list, 按成分股权重从大到小排序
+        # 如： [['2021-11-30', '399997', '中证白酒', '600809', '山西汾酒', 'sh', 'XSHG', 15.983], ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619], ['2021-11-30', '399997', '中证白酒', '000568', '泸州老窖', 'sz', 'XSHE', 14.922], ['2021-11-30', '399997', '中证白酒', '000858', '五 粮 液', 'sz', 'XSHE', 12.799], ['2021-11-30', '399997', '中证白酒', '002304', '洋河股份', 'sz', 'XSHE', 12.586], ['2021-11-30', '399997', '中证白酒', '000799', '酒鬼酒', 'sz', 'XSHE', 6.119], ['2021-11-30', '399997', '中证白酒', '603369', '今世缘', 'sh', 'XSHG', 4.241], ['2021-11-30', '399997', '中证白酒', '000596', '古井贡酒', 'sz', 'XSHE', 3.725], ['2021-11-30', '399997', '中证白酒', '600779', '水井坊', 'sh', 'XSHG', 3.05], ['2021-11-30', '399997', '中证白酒', '603589', '口子窖', 'sh', 'XSHG', 2.853], ['2021-11-30', '399997', '中证白酒', '000860', '顺鑫农业', 'sz', 'XSHE', 1.997], ['2021-11-30', '399997', '中证白酒', '603198', '迎驾贡酒', 'sh', 'XSHG', 1.963], ['2021-11-30', '399997', '中证白酒', '600559', '老白干酒', 'sh', 'XSHG', 1.718], ['2021-11-30', '399997', '中证白酒', '600199', '金种子酒', 'sh', 'XSHG', 0.906], ['2021-11-30', '399997', '中证白酒', '600197', '伊力特', 'sh', 'XSHG', 0.853], ['2021-11-30', '399997', '中证白酒', '603919', '金徽酒', 'sh', 'XSHG', 0.665]]
+        # 返回： 如果存储过，则返回True; 未储存过，则返回False
+
+        # 查询sql
+        selecting_sql = "select index_code, index_name, stock_code, stock_name, weight, p_day from " \
+                        "index_constituent_stocks_weight where p_day = (select max(p_day) as max_day from " \
+                        "index_constituent_stocks_weight where index_code = '%s' and source = '%s') and " \
+                        "index_code = '%s' and source = '%s' order by weight desc" % (index_code,'中证权重文件',index_code,'中证权重文件')
+
+        # 从数据库获取内容
+        # [{'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '600809', 'stock_name': '山西汾酒', 'weight': Decimal('15.983000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '600519', 'stock_name': '贵州茅台', 'weight': Decimal('15.619000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '000568', 'stock_name': '泸州老窖', 'weight': Decimal('14.922000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '000858', 'stock_name': '五 粮 液', 'weight': Decimal('12.799000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '002304', 'stock_name': '洋河股份', 'weight': Decimal('12.586000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '000799', 'stock_name': '酒鬼酒', 'weight': Decimal('6.119000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '603369', 'stock_name': '今世缘', 'weight': Decimal('4.241000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '000596', 'stock_name': '古井贡酒', 'weight': Decimal('3.725000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '600779', 'stock_name': '水井坊', 'weight': Decimal('3.050000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '603589', 'stock_name': '口子窖', 'weight': Decimal('2.853000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '000860', 'stock_name': '顺鑫农业', 'weight': Decimal('1.997000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '603198', 'stock_name': '迎驾贡酒', 'weight': Decimal('1.963000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '600559', 'stock_name': '老白干酒', 'weight': Decimal('1.718000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '600199', 'stock_name': '金种子酒', 'weight': Decimal('0.906000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '600197', 'stock_name': '伊力特', 'weight': Decimal('0.853000000000000000'), 'p_day': datetime.date(2021, 11, 30)}, {'index_code': '399997', 'index_name': '中证白酒', 'stock_code': '603919', 'stock_name': '金徽酒', 'weight': Decimal('0.665000000000000000'), 'p_day': datetime.date(2021, 11, 30)}]
+        db_index_content = db_operator.DBOperator().select_all("financial_data", selecting_sql)
+
+        # 文件内容中的成分股个数
+        file_content_len = len(file_content_list)
+        # 数据库中的指数成分股个数
+        db_index_content_len = len(db_index_content)
+        # 对比文件内容中的成分股 与 数据库中的指数成分股 个数是否一致
+        if(file_content_len!=db_index_content_len):
+            return False
+
+        for i in range(file_content_len):
+
+            # 对比股票代码是否一致
+            if (file_content_list[i][3] != db_index_content[i]["stock_code"]):
+                return False
+            # 对比股票权重是否一致
+            elif (file_content_list[i][7] != float(db_index_content[i]["weight"])):
+                return False
+            # 对比发布日期是否一致
+            elif (file_content_list[i][0] != str(db_index_content[i]["p_day"])):
+                return False
+        return True
+
     def read_and_save_the_all_expected_sample_files_content(self):
         # 读取并存储所有的预计下载文件内容
 
@@ -264,19 +321,46 @@ class CollectIndexWeightFromCSIndex:
         for file_name_str in expected_to_be_collected_file_name_list:
             # 如果存放路径下也包含了该文件名称
             if file_name_str  in all_saved_files_name_list:
-                print(file_name_str +" in ")
+                # 读取文件中的内容，并按成分股权重权重，从大到小排列
+                file_content_list = self.read_single_file_content(file_name_str)
+                # 获取指数代码
+                index_code = file_name_str.split("_")[0]
+                # 获取指数名称
+                index_name = file_name_str.split("_")[1]
+                # 文件中的内容与数据库中该指数的储存内容对比，检查是否存储过
+                is_saved_before = self.check_if_saved_before(index_code,file_content_list)
+                # 如果储存过，则跳过
+                if(is_saved_before):
+                    # 日志记录
+                    msg = index_code +" "+ index_name + " 曾经储存过，无需再存储"
+                    custom_logger.CustomLogger().log_writter(msg, lev='warning')
+                    continue
+                # 如果未存储过，则存入数据库
+                else:
+                    self.save_file_content_into_db(file_content_list)
+                    # 日志记录
+                    msg = index_code + " " + index_name + " 未储存过，已更新指数信息"
+                    custom_logger.CustomLogger().log_writter(msg, lev='warning')
+
             # 如果存放路径下未包含该文件名称
             else:
                 # 日志记录
                 msg = "读取 "+file_name_str+" 文件失败，从中证指数官网下载该指数权重文件失败"
                 custom_logger.CustomLogger().log_writter(msg, lev='warning')
-                print(file_name_str + " not in")
 
+    def main(self):
+        self.download_all_target_cs_index_weight_multi_threads()
+        self.read_and_save_the_all_expected_sample_files_content()
 
 if __name__ == '__main__':
     time_start = time.time()
-    go = CollectIndexWeightFromCSIndex()
-    go.read_single_file_content('399997_中证白酒指数_2021-12-18.xls')
+    go = CollectIndexWeightFromCSIndexFile()
+    go.main()
+    #result = go.check_if_saved_before('399997', file_content_list)
+    #print(result)
+    #go.download_all_target_cs_index_weight_multi_threads()
+    #go.read_and_save_the_all_expected_sample_files_content()
+    #result = go.read_single_file_content('399997_中证白酒_2021-12-18.xls')
     #result = go.the_sample_file_names_that_expected_to_be_collected()
     #print(result)
     time_end = time.time()
