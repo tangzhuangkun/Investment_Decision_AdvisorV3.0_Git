@@ -39,6 +39,8 @@ class CollectorToolToDistinguishStockMarket:
         # 判断是否为深市
         elif stock_code.startswith('0') or stock_code.startswith('2') or stock_code.startswith('3'):
             return ('sz', 'XSHE')
+        else:
+            return ('UNKOWN', 'UNKOWN')
 
 
 
