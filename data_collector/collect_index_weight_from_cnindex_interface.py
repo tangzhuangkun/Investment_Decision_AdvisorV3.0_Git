@@ -4,9 +4,9 @@
 import requests
 import time
 import json
+import threading
 
 import sys
-
 sys.path.append("..")
 import parsers.disguise as disguise
 import log.custom_logger as custom_logger
@@ -194,8 +194,8 @@ class CollectIndexWeightFromCNIndexInterface:
         return True
 
 
-    def collect_cn_index(self):
-        # 收集国证指数信息
+    def collect_cn_index_single_thread(self):
+        # 单线程收集国证指数信息
         # 从标的池中获取国证公司的指数
         target_cn_index_dict = self.get_cn_index_from_index_target()
         # 遍历国证指数
@@ -219,10 +219,58 @@ class CollectIndexWeightFromCNIndexInterface:
                 custom_logger.CustomLogger().log_writter(msg, lev='warning')
 
 
+    def get_check_and_save_index_info(self, index_code, target_cn_index_dict):
+        # 获取，检查是否存储过，并存储指数成分股及权重信息
+        # index_code,指数代码，399396
+        # target_cn_index_dict，指数代码及对应的指数名称的字典
+        # 如 {'399396': '国证食品饮料行业', '399440': '国证钢铁',,,}
+
+        # 获取更新日期和成分股信息
+        update_date, stocks_detail_info_list = self.get_single_index_latest_constituent_stock_and_weight(index_code)
+        # 指数名称
+        index_name = target_cn_index_dict[index_code]
+        # 检查是否储存过
+        is_saved_before = self.check_if_saved_before(index_code, update_date, stocks_detail_info_list)
+        # 如果储存过，则跳过
+        if (is_saved_before):
+            # 日志记录
+            msg = index_code + " " + index_name + " 曾经储存过，无需再存储"
+            custom_logger.CustomLogger().log_writter(msg, lev='warning')
+        # 如果未存储过，则存入数据库
+        else:
+            self.save_index_info_into_db(index_code, index_name, update_date, stocks_detail_info_list)
+            # 日志记录
+            msg = index_code + " " + index_name + " 未储存过，已更新指数信息"
+            custom_logger.CustomLogger().log_writter(msg, lev='warning')
+
+
+    def collect_cn_index_multi_thread(self):
+        # 多线程收集国证指数信息
+        # 从标的池中获取国证公司的指数
+        target_cn_index_dict = self.get_cn_index_from_index_target()
+        # 启用多线程
+        running_threads = []
+        # 遍历国证指数
+        for index_code in target_cn_index_dict:
+            # 启动线程
+            running_thread = threading.Thread(target=self.get_check_and_save_index_info,
+                                              kwargs={"index_code": index_code,
+                                                      "target_cn_index_dict": target_cn_index_dict})
+            running_threads.append(running_thread)
+
+            # 开启新线程
+        for mem in running_threads:
+            mem.start()
+
+            # 等待所有线程完成
+        for mem in running_threads:
+            mem.join()
+
+
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectIndexWeightFromCNIndexInterface()
-    go.collect_cn_index()
+    go.collect_cn_index_multi_thread()
     #go.collect_cn_index()
     #result = go.get_single_index_latest_constituent_stock_and_weight('399396')
     #result = go.collect_all_target_cn_index_weight_single_thread()
