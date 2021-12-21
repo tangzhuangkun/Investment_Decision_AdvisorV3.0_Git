@@ -71,6 +71,9 @@ class CollectIndexWeightFromCNIndexInterface:
                 # 权重
                 stock_detail_info_list.append(stock_info['weight'])
                 stocks_detail_info_list.append(stock_detail_info_list)
+
+            # 按成分股权重从大到小排序
+            stocks_detail_info_list.sort(key=lambda x: x[4], reverse=True)
             # 返回如 ('2021-12-13', [['600519', '贵州茅台', 'sh', 'XSHG', 15.19], ['000858', '五粮液', 'sz', 'XSHE', 15.18],,,,,])
             return update_date, stocks_detail_info_list
 
@@ -120,6 +123,7 @@ class CollectIndexWeightFromCNIndexInterface:
 
         return self.call_interface_to_get_index_weight(index_id, current_month, header, proxy)
 
+
     def get_cn_index_from_index_target(self):
         # 从标的池中获取国证公司的指数
         # 返回：指数代码及对应的指数名称的字典
@@ -135,10 +139,92 @@ class CollectIndexWeightFromCNIndexInterface:
         return target_cn_index_dict
 
 
+    def save_index_info_into_db(self,index_code, index_name, update_date, stocks_detail_info_list):
+        # 将指数成分股信息存入数据库
+        # index_code，指数代码，399396
+        # index_name，指数名称，国证食品饮料行业
+        # update_date，更新日期，2021-12-13
+        # stocks_detail_info_list，成分股的信息， [['600519', '贵州茅台','sh','XSHG',15.19'], ['600887', '伊利股份','sh','XSHG',10.37']，，，]
+        # 返回：存入数据库
+
+        for stock_info in stocks_detail_info_list:
+            # 插入的SQL
+            inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name," \
+                            "stock_code,stock_name,stock_exchange_location,stock_market_code," \
+                            "weight,source,index_company,p_day)" \
+                            "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
+                                index_code, index_name, stock_info[0], stock_info[1], stock_info[2], stock_info[3], stock_info[4],
+                                 '国证官网', '国证', update_date)
+            db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
+
+
+    def check_if_saved_before(self, index_code, update_date, stocks_detail_info_list):
+        # 与数据库的内容对比，是否已存过
+        # index_code,指数代码，399396
+        # update_date, 更新日期，2021-12-13
+        # stocks_detail_info_list, 成分股的信息， [['600519', '贵州茅台','sh','XSHG',15.19'], ['600887', '伊利股份','sh','XSHG',10.37']，，，]
+        # 返回：如果存储过，则返回True; 未储存过，则返回False
+
+        # 查询sql
+        selecting_sql = "select index_code, index_name, stock_code, stock_name, weight, p_day from " \
+                        "index_constituent_stocks_weight where p_day = (select max(p_day) as max_day from " \
+                        "index_constituent_stocks_weight where index_code = '%s' and source = '%s') and " \
+                        "index_code = '%s' and source = '%s' order by weight desc" % (
+                        index_code, '国证官网', index_code, '国证官网')
+        db_index_content = db_operator.DBOperator().select_all("financial_data", selecting_sql)
+
+        # 成分股个数
+        file_content_len = len(stocks_detail_info_list)
+        # 数据库中的指数成分股个数
+        db_index_content_len = len(db_index_content)
+        # 对比文件内容中的成分股 与 数据库中的指数成分股 个数是否一致
+        if (file_content_len != db_index_content_len):
+            return False
+
+        for i in range(file_content_len):
+            # 对比股票代码是否一致
+            if (stocks_detail_info_list[i][0] != db_index_content[i]["stock_code"]):
+                return False
+            # 对比股票权重是否一致
+            elif (stocks_detail_info_list[i][4] != float(db_index_content[i]["weight"])):
+                return False
+            # 对比发布日期是否一致
+            elif (update_date != str(db_index_content[i]["p_day"])):
+                return False
+        return True
+
+
+    def collect_cn_index(self):
+        # 收集国证指数信息
+        # 从标的池中获取国证公司的指数
+        target_cn_index_dict = self.get_cn_index_from_index_target()
+        # 遍历国证指数
+        for index_code in target_cn_index_dict:
+            # 获取更新日期和成分股信息
+            update_date, stocks_detail_info_list = self.get_single_index_latest_constituent_stock_and_weight(index_code)
+            # 指数名称
+            index_name = target_cn_index_dict[index_code]
+            # 检查是否储存过
+            is_saved_before = self.check_if_saved_before(index_code, update_date, stocks_detail_info_list)
+            # 如果储存过，则跳过
+            if (is_saved_before):
+                # 日志记录
+                msg = index_code + " " + index_name + " 曾经储存过，无需再存储"
+                custom_logger.CustomLogger().log_writter(msg, lev='warning')
+            # 如果未存储过，则存入数据库
+            else:
+                self.save_index_info_into_db(index_code, index_name, update_date, stocks_detail_info_list)
+                # 日志记录
+                msg = index_code + " " + index_name + " 未储存过，已更新指数信息"
+                custom_logger.CustomLogger().log_writter(msg, lev='warning')
+
+
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectIndexWeightFromCNIndexInterface()
-    go.collect_all_target_cn_index_weight_single_thread()
+    go.collect_cn_index()
+    #go.collect_cn_index()
+    #result = go.get_single_index_latest_constituent_stock_and_weight('399396')
     #result = go.collect_all_target_cn_index_weight_single_thread()
     #print(result)
     time_end = time.time()
