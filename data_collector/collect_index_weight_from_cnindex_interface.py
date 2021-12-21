@@ -244,7 +244,7 @@ class CollectIndexWeightFromCNIndexInterface:
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
 
 
-    def collect_cn_index_multi_thread(self):
+    def collect_cn_index_multi_threads(self):
         # 多线程收集国证指数信息
         # 从标的池中获取国证公司的指数
         target_cn_index_dict = self.get_cn_index_from_index_target()
@@ -266,11 +266,14 @@ class CollectIndexWeightFromCNIndexInterface:
         for mem in running_threads:
             mem.join()
 
+    def main(self):
+        self.collect_cn_index_multi_threads()
+
 
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectIndexWeightFromCNIndexInterface()
-    go.collect_cn_index_multi_thread()
+    go.main()
     #go.collect_cn_index()
     #result = go.get_single_index_latest_constituent_stock_and_weight('399396')
     #result = go.collect_all_target_cn_index_weight_single_thread()
