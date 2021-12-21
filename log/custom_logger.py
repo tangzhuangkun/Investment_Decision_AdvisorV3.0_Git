@@ -28,9 +28,12 @@ class CustomLogger:
 		# 设置logger日志等级,设置日志器将会处理的日志消息的最低严重级别
 		# DEBUG<INFO<WARNING<ERROR<CRITICAL
 		logger.setLevel(logging.INFO)  
-		
+
 		# 如果logger.handlers列表为空，且日志级别不为debug和不为info，则添加，否则，直接去写日志
-		if not logger.handlers and lev != 'debug':
+		#if not logger.handlers and lev != 'debug':
+
+		# 如果logger.handlers列表为空,则先创建日志文件，然后再写入日志
+		if not logger.handlers:
 			# 创建handler
 			fh = logging.FileHandler("../log/daily_log/"+self.today+".log",encoding="utf-8")
 			ch = logging.StreamHandler()
@@ -48,6 +51,17 @@ class CustomLogger:
 			# 为logger添加的日志处理器
 			logger.addHandler(fh)
 			logger.addHandler(ch)
+
+			if lev=='info':
+				logger.info("	INFO  "+working_dir+"  "+msg+"\n")
+			elif lev=='warning':
+				logger.warning("	WARNING  "+working_dir+"  "+msg+"\n")
+			elif lev=='error':
+				logger.error("	ERROR  "+working_dir+"  "+msg+"\n")
+			elif lev=='critical':
+				logger.critical("	CRITICAL  "+working_dir+"  "+msg+"\n")
+			else:
+				print('WRONG LEVEL')
 
 		else:
 			# 输出不同级别的log,严重级别依次递增
