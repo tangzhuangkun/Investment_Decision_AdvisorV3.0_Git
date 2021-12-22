@@ -21,7 +21,7 @@ class CollectIndexWeightFromCSIndexFile:
         # 当天的日期
         self.today = time.strftime("%Y-%m-%d", time.localtime())
         # 权重文件存放路径
-        self.index_weight_samples_path = "../data_collector/index_weight_samples/"
+        self.index_weight_samples_path = os.path.abspath(os.path.join(os.getcwd(), "../.."))+"/index_weight_samples/"
 
 
     def download_index_weight_file(self, index_code, index_name, header, proxy):
