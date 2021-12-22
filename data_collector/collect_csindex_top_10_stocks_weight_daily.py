@@ -13,7 +13,7 @@ import database.db_operator as db_operator
 
 
 class CollectCSIndexTop10StocksWeightDaily:
-    # 从中证指数官网获取指数的权重数据，并存入数据库
+    # 从中证指数官网获取指数的前十权重数据，并存入数据库
     # 运行频率：每天
 
     def __init__(self):
@@ -59,9 +59,9 @@ class CollectCSIndexTop10StocksWeightDaily:
                 stock_detail_info_list = []
                 stock_detail_info_list.append(stock_info['securityCode'])
                 stock_detail_info_list.append(stock_info['securityName'])
-                if stock_info['marketNameEn'] == 'Shenzhen Stock Exchange':
+                if 'Shenzhen' in stock_info['marketNameEn']:
                     stock_detail_info_list.append('sz')
-                elif stock_info['marketNameEn'] == 'Shanghai Stock Exchange':
+                elif 'Shanghai' in stock_info['marketNameEn'] :
                     stock_detail_info_list.append('sh')
                 else:
                     stock_detail_info_list.append('unknown')
@@ -129,8 +129,8 @@ class CollectCSIndexTop10StocksWeightDaily:
         for target_index_code in cs_target_indexes_names_dict:
             # 获取 该指数的最新更新日期及前十成份股信息
             stocks_info = self.get_single_index_latest_constituent_stock_and_weight(target_index_code[:6])
-            # 截止日期
-            expiration_date = stocks_info[0]
+            # 业务日期
+            p_day = stocks_info[0]
             # 指数代码，如 399997
             index_code = target_index_code[:6]
             # 指数名称，如 中证白酒
@@ -140,28 +140,33 @@ class CollectCSIndexTop10StocksWeightDaily:
                 stock_code = stock_info[0]
                 # 股票名称，如 伊利股份
                 stock_name = stock_info[1].replace(' ', '')
-                # 股票交易所，如 sh，sz
-                stock_exchange = stock_info[2]
+                # 股票交易所地点，如 sh，sz
+                stock_exchange_location = stock_info[2]
                 # 权重，如 16.766190846153634
                 weight = stock_info[3]
-                # 股票全球代码
-                global_stock_code = ""
-                if stock_exchange =='sh':
-                    global_stock_code = stock_code+'.XSHG'
-                elif stock_exchange == 'sz':
-                    global_stock_code = stock_code + '.XSHE'
+                # 交易所全球代码
+                if stock_exchange_location =='sh':
+                    stock_market_code = 'XSHG'
+                elif stock_exchange_location == 'sz':
+                    stock_market_code = 'XSHE'
                 else:
-                    global_stock_code = stock_code
+                    stock_market_code = 'UNKNOWN'
 
                 try:
+
                     # 插入的SQL
-                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name,global_stock_code,stock_code,stock_name,stock_exchange_location,weight,source,index_company,submission_date)" \
-                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (target_index_code, index_name, global_stock_code, stock_code, stock_name,stock_exchange,weight, '中证官网','中证',expiration_date)
+                    inserting_sql = "INSERT INTO index_constituent_stocks_weight(index_code,index_name," \
+                                    "stock_code,stock_name,stock_exchange_location,stock_market_code," \
+                                    "weight,source,index_company,p_day)" \
+                                    "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')" % (
+                                        index_code, index_name, stock_code, stock_name, stock_exchange_location,
+                                        stock_market_code, weight, '中证官网', '中证', p_day)
+
                     db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
 
                 except Exception as e:
                     # 日志记录
-                    msg = 'Failed to insert index weights into DB' + '  ' + str(e)
+                    msg = '将从中证官网获取的'+p_day+index_code+index_name+ '的前十大权重股存入数据库时错误  ' + str(e)
                     custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def main(self):
