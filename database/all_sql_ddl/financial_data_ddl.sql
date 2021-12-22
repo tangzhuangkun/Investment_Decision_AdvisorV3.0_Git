@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`index_company` VARCHAR(20) DEFAULT NULL COMMENT '指数开发公司',
 	`p_day` DATE DEFAULT NULL COMMENT '业务日期',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
-	INDEX (index_code, stock_code, weight, source, p_day),
+	UNIQUE INDEX (index_code, stock_code, weight, source, p_day),
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '指数构成及权重';
