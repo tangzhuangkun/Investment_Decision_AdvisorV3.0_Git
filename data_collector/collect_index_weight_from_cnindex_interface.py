@@ -73,7 +73,7 @@ class CollectIndexWeightFromCNIndexInterface:
                 stocks_detail_info_list.append(stock_detail_info_list)
 
             # 按成分股权重从大到小排序
-            stocks_detail_info_list.sort(key=lambda x: x[4], reverse=True)
+            stocks_detail_info_list.sort(key=lambda x: x[0], reverse=True)
             # 返回如 ('2021-12-13', [['600519', '贵州茅台', 'sh', 'XSHG', 15.19], ['000858', '五粮液', 'sz', 'XSHE', 15.18],,,,,])
             return update_date, stocks_detail_info_list
 
@@ -169,7 +169,7 @@ class CollectIndexWeightFromCNIndexInterface:
         selecting_sql = "select index_code, index_name, stock_code, stock_name, weight, p_day from " \
                         "index_constituent_stocks_weight where p_day = (select max(p_day) as max_day from " \
                         "index_constituent_stocks_weight where index_code = '%s' and source = '%s') and " \
-                        "index_code = '%s' and source = '%s' order by weight desc" % (
+                        "index_code = '%s' and source = '%s' order by stock_code desc" % (
                         index_code, '国证官网', index_code, '国证官网')
         db_index_content = db_operator.DBOperator().select_all("financial_data", selecting_sql)
 
@@ -183,9 +183,15 @@ class CollectIndexWeightFromCNIndexInterface:
 
         for i in range(file_content_len):
             # 对比股票代码是否一致
+            s_stock_code = stocks_detail_info_list[i][0]
+            db_stock_code = db_index_content[i]["stock_code"]
+
+            s_stock_weight = stocks_detail_info_list[i][4]
+            db_stock_weight = float(db_index_content[i]["weight"])
             if (stocks_detail_info_list[i][0] != db_index_content[i]["stock_code"]):
                 return False
             # 对比股票权重是否一致
+
             elif (stocks_detail_info_list[i][4] != float(db_index_content[i]["weight"])):
                 return False
             # 对比发布日期是否一致
@@ -219,10 +225,11 @@ class CollectIndexWeightFromCNIndexInterface:
                 custom_logger.CustomLogger().log_writter(msg, lev='warning')
 
 
-    def get_check_and_save_index_info(self, index_code, target_cn_index_dict):
+    def get_check_and_save_index_info(self, index_code, target_cn_index_dict, threadLock):
         # 获取，检查是否存储过，并存储指数成分股及权重信息
         # index_code,指数代码，399396
         # target_cn_index_dict，指数代码及对应的指数名称的字典
+        # threadLock：线程锁
         # 如 {'399396': '国证食品饮料行业', '399440': '国证钢铁',,,}
 
         # 获取更新日期和成分股信息
@@ -233,15 +240,23 @@ class CollectIndexWeightFromCNIndexInterface:
         is_saved_before = self.check_if_saved_before(index_code, update_date, stocks_detail_info_list)
         # 如果储存过，则跳过
         if (is_saved_before):
+            # 获取锁，用于线程同步
+            threadLock.acquire()
             # 日志记录
             msg = index_code + " " + index_name + " 曾经储存过，无需再存储"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
+            # 释放锁，开启下一个线程
+            threadLock.release()
         # 如果未存储过，则存入数据库
         else:
             self.save_index_info_into_db(index_code, index_name, update_date, stocks_detail_info_list)
+            # 获取锁，用于线程同步
+            threadLock.acquire()
             # 日志记录
             msg = index_code + " " + index_name + " 未储存过，已更新指数信息"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
+            # 释放锁，开启下一个线程
+            threadLock.release()
 
 
     def collect_cn_index_multi_threads(self):
@@ -250,12 +265,15 @@ class CollectIndexWeightFromCNIndexInterface:
         target_cn_index_dict = self.get_cn_index_from_index_target()
         # 启用多线程
         running_threads = []
+        # 启用线程锁
+        threadLock = threading.Lock()
         # 遍历国证指数
         for index_code in target_cn_index_dict:
             # 启动线程
             running_thread = threading.Thread(target=self.get_check_and_save_index_info,
                                               kwargs={"index_code": index_code,
-                                                      "target_cn_index_dict": target_cn_index_dict})
+                                                      "target_cn_index_dict": target_cn_index_dict,
+                                                      "threadLock": threadLock})
             running_threads.append(running_thread)
 
             # 开启新线程
@@ -267,7 +285,8 @@ class CollectIndexWeightFromCNIndexInterface:
             mem.join()
 
     def main(self):
-        self.collect_cn_index_multi_threads()
+        #self.collect_cn_index_multi_threads()
+        self.collect_cn_index_single_thread()
 
 
 if __name__ == '__main__':
