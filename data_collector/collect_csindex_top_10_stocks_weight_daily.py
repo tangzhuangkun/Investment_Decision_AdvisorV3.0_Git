@@ -224,10 +224,11 @@ class CollectCSIndexTop10StocksWeightDaily:
             self.get_check_and_save_index_info(index_code, cs_target_indexes_names_dict)
 
 
-    def get_check_and_save_index_info(self, index_code, target_cs_index_dict):
+    def get_check_and_save_index_info(self, index_code, target_cs_index_dict,threadLock):
         # 从接口获取前十成分股信息，检查是否存储过，并存储指数成分股及权重信息
         # index_code,指数代码，399997
         # target_cs_index_dict，指数代码及对应的指数名称的字典
+        # threadLock：线程锁
         # 如 {'399997': '中证白酒指数', '000932': '中证主要消费', '399965': '中证800地产', '399986': '中证银行指数', '000036': '上证主要消费行业指数'}
 
         # 获取 该指数的最新更新日期及前十成份股信息
@@ -238,15 +239,23 @@ class CollectCSIndexTop10StocksWeightDaily:
         is_saved_before = self.check_if_saved_before(index_code, p_day, top_10_stocks_detail_info_list)
         # 如果储存过，则跳过
         if (is_saved_before):
+            # 获取锁，用于线程同步
+            threadLock.acquire()
             # 日志记录
             msg = p_day + " " + index_code + " " + index_name + " 的前十权重股曾经储存过，无需再存储"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
+            # 释放锁，开启下一个线程
+            threadLock.release()
         # 如果未存储过，则存入数据库
         else:
             self.save_index_info_into_db(index_code, index_name, p_day, top_10_stocks_detail_info_list)
+            # 获取锁，用于线程同步
+            threadLock.acquire()
             # 日志记录
             msg = p_day + " " + index_code + " " + index_name + " 的前十权重股未储存过，已更新指数信息"
             custom_logger.CustomLogger().log_writter(msg, lev='warning')
+            # 释放锁，开启下一个线程
+            threadLock.release()
 
 
     def collect_target_index_stock_info_by_multi_threads(self):
@@ -258,13 +267,16 @@ class CollectCSIndexTop10StocksWeightDaily:
 
         # 启用多线程
         running_threads = []
+        # 启用线程锁
+        threadLock = threading.Lock()
 
         # 遍历这些指数
         for index_code in cs_target_indexes_names_dict:
             # 启动线程
             running_thread = threading.Thread(target=self.get_check_and_save_index_info,
                                               kwargs={"index_code": index_code,
-                                                      "target_cs_index_dict": cs_target_indexes_names_dict})
+                                                      "target_cs_index_dict": cs_target_indexes_names_dict,
+                                                      "threadLock": threadLock})
             running_threads.append(running_thread)
 
             # 开启新线程
