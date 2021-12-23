@@ -72,7 +72,7 @@ class CollectIndexWeightFromCNIndexInterface:
                 stock_detail_info_list.append(stock_info['weight'])
                 stocks_detail_info_list.append(stock_detail_info_list)
 
-            # 按成分股权重从大到小排序
+            # 按成分股股票代码从大到小排序
             stocks_detail_info_list.sort(key=lambda x: x[0], reverse=True)
             # 返回如 ('2021-12-13', [['600519', '贵州茅台', 'sh', 'XSHG', 15.19], ['000858', '五粮液', 'sz', 'XSHE', 15.18],,,,,])
             return update_date, stocks_detail_info_list
