@@ -68,6 +68,8 @@ class CollectCSIndexTop10StocksWeightDaily:
                     stock_detail_info_list.append('unknown')
                 stock_detail_info_list.append(stock_info['preciseWeight'])
                 top_10_stocks_detail_info_list.append(stock_detail_info_list)
+            # 按成分股股票代码从大到小排序
+            top_10_stocks_detail_info_list.sort(key=lambda x: x[0], reverse=True)
             # 返回如 ( '2021-09-24', [['600809', '山西汾酒', 'sh','16.766190846153634'], ['600519', '贵州茅台', 'sh','13.277568906087126'], ,,,,])
             return p_day, top_10_stocks_detail_info_list
 
@@ -147,7 +149,7 @@ class CollectCSIndexTop10StocksWeightDaily:
         selecting_sql = "select index_code, index_name, stock_code, stock_name, weight, p_day from " \
                         "index_constituent_stocks_weight where p_day = (select max(p_day) as max_day from " \
                         "index_constituent_stocks_weight where index_code = '%s' and source = '%s') and " \
-                        "index_code = '%s' and source = '%s' order by weight desc" % (
+                        "index_code = '%s' and source = '%s' order by stock_code desc" % (
                             index_code, '中证官网', index_code, '中证官网')
         db_index_content = db_operator.DBOperator().select_all("financial_data", selecting_sql)
 
