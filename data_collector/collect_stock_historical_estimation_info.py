@@ -457,6 +457,7 @@ class CollectStockHistoricalEstimationInfo:
     def main(self,start_date):
         # 与上次数据库中待收集的股票代码和名称对比，
         # 并决定是 同时收集多只股票特定日期的数据 还是 分多次收集个股票一段时间的数据
+        # param: start_date, 起始日期，如 2010-01-02
 
         # 当前数据库中，待收集的股票代码和名称
         all_stock_codes_names_dict = self.all_demanded_stocks()
@@ -510,7 +511,7 @@ if __name__ == "__main__":
     #go.collect_all_new_stocks_info_at_one_time()
     #result = go.is_existing("000568", "泸州老窖", "2020-11-19")
     #print(result)
-    go.main("2021-02-25")
+    go.main("2010-01-01")
     #print(go.all_demanded_stocks_counter())
     #go.latest_collection_date("2021-04-01")
     #go.test_date_loop()
