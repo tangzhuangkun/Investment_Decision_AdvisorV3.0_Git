@@ -6,7 +6,6 @@ import threading
 sys.path.append("..")
 import database.db_operator as db_operator
 import data_collector.get_stock_real_time_indicator_from_interfaces as get_stock_real_time_indicator_from_interfaces
-import target_pool.read_collect_target_fund as read_collect_target_fund
 import log.custom_logger as custom_logger
 import data_miner.data_miner_common_index_operator as data_miner_common_index_operator
 import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
@@ -22,14 +21,13 @@ class FundStrategyPBEstimation:
     def __init__(self):
         pass
 
-    def get_stock_historical_pb(self, stock_code, stock_name, day):
+    def get_stock_historical_pb(self, stock_code, day):
         # 提取股票的历史某一天的市净率信息， 包括市净率, 扣商誉市净率
         # param: stock_code, 股票代码，如 000596
-        # param: stock_name， 股票名称，如 古井贡酒
         # param: day, 日期， 如 2020-09-01
         # 返回：市净率, 扣商誉市净率
         selecting_sql = "select pb, pb_wo_gw from stocks_main_estimation_indexes_historical_data where stock_code = '%s'" \
-                        " and stock_name = '%s' and date = '%s' " % (stock_code, stock_name, day)
+                        " and date = '%s' " % (stock_code, day)
         pb_info = db_operator.DBOperator().select_all("financial_data", selecting_sql)
         return pb_info
 
@@ -58,14 +56,14 @@ class FundStrategyPBEstimation:
 
     def get_a_historical_date_index_PB(self, index_code, day):
         # 从已算好的数据库中获取某个历史日期的市净率
-        # param: index_code 指数代码，399997.XSHE
+        # param: index_code 指数代码，399997
         # param: day, 日期， 如 2020-09-01
         # 返回 指数市净率, 扣商誉市净率
         # 如 (Decimal('56.39008'), Decimal('53.32287'))
         selecting_sql = "select pb, pb_wo_gw from index_components_historical_estimations" \
                         " where index_code = '%s' and historical_date = '%s' " % (index_code, day)
-        index_pe_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
-        return index_pe_info['pb'], index_pe_info['pb_wo_gw']
+        index_pb_info = db_operator.DBOperator().select_one("aggregated_data", selecting_sql)
+        return index_pb_info['pb'], index_pb_info['pb_wo_gw']
 
     '''
     def calculate_index_pb_in_a_period_time(self, index_code, n_year):
@@ -106,13 +104,15 @@ class FundStrategyPBEstimation:
 
     def calculate_real_time_index_pb_multiple_threads(self, index_code):
         # 多线程计算指数的实时市净率
-        # index_code, 指数代码（1、6位数字+交易所代码；2、6位数字；例如： 399997.XSHE 或者 399997）
+        # index_code, 指数代码， 如 399997
         # 输出，指数的实时市净率， 如 18.5937989
 
         # 统计指数实时的市净率
         self.index_real_time_pb = 0
 
         # 获取指数的成分股和权重
+        # [{'stock_code': '000568', 'stock_name': '泸州老窖', 'weight': Decimal('15.487009751893797000'), 'stock_exchange_location': 'sz', 'stock_market_code': 'XSHE'},
+        #         # {'stock_code': '000596', 'stock_name': '古井贡酒', 'weight': Decimal('3.438504576505159600'), 'stock_exchange_location': 'sz', 'stock_market_code': 'XSHE'},,,,]
         stocks_and_their_weights = data_miner_common_index_operator.DataMinerCommonIndexOperator().get_index_constitute_stocks(
             index_code)
 
@@ -123,25 +123,19 @@ class FundStrategyPBEstimation:
 
         # 遍历指数的成分股
         for i in range(len(stocks_and_their_weights)):
-            # 用于储存股票代码，例如 sh600726
-            stock_id = ''
+            # 拼接股票代码，例如 sh600726
 
             # 获取成分股上市地，
-            # XSHG 上海证券交易所
-            # XSHE 深圳证券交易所
-            stock_exchange = stocks_and_their_weights[i]["global_stock_code"][7:11]
-            # 获取成分股代码，6位纯数字
-            stock_code = stocks_and_their_weights[i]["global_stock_code"][:6]
-            # 获取成分股权重
+            # sh 代表上海
+            # sz 代表深圳
+            stock_exchange_location = stocks_and_their_weights[i]["stock_exchange_location"]
+            # 获取成分股代码，6位纯数字， 000568
+            stock_code = stocks_and_their_weights[i]["stock_code"]
+            # 获取成分股权重,
             stock_weight = stocks_and_their_weights[i]["weight"]
 
-            # todo 获取股票的上市地出错
-            # 将股票代码进行转换，
-            # 由 6位数字+4位上市地（如 000596.XSHE） ---> 2位上市地+6位数字（如 sz000596）
-            if stock_exchange == 'XSHG':
-                stock_id = 'sh' + stock_code
-            elif stock_exchange == 'XSHE':
-                stock_id = 'sz' + stock_code
+            # 将股票代码进行转换，如 sz000568
+            stock_id = stock_exchange_location + stock_code
 
             # 启动线程
             running_thread = threading.Thread(target=self.get_and_calculate_single_stock_pb_weight_in_index,
@@ -171,7 +165,7 @@ class FundStrategyPBEstimation:
 
     def get_last_trading_day_PB(self, index_code):
         # 获取当前指数上一个交易日的  市净率 和 扣商誉市净率
-        # index_code: 指数代码, 必须如 399965.XSHE，代码后面带上市地
+        # index_code: 指数代码, 必须如 399965
         # return： 如果有值，则返回tuple，( PB , 扣商誉市净率)
         #          如： (Decimal('16.581174467'), Decimal('16.616582865'))
         #          如果无值，则返回tuple，(0, 0)
@@ -198,9 +192,10 @@ class FundStrategyPBEstimation:
             custom_logger.CustomLogger().log_writter(log_msg, 'error')
             return (0, 0)
 
-    def cal_the_PB_percentile_in_history(self, index_code):
+    def cal_the_PB_percentile_in_history(self, index_code, index_code_with_location):
         # 获取当前指数的实时市净率， 并计算当前实时PB在历史上的百分位水平，预估扣商誉市净率，历史百分位，同比上个交易日涨跌幅
         # index_code: 指数代码, 必须如 399965
+        # index_code_with_location: 指数代码（含上市地），sz399965
         # return: 当前指数的实时PB， 在历史上的百分位水平，预估的实时扣商誉市净率，历史百分位，同比上个交易日涨跌幅
         #         如 [Decimal('1.0617'), 0.0063, Decimal('1.1857'), 0.0237, Decimal('1.96')]
 
@@ -249,7 +244,7 @@ class FundStrategyPBEstimation:
 
         # 获取指数最新的涨跌率
         index_latest_increasement_decreasement_rate = data_collector_common_index_collector.DataCollectorCommonIndexCollector().get_index_latest_increasement_decreasement_rate(
-            index_code)
+            index_code_with_location)
 
         # 根据市净率的同比涨跌幅，预估实时的扣商誉市净率
         index_real_time_predictive_pb_wo_gw = round(
@@ -297,7 +292,7 @@ class FundStrategyPBEstimation:
         for index_code_info in indexes_and_their_names:
             # 获取 当前指数的实时市净率， 在历史上的百分位水平，预估的实时扣商誉市净率，历史百分位，同比上个交易日涨跌幅
             # 如 [Decimal('1.0617'), 0.0063, Decimal('1.1857'), 0.0237, Decimal('1.96')]
-            pb_result_list = self.cal_the_PB_percentile_in_history(index_code_info["index_code"])
+            pb_result_list = self.cal_the_PB_percentile_in_history(index_code_info["index_code"],index_code_info["index_code_with_init"])
             # 生成 讯息
             indexes_and_real_time_PB_msg += index_code_info["index_name"] + ":  \n" + "同比上一个交易日: " + str(
                 pb_result_list[4]) + "%;" + "\n" + "--------" + "\n" + "实时市净率: " + \
@@ -319,17 +314,17 @@ if __name__ == '__main__':
     go = FundStrategyPBEstimation()
     # result = go.get_index_constitute_stocks("399965")
     # print(result)
-    # result = go.get_stock_historical_pb("000002", "万科A", "2020-05-24")
-    # print(result)
-    # pb, pb_wo_gw = go.get_a_historical_date_index_PB("399997.XSHE", "2021-10-22")
-    # print(pb, pb_wo_gw)
-    # result = go.get_last_trading_day_PB("399997.XSHE")
-    # print(result)
+    #result = go.get_stock_historical_pb("000002", "2021-12-24")
+    #print(result)
+    #pb, pb_wo_gw = go.get_a_historical_date_index_PB("399997", "2021-12-24")
+    #print(pb, pb_wo_gw)
+    #result = go.get_last_trading_day_PB("399997")
+    #print(result)
     # go.calculate_index_pb_in_a_period_time("399965",0.5)
-    # result = go.cal_the_PB_percentile_in_history("399997.XSHE")
+    #result = go.cal_the_PB_percentile_in_history("399965", "sz399965")
     # result = go.cal_the_PB_percentile_in_history("399965.XSHE")
     # result = go.calculate_real_time_index_pb_multiple_threads("399965.XSHE")
-    # print(result)
+    #print(result)
     msg = go.generate_PB_strategy_msg()
     print(msg)
     time_end = time.time()
