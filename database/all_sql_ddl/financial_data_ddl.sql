@@ -28,16 +28,19 @@ COMMENT '指数构成及权重';
 
 USE financial_data;
 CREATE TABLE IF NOT EXISTS `mix_top10_with_bottom_no_repeat`(
-	`id` INT NOT NULL AUTO_INCREMENT,
+	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
 	`index_name` VARCHAR(50) NOT NULL COMMENT '指数名称',
-	`global_stock_code` VARCHAR(20) DEFAULT NULL COMMENT '股票全球代码',
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
 	`stock_name` VARCHAR(20) NOT NULL COMMENT '股票名称',
+	`stock_exchange_location` VARCHAR(20) DEFAULT NULL COMMENT '股票上市地',
+	`stock_market_code` VARCHAR(20) DEFAULT NULL COMMENT '股票交易市场代码',
 	`weight` DECIMAL(21,18) NOT NULL COMMENT '股票权重',
 	`source` VARCHAR(10) DEFAULT NULL COMMENT '数据来源',
 	`index_company` VARCHAR(20) DEFAULT NULL COMMENT '指数开发公司',
-	`submission_date` DATE DEFAULT NULL COMMENT '提交的日期',
+	`p_day` DATE DEFAULT NULL COMMENT '业务日期',
+	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
+	UNIQUE INDEX (index_code, stock_code, p_day),
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '指数成分股及权重构成，最新top10与其它成分股，无重复股';
