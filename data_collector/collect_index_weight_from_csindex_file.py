@@ -258,7 +258,7 @@ class CollectIndexWeightFromCSIndexFile:
                     row_content_list.append(stock_code)
                 elif c==5:
                     # 股票名称
-                    stock_name = sheet.row_values(r)[c]
+                    stock_name = sheet.row_values(r)[c].replace(" ","")
                     row_content_list.append(stock_name)
                 elif c==8:
                     # 股票上市地
