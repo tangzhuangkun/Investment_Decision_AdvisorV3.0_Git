@@ -6,3 +6,9 @@
 4、技术突破：从中证官网爬取excel文件，读取文件，录入mysql--Done
 5、将股债比的 数据聚合 脚本放在data_miner 文件中
 6、增加可转债的双低策略
+
+
+
+上线：
+1、增加文件夹 index_weight_samples
+2、添加索引， ALTER TABLE stocks_main_estimation_indexes_historical_data add unique index (stock_code, date);

@@ -85,6 +85,10 @@ CREATE TABLE IF NOT EXISTS `stocks_main_estimation_indexes_historical_data`(
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '股票估值指标历史数据';
 
+/* 加索引*/
+ALTER TABLE stocks_main_estimation_indexes_historical_data add unique index (stock_code, date);
+
+
 /* --------- user：investor1 ------ */
 /* --------- db：financial_data ------ */
 /*创建一个表，trading_days，用于存储 交易日期*/
