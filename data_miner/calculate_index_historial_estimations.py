@@ -28,12 +28,12 @@ class CalculateIndexHistoricalEstimations:
             custom_logger.CustomLogger().log_writter(msg, 'error')
 
 
-    def run_file_to_create_middle_views(self):
-        # 读取并运行mysql脚本
+    def run_file_to_predict_index_latest_component(self):
+        # 读取并运行mysql脚本,预测指数的最新构成成分
 
         # 运行 创建中间层
         # 相对路径，是相对于程序执行命令所在的目录，./ 表示的不是脚本所在的目录，而是程序执行命令所在的目录，也就是所谓的当前目录。
-        with open("../data_miner/create_middle_views.sql", encoding='utf-8', mode='r') as view_f:
+        with open("../data_miner/predict_all_indexes_latest_component.sql", encoding='utf-8', mode='r') as view_f:
             # 分割sql文件中的执行语句，挨句执行
             sql_list = view_f.read().split(';')[:-1]
             for x in sql_list:
@@ -55,7 +55,7 @@ class CalculateIndexHistoricalEstimations:
 
                 except Exception as e:
                     # 日志记录
-                    msg = '失败，无法成功创建中间视图层' + '  ' + str(e)
+                    msg = '失败，无法成功读取并运行mysql脚本,预测指数的最新构成成分' + '  ' + str(e)
                     custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def run_file_to_cal_index_his_estimation(self):
@@ -91,7 +91,7 @@ class CalculateIndexHistoricalEstimations:
 
     def main(self):
         self.truncate_table()
-        self.run_file_to_create_middle_views()
+        self.run_file_to_predict_index_latest_component()
         self.run_file_to_cal_index_his_estimation()
 
 if __name__ == '__main__':
