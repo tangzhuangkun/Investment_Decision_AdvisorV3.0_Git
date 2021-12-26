@@ -285,8 +285,8 @@ class CollectIndexWeightFromCNIndexInterface:
             mem.join()
 
     def main(self):
-        #self.collect_cn_index_multi_threads()
-        self.collect_cn_index_single_thread()
+        self.collect_cn_index_multi_threads()
+        #self.collect_cn_index_single_thread()
 
 
 if __name__ == '__main__':
