@@ -7,6 +7,8 @@ import database.db_operator as db_operator
 import log.custom_logger as custom_logger
 import target_pool.read_collect_target_stock as read_collect_target_stock
 import data_collector.get_stock_real_time_indicator_from_xueqiu as get_stock_real_time_indicator_from_xueqiu
+import data_miner.data_miner_common_target_stock_operator as data_miner_common_target_stock_operator
+import data_collector.get_stock_real_time_indicator_from_interfaces as get_stock_real_time_indicator_from_interfaces
 
 
 class StockStrategyMonitoringEstimation:
@@ -21,12 +23,45 @@ class StockStrategyMonitoringEstimation:
         # 返回 所有触发了条件的股票及信息的字典
         # 如 {'000002': [('sz000002', '万科A', 'pb', '0.98', '小于设定估值 0.99'), ('sz000002', '万科A', 'pe_ttm', '5.84', '3.39% 小于设定估值百分位 12%')], '600048': [('sh600048', '保利发展', 'pb', '1.07', '小于设定估值 1.1')]}
 
+        '''
         # 获取标的池中跟踪关注股票及他们的中文名称
         # {'000002': ('sz000002', '万科A'), '600048': ('sh600048', '保利发展')}
         tracking_stocks_names_dict = read_collect_target_stock.ReadCollectTargetStock().get_stocks_and_their_names()
+        '''
+        # 获取标的池中跟踪关注股票及他们的中文名称
+        # [{'stock_code': '000002', 'stock_name': '万科A', 'stock_code_with_init': 'sz000002', 'stock_code_with_market_code': '000002.XSHE'}, ,,,]
+        tracking_stocks_names_dict_list = data_miner_common_target_stock_operator.DataMinerCommonTargetStockOperator().get_stocks_and_their_names()
+        # 因标的池信息从文件为了数据库，为了保持业务逻辑不变，此处还原了tracking_stocks_names_dict的结构
+        # 如 {'000002': ('sz000002', '万科A'), '600048': ('sh600048', '保利发展')}
+        tracking_stocks_names_dict = dict()
+        for stock_info in tracking_stocks_names_dict_list:
+            stock_id_with_location_and_name_tuple = (stock_info["stock_code_with_init"],stock_info["stock_name"])
+            tracking_stocks_names_dict[stock_info["stock_code"]] = stock_id_with_location_and_name_tuple
+
+        '''
         # 获取标的池中跟踪关注股票及对应的估值方式和触发条件(估值，低于等于历史百分位)
         # 如，{'000002': {'pb': (0.95, 0.5), 'pe': (1, 2)}, '600048': {'pb': (0.95, 0.5)}}
         tracking_stocks_valuation_method_and_trigger_dict = read_collect_target_stock.ReadCollectTargetStock().get_stocks_valuation_method_and_trigger()
+        '''
+        # 获取标的池中跟踪关注股票及对应的估值方式和触发条件(估值，低于等于历史百分位)
+        # [{'stock_code': '000002', 'stock_name': '万科A', 'stock_code_with_init': 'sz000002', 'stock_code_with_market_code': '000002.XSHE', 'valuation_method': 'pb', 'trigger_value': Decimal('0.95'), 'trigger_percent': Decimal('0.50')},,,,]
+        tracking_stocks_valuation_method_and_trigger_dict_list = data_miner_common_target_stock_operator.DataMinerCommonTargetStockOperator().get_stocks_valuation_method_and_trigger()
+        # 因标的池信息从文件为了数据库，为了保持业务逻辑不变，tracking_stocks_valuation_method_and_trigger_dict的结构
+        # 如 {'000002': {'pb': (0.95, 0.5), 'pe': (1, 2)}, '600048': {'pb': (0.95, 0.5)}}
+        tracking_stocks_valuation_method_and_trigger_dict = dict()
+        for stock_info in tracking_stocks_valuation_method_and_trigger_dict_list:
+            stock_code = stock_info["stock_code"]
+            # 如果字典中还未保存过这个股票代码的信息
+            if stock_code not in tracking_stocks_valuation_method_and_trigger_dict:
+                stock_code_method_trigger_dict = dict()
+                stock_method_trigger_tuple = (float(stock_info["trigger_value"]), float(stock_info["trigger_percent"]))
+                stock_code_method_trigger_dict[stock_info["valuation_method"]] = stock_method_trigger_tuple
+                tracking_stocks_valuation_method_and_trigger_dict[stock_code] = stock_code_method_trigger_dict
+            # 如果字典中保存过这个股票代码的信息
+            else:
+                stock_code_method_trigger_dict = tracking_stocks_valuation_method_and_trigger_dict[stock_code]
+                stock_method_trigger_tuple = (float(stock_info["trigger_value"]), float(stock_info["trigger_percent"]))
+                stock_code_method_trigger_dict[stock_info["valuation_method"]] = stock_method_trigger_tuple
         # 保存所有触发了条件的股票
         triggered_stocks_info_dict = dict()
         for stock_code in tracking_stocks_names_dict:
@@ -165,6 +200,7 @@ class StockStrategyMonitoringEstimation:
         estimation_from_xueqiu = get_stock_real_time_indicator_from_xueqiu.GetStockRealTimeIndicatorFromXueqiu().get_single_stock_real_time_indicator(
            stock_id_name_tuple[0], estimation_method)
 
+
         # 如果实时估值小于等于触发条件
         if( float(estimation_from_xueqiu)<=trigger_tuple[0]):
             # 返回 股票上市地的代码, 中文名称, 估值方式, 估值, 提示信息
@@ -216,7 +252,7 @@ class StockStrategyMonitoringEstimation:
 if __name__ == '__main__':
     time_start = time.time()
     go = StockStrategyMonitoringEstimation()
-    result = go.main()
+    result = go.get_tracking_stocks_realtime_indicators_trigger_result_single_thread()
     print(result)
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
