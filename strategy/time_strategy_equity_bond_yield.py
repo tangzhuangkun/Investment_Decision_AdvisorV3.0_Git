@@ -6,6 +6,7 @@ import log.custom_logger as custom_logger
 import data_collector.collect_chn_gov_bonds_rates as collect_chn_gov_bonds_rates
 import data_collector.collect_index_estimation_from_lxr as collect_index_estimation_from_lxr
 import data_miner.data_miner_common_db_operator as data_miner_common_db_operator
+import data_miner.calculate_stock_bond_ratio as calculate_stock_bond_ratio
 
 class TimeStrategyEquityBondYield:
     # 择时策略，股债收益率
@@ -24,49 +25,6 @@ class TimeStrategyEquityBondYield:
         # 收集最新沪深300指数市值加权估值
         collect_index_estimation_from_lxr.CollectIndexEstimationFromLXR().main()
 
-
-    def truncate_table(self):
-        # 清空已计算好的股债比信息表
-        # 插入数据之前，先进行清空操作
-        truncating_sql = 'truncate table aggregated_data.stock_bond_ratio_di'
-
-        try:
-            db_operator.DBOperator().operate("update", "aggregated_data", truncating_sql)
-
-        except Exception as e:
-            # 日志记录
-            msg = '失败，无法清空 aggregated_data数据库中的stock_bond_ratio_di表' + '  ' + str(e)
-            custom_logger.CustomLogger().log_writter(msg, 'error')
-
-
-    def run_sql_script_and_cal_ratio(self):
-        # 运行mysql脚本以计算股债收益比
-
-        # 相对路径，是相对于程序执行命令所在的目录，./ 表示的不是脚本所在的目录，而是程序执行命令所在的目录，也就是所谓的当前目录。
-        with open("../data_miner/cal_stock_bond_ratio.sql", encoding='utf-8', mode='r') as script_f:
-            # 分割sql文件中的执行语句，挨句执行
-            sql_list = script_f.read().split(';')[:-1]
-            for x in sql_list:
-                # 判断包含空行的
-                if '\n' in x:
-                    # 替换空行为1个空格
-                    x = x.replace('\n', ' ')
-
-                # 判断多个空格时
-                if '    ' in x:
-                    # 替换为空
-                    x = x.replace('    ', '')
-
-                # sql语句添加分号结尾
-                inserting_sql = x + ';'
-
-                try:
-                    db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
-
-                except Exception as e:
-                    # 日志记录
-                    msg = '失败，无法成功运行mysql脚本以计算股债收益比' + '  ' + str(e)
-                    custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def cal_the_ratio_percentile_in_history(self):
         # 计算最新交易日期市盈率，10年期国债收益率，股债比，及历史百分位
@@ -142,8 +100,8 @@ class TimeStrategyEquityBondYield:
 
     def main(self):
         self.prepare_index_estimation_and_bond_rate()
-        self.truncate_table()
-        self.run_sql_script_and_cal_ratio()
+        # 运行mysql脚本，计算股债收益率
+        calculate_stock_bond_ratio.CalculateStockBondRatio().main()
         msg = self.generate_strategy_msg()
         return msg
 
