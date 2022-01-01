@@ -248,17 +248,17 @@ class StockStrategyMonitoringEstimation:
 
     def main(self):
         # 多线程，获取所有跟踪股票的实时指标的对预设条件的触发结果
-        self.get_tracking_stocks_realtime_indicators_trigger_result_multi_threads()
+        return self.get_tracking_stocks_realtime_indicators_trigger_result_multi_threads()
 
 
 
 if __name__ == '__main__':
     time_start = time.time()
     go = StockStrategyMonitoringEstimation()
+    result = go.main()
     #result = go.compare_realtime_estimation_with_triggers('000002','sz000002','万科A','pb',0.9,10)
     #result = go.get_tracking_stocks_realtime_indicators_trigger_result_multi_threads()
     #result = go.get_tracking_stocks_realtime_indicators_trigger_result_single_thread()
-    #print(result)
-    go.main()
+    print(result)
     time_end = time.time()
     print('Time Cost: ' + str(time_end - time_start))
