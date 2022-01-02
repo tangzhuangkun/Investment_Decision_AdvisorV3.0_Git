@@ -301,7 +301,7 @@ class FundStrategyPBEstimation:
                                             "--------" + "\n" + "预估扣商誉市净率: " + str(
                 pb_result_list[2]) + "\n" + "历史百分位: " + \
                                             str(decimal.Decimal(pb_result_list[3] * 100).quantize(
-                                                decimal.Decimal('0.00'))) + "%;" + "\n\n"
+                                                decimal.Decimal('0.00'))) + "%;\n"+"***************"+ "\n\n"
 
         # 日志记录
         log_msg = '市净率策略执行完毕'

@@ -311,7 +311,7 @@ class FundStrategyPEEstimation:
             indexes_and_real_time_PE_msg += index_code_info["index_name"] + ":  \n"+ "同比上一个交易日: "+str(pe_result_list[4])+"%;" +"\n"+"--------"+"\n"+"实时动态市盈率: "+\
                                             str(pe_result_list[0])+ "\n"+"历史百分位: "+str(decimal.Decimal(pe_result_list[1]*100).quantize(decimal.Decimal('0.00')))+"%;"+"\n"+\
                                             "--------"+"\n"+"预估扣非市盈率: "+str(pe_result_list[2])+ "\n"+"历史百分位: "+\
-                                            str(decimal.Decimal(pe_result_list[3]*100).quantize(decimal.Decimal('0.00')))+"%;"+ "\n\n"
+                                            str(decimal.Decimal(pe_result_list[3]*100).quantize(decimal.Decimal('0.00')))+"%;\n"+"***************"+ "\n\n"
 
         # 日志记录
         log_msg = '市盈率策略执行完毕'
