@@ -49,7 +49,8 @@ class WechatNotification:
         :param send_content: , 自定义的内容
         :return: send_content中的每个回车符号替换成两个
         '''
-        replaced_send_content = send_content.replace("\n","\n\n")
+        replaced_send_content = send_content.replace("\n\n","\n\n***********\n\n")
+        replaced_send_content = replaced_send_content.replace("\n","\n\n")
         return replaced_send_content
 
     def push_customized_content(self, token, object, send_content):
