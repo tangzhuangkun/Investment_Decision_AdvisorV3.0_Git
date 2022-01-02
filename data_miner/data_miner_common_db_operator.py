@@ -26,7 +26,7 @@ class DataMinerCommonDBOperation:
         selecting_result = db_operator.DBOperator().select_one("financial_data", selecting_sql)
 
         if selecting_result is not None:
-            return selecting_result["trading_date"]
+            return str(selecting_result["trading_date"])
         else:
             # 日志记录
             log_msg = "无法获取 "+day+" 最近的交易日期"
