@@ -3,6 +3,7 @@
 /*创建一个表，index_constituent_stocks_weights，用于存储 指数构成及权重*/
 
 USE financial_data;
+DROP TABLE IF EXISTS `index_constituent_stocks_weight`;
 CREATE TABLE IF NOT EXISTS `index_constituent_stocks_weight`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
@@ -27,6 +28,7 @@ COMMENT '指数构成及权重';
 /*创建一个表，mix_top10_with_bottom_no_repeat，用于存储 指数成分股及权重构成，最新top10与其它成分股，无重复股*/
 
 USE financial_data;
+DROP TABLE IF EXISTS `mix_top10_with_bottom_no_repeat`;
 CREATE TABLE IF NOT EXISTS `mix_top10_with_bottom_no_repeat`(
 	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
 	`index_code` VARCHAR(12) NOT NULL COMMENT '指数代码',
@@ -53,6 +55,7 @@ COMMENT '指数成分股及权重构成，最新top10与其它成分股，无重
 /*创建一个表，stocks_main_estimation_indexes_historical_data，用于存储 股票估值指标历史数据*/
 
 USE financial_data;
+DROP TABLE IF EXISTS `stocks_main_estimation_indexes_historical_data`;
 CREATE TABLE IF NOT EXISTS `stocks_main_estimation_indexes_historical_data`(
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`stock_code` VARCHAR(20) NOT NULL COMMENT '股票代码',
@@ -113,6 +116,7 @@ COMMENT '交易日期';
 /*创建一个表，chn_gov_bonds_rates_di，用于存储 中国国债到期收益率，日增表*/
 
 USE financial_data;
+DROP TABLE IF EXISTS `chn_gov_bonds_rates_di`;
 CREATE TABLE IF NOT EXISTS `chn_gov_bonds_rates_di`(
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`1m` VARCHAR(20) NOT NULL COMMENT '1月期限到期利率',

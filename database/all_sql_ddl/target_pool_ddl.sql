@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `stock_target`(
 COMMENT '跟踪指数及跟踪策略标的池';
 
 insert into stock_target (stock_code, stock_name, exchange_location_1, exchange_location_2, valuation_method, trigger_value, trigger_percent, p_day )
-values ('000002','万科A','sz','XSHE','pb',0.95,0.5,'2021-12-16');
+values ('000002','万科A','sz','XSHE','pb',0.9,5,'2021-12-16');
 
 insert into stock_target (stock_code, stock_name, exchange_location_1, exchange_location_2, valuation_method, trigger_value, trigger_percent, p_day )
-values ('600048','保利发展','sh','XSHG','pb',0.89,10,'2021-12-16');
+values ('600048','保利发展','sh','XSHG','pb',0.89,20,'2021-12-16');
