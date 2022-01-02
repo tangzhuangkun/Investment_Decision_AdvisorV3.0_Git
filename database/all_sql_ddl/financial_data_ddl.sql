@@ -84,12 +84,13 @@ CREATE TABLE IF NOT EXISTS `stocks_main_estimation_indexes_historical_data`(
 	`securities_balances` DECIMAL(24,6) DEFAULT 0 COMMENT '融券余额',
 	`stock_connect_holding_amount` DECIMAL(24,6) DEFAULT NULL COMMENT '陆股通持仓金额',
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '提交时间',
+	UNIQUE INDEX (`stock_code`, `date`),
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '股票估值指标历史数据';
 
 /* 加索引*/
-ALTER TABLE stocks_main_estimation_indexes_historical_data add unique index (stock_code, date);
+-- ALTER TABLE stocks_main_estimation_indexes_historical_data add unique index (stock_code, date);
 
 
 /* --------- user：investor1 ------ */
