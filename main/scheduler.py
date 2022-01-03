@@ -54,10 +54,10 @@ class Scheduler:
 			custom_logger.CustomLogger().log_writter(e, 'error')
 
 		try:
-			# 每一分钟执行一次股票的监控策略
+			# 每10分钟执行一次股票的监控策略
 			scheduler.add_job(func=notification_plan_during_trading.NotificationPlanDuringTrading().minutely_estimation_notification,
 							  trigger='cron',
-							  hour='9,10,11,13,14',minute='0-59', second='0',day_of_week='mon,tue,wed,thu,fri',
+							  hour='9,10,11,13,14',minute='5,15,25,35,45,55',day_of_week='mon,tue,wed,thu,fri',
 							  id='tradingdaymonitorstocksestimationsandtriggers')
 		except Exception as e:
 			# 抛错
