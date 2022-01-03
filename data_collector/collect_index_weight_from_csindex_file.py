@@ -251,6 +251,8 @@ class CollectIndexWeightFromCSIndexFile:
                 elif c==2:
                     # 指数名称
                     index_name = sheet.row_values(r)[c]
+                    if(index_name=="800消费"):
+                        index_name = "中证消费"
                     row_content_list.append(index_name)
                 elif c==4:
                     # 股票代码
