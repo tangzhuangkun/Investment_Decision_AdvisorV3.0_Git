@@ -93,7 +93,7 @@ class TimeStrategyEquityBondYield:
             msg += "需特别注意，已进入重点投资区间\n\n"
         msg += str(today_info_dict['trading_date']) + ': \n'
         msg += '股债比: ' + str(today_info_dict['ratio']) + '\n'
-        msg += '自2010年百分位: ' + str(today_info_dict['percent'])+'%' + '\n'
+        msg += '自2010年百分位: ' + str(round(today_info_dict['percent'],6))+'%' + '\n'
         msg += '沪深300市盈率: ' + str(today_info_dict['pe']) + '\n'
         msg += '国债收益率: ' + str(today_info_dict['bond']) + '\n'
         return msg
