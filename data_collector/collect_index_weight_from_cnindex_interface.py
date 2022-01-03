@@ -5,6 +5,7 @@ import requests
 import time
 import json
 import threading
+import datetime
 
 import sys
 sys.path.append("..")
@@ -22,17 +23,18 @@ class CollectIndexWeightFromCNIndexInterface:
     def __init__(self):
         pass
 
-    def call_interface_to_get_index_weight(self, index_id, current_month, header, proxy):
+    def call_interface_to_get_index_weight(self, index_id, month, header, proxy):
         # 调用国证指数公司接口获取指数成分股及权重
         # index_id: 指数代码（6位数字， 如 399396）
-        # current_month，所查月份，如 2021-12
+        # month，所查月份，如 2021-12
         # header，伪装的UA
         # proxy，伪装的IP
         # 返回 tuple (截止日期, [成份股代码，名称，上市地，交易所代码，权重])
         # 如 ( '2021-09-24', [['600519', '贵州茅台','sh','XSHG',15.19'], ['600887', '伊利股份','sh','XSHG',10.37'], ,,,,])
 
         # 地址模板
-        page_address = 'http://www.cnindex.com.cn/sample-detail/detail?indexcode='+index_id+'&dateStr='+current_month+'&pageNum=1&rows=1000'
+        #page_address = 'http://www.cnindex.com.cn/sample-detail/detail?indexcode='+index_id+'&dateStr='+current_month+'&pageNum=1&rows=1000'
+        page_address = 'http://www.cnindex.com.cn/sample-detail/detail?indexcode=' + index_id + '&dateStr='+month+'&pageNum=1&rows=1000'
 
         # 返回成份股信息，成份股代码，名称，权重
         # [['600519', '贵州茅台','sh','XSHG',15.19'], ['600887', '伊利股份','sh','XSHG',10.37'], ,,,,]
@@ -54,6 +56,10 @@ class CollectIndexWeightFromCNIndexInterface:
                                     timeout=10).text
             # 转换成字典数据
             data_json = json.loads(raw_page)
+            # 如果国证还没更新本月的最新数据
+            # 如果接口获取到数据内容为空，数据量也为0的话，直接返空
+            if(data_json["data"]==None and data_json["total"]==0):
+                return None,None
             # 获取更新日期
             update_date = data_json['data']['rows'][1]['dateStr']
             # 遍历成分股权重列表
@@ -121,7 +127,26 @@ class CollectIndexWeightFromCNIndexInterface:
         proxy = {'https': 'https://' + ip_address['ip_address']}
         current_month = time.strftime("%Y-%m", time.localtime())
 
-        return self.call_interface_to_get_index_weight(index_id, current_month, header, proxy)
+        # 1. 获取「今天」
+        today = datetime.date.today()
+        # 2. 获取当前月的第一天
+        first = today.replace(day=1)
+        # 3. 减一天，得到上个月的最后一天
+        last_month = (first - datetime.timedelta(days=1)).strftime("%Y-%m")
+
+        # 所有需要检查的月份
+        # 因为国证官网，每月可能会更新两次数据，月中旬及月末
+        # 月中旬更新用本月月份检查
+        # 月末更新用上月月份检查
+        # 优先检查本月的
+        months = [current_month,last_month]
+
+        for month in months:
+            update_date, stocks_detail_info_list = self.call_interface_to_get_index_weight(index_id, month, header, proxy)
+            # 如果有数据返回
+            if(update_date != None and stocks_detail_info_list!=None):
+                return update_date, stocks_detail_info_list
+        return None, None
 
 
     def get_cn_index_from_index_target(self):
@@ -183,15 +208,9 @@ class CollectIndexWeightFromCNIndexInterface:
 
         for i in range(file_content_len):
             # 对比股票代码是否一致
-            s_stock_code = stocks_detail_info_list[i][0]
-            db_stock_code = db_index_content[i]["stock_code"]
-
-            s_stock_weight = stocks_detail_info_list[i][4]
-            db_stock_weight = float(db_index_content[i]["weight"])
             if (stocks_detail_info_list[i][0] != db_index_content[i]["stock_code"]):
                 return False
             # 对比股票权重是否一致
-
             elif (stocks_detail_info_list[i][4] != float(db_index_content[i]["weight"])):
                 return False
             # 对比发布日期是否一致
@@ -236,6 +255,7 @@ class CollectIndexWeightFromCNIndexInterface:
         update_date, stocks_detail_info_list = self.get_single_index_latest_constituent_stock_and_weight(index_code)
         # 指数名称
         index_name = target_cn_index_dict[index_code]
+
         # 检查是否储存过
         is_saved_before = self.check_if_saved_before(index_code, update_date, stocks_detail_info_list)
         # 如果储存过，则跳过
