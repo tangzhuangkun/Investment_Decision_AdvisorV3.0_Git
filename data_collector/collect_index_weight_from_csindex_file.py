@@ -229,6 +229,10 @@ class CollectIndexWeightFromCSIndexFile:
         #   ['2021-11-30', '399997', '中证白酒', '600519', '贵州茅台', 'sh', 'XSHG', 15.619],,,]
         file_content_list = []
 
+        # 从文件名解析出指数名称
+        # 保持整个项目中，指数名称的使用保持一致
+        index_name = file_name.split("_")[1]
+
         # 打开xls文件,xlrd用于读取xld
         workbook = xlrd.open_workbook(self.index_weight_samples_path+file_name)
         # 打开第一张表
@@ -250,9 +254,7 @@ class CollectIndexWeightFromCSIndexFile:
                     row_content_list.append(index_code)
                 elif c==2:
                     # 指数名称
-                    index_name = sheet.row_values(r)[c]
-                    if(index_name=="800消费"):
-                        index_name = "中证消费"
+                    #index_name = sheet.row_values(r)[c]
                     row_content_list.append(index_name)
                 elif c==4:
                     # 股票代码
