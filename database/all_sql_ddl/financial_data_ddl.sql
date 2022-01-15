@@ -217,3 +217,26 @@ CREATE TABLE IF NOT EXISTS `CSI_300_index_stocks`(
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '沪深300指数的成分股';
 */
+
+
+/* --------- user：investor1 ------ */
+/* --------- db：financial_data ------ */
+/*创建一个表，excellent_performance_indices_di，用于存储 多年表现优异的指数*/
+
+USE financial_data;
+DROP TABLE IF EXISTS `index_excellent_performance_indices_di`;
+CREATE TABLE IF NOT EXISTS `index_excellent_performance_indices_di`(
+	`id` MEDIUMINT NOT NULL AUTO_INCREMENT,
+	`index_code` VARCHAR(60) NOT NULL COMMENT '指数代码',
+	`index_name` VARCHAR(60) NOT NULL COMMENT '指数名称',
+	`index_company` VARCHAR(60) NOT NULL COMMENT '指数开发公司',
+	`three_year_yield_rate` DECIMAL(5,2) DEFAULT NULL COMMENT '近3年年化收益率',
+	`five_year_yield_rate` DECIMAL(5,2) DEFAULT NULL COMMENT '近5年年化收益率',
+	`relative_fund_code` VARCHAR(10) DEFAULT NULL COMMENT '跟踪指数基金代码',
+	`relative_fund_name` VARCHAR(60) DEFAULT NULL COMMENT '跟踪指数基金名称',
+	`p_day` DATE DEFAULT NULL COMMENT '业务日期',
+    `submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
+    UNIQUE INDEX (index_code, p_day),
+	PRIMARY KEY ( `id` )
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+COMMENT '表现优异的指数及其跟踪基金';
