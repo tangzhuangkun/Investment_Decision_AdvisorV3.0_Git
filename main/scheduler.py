@@ -15,6 +15,7 @@ import data_miner.calculate_index_historial_estimations as calculate_index_histo
 import data_collector.collect_csindex_top_10_stocks_weight_daily as collect_csindex_top_10_stocks_weight_daily
 import data_collector.collect_index_weight_from_csindex_file as collect_index_weight_from_csindex_file
 import data_collector.collect_index_weight_from_cnindex_interface as collect_index_weight_from_cnindex_interface
+import data_collector.collect_excellent_index_from_cs_index as collect_excellent_index_from_cs_index
 
 class Scheduler:
 	# 任务调度器，根据时间安排工作
@@ -105,6 +106,16 @@ class Scheduler:
 							  trigger='cron',
 							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=3,
 							  id='weekdayCollectCSIndexTop10StocksWeight')
+		except Exception as e:
+			# 抛错
+			custom_logger.CustomLogger().log_writter(e, 'error')
+
+		try:
+			# 每个交易日18：03, 从中证指数官网接口收集过去几年表现优异的指数
+			scheduler.add_job(func=collect_excellent_index_from_cs_index.CollectExcellentIndexFromCSIndex().main,
+							  trigger='cron',
+							  month='1-12', day_of_week='mon,tue,wed,thu,fri', hour=18, minute=3,
+							  id='weekdayCollectCSExcellentIndices')
 		except Exception as e:
 			# 抛错
 			custom_logger.CustomLogger().log_writter(e, 'error')
