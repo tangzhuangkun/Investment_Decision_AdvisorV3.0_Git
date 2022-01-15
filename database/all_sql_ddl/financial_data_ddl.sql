@@ -236,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `index_excellent_performance_indices_di`(
 	`relative_fund_name` VARCHAR(60) DEFAULT NULL COMMENT '跟踪指数基金名称',
 	`p_day` DATE DEFAULT NULL COMMENT '业务日期',
     `submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
-    UNIQUE INDEX (index_code, p_day),
+    UNIQUE INDEX (index_code, relative_fund_code, p_day),
 	PRIMARY KEY ( `id` )
 	)ENGINE=InnoDB DEFAULT CHARSET=utf8
 COMMENT '表现优异的指数及其跟踪基金';
