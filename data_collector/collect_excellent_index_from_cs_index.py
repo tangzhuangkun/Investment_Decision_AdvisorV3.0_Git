@@ -10,9 +10,10 @@ import sys
 sys.path.append("..")
 import parsers.disguise as disguise
 import log.custom_logger as custom_logger
+import database.db_operator as db_operator
 
 class CollectExcellentIndexFromCSIndex:
-    # 从中证指数官网接口获取过去几年表现优异的指数
+    # 从中证指数官网接口收集过去几年表现优异的指数
 
     def __init__(self):
 
@@ -147,9 +148,11 @@ class CollectExcellentIndexFromCSIndex:
                 return
 
             index_name = data_json["indexNameCn"]
+            p_day = data_json["endDate"]
 
             index_performance_dict["index_code"] = index_code
             index_performance_dict["index_name"] = index_name
+            index_performance_dict["p_day"] = p_day
 
             three_year_yield_rate = 0
             five_year_yield_rate = 0
@@ -210,6 +213,7 @@ class CollectExcellentIndexFromCSIndex:
         '''
         收集满足预设年化收益率的指数信息
         :return:
+        # 如 [{'index_code': '930758', 'index_name': '凤凰50', 'p_day': '2022-01-14', 'three_year_yield_rate': 27.12, 'five_year_yield_rate': 16.52, 'relative_funds': [{'512190': '浙商汇金中证凤凰50ETF'}, {'007431': '浙商汇金中证凤凰50ETF联接'}]}, ,,，，，]
         '''
 
         # 获取所有指数的代码
@@ -308,16 +312,60 @@ class CollectExcellentIndexFromCSIndex:
         return self.parse_interface_to_get_index_relative_funds(index_code, header, proxy)
 
 
+    def collect_and_save(self):
+        # 存储符合收集标准的指数
+        # 如 [{'index_code': '930758', 'index_name': '凤凰50', 'p_day': '2022-01-14', 'three_year_yield_rate': 27.12, 'five_year_yield_rate': 16.52, 'relative_funds': [{'512190': '浙商汇金中证凤凰50ETF'}, {'007431': '浙商汇金中证凤凰50ETF联接'}]}, ,,，，，]
+        satisfied_index_list = self.check_all_index_and_get_all_excellent_index()
 
+        # 遍历
+        for index_info in satisfied_index_list:
+            # 指数代码
+            index_code = index_info.get("index_code")
+            # 指数名称
+            index_name = index_info.get("index_name")
+            # 指数近3年年化收益率
+            three_year_yield_rate = index_info.get("three_year_yield_rate")
+            # 指数近5年年化收益率
+            five_year_yield_rate = index_info.get("five_year_yield_rate")
+            # 业务日期
+            p_day =  index_info.get("p_day")
+            # 所有关联的跟踪指数基金
+            relative_funds = index_info.get("relative_funds")
+            # 遍历这些指数基金
+            for fund in relative_funds:
+                for relative_fund_code in fund:
+                    # 基金名称
+                    relative_fund_name = fund.get(relative_fund_code)
+                    try:
+                        # 插入的SQL
+                        inserting_sql = "INSERT INTO index_excellent_performance_indices_di(index_code,index_name," \
+                                        "index_company,three_year_yield_rate,five_year_yield_rate,relative_fund_code," \
+                                        "relative_fund_name,p_day)" \
+                                        "VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')" % (
+                                            index_code,index_name, '中证', three_year_yield_rate,five_year_yield_rate,
+                                            relative_fund_code,relative_fund_name,p_day)
+                        db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
+                        # 日志记录
+                        msg = '将从中证官网接口获取的优异指数' + p_day + index_code + index_name + ' 存入数据库时成功'
+                        custom_logger.CustomLogger().log_writter(msg, 'info')
+
+                    except Exception as e:
+                        # 日志记录
+                        msg = '将从中证官网接口获取的优异指数' + p_day + index_code + index_name + ' 存入数据库时错误  ' + str(e)
+                        custom_logger.CustomLogger().log_writter(msg, 'error')
+
+    def main(self):
+        self.collect_and_save()
 
 if __name__ == '__main__':
     time_start = time.time()
     go = CollectExcellentIndexFromCSIndex()
+    go.main()
     #result = go.call_interface_to_get_all_index_code_name_from_cs_index()
     #result = go.call_interface_to_get_single_index_past_performance("399997")
     #print(result)
-    result = go.check_all_index_and_get_all_excellent_index()
-    print(result)
+    #result = go.check_all_index_and_get_all_excellent_index()
+    #print(result)
     #result = go.get_satisfied_index_relative_funds("930758")
     #print(result)
     #go.call_interface_to_get_single_index_past_performance("H50059")
