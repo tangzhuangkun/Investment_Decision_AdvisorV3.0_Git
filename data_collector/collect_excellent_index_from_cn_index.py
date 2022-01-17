@@ -119,11 +119,11 @@ class CollectExcellentIndexFromCNIndex:
 
             # 判断接口是否调用成功
             if (raw_data["code"] != 200):
-                return relative_funds_list
+                return []
 
             # 如果目前无跟踪产品
             if (raw_data["data"]==None):
-                return relative_funds_list
+                return []
 
             # 获取data数据
             data_json = raw_data["data"]["rows"]
