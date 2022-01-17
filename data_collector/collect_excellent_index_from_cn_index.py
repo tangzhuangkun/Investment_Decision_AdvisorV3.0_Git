@@ -345,8 +345,11 @@ class CollectExcellentIndexFromCNIndex:
 
 
 if __name__ == '__main__':
+    time_start = time.time()
     go = CollectExcellentIndexFromCNIndex()
     go.main()
     #result = go.get_satisfied_index_relative_funds("483060")
     #result = go.call_interface_to_get_all_index_code_from_cn_index()
     #print(result)
+    time_end = time.time()
+    print('Time Cost: ' + str(time_end - time_start))
