@@ -271,12 +271,12 @@ class CollectExcellentIndexFromCSIndex:
 
             # 判断接口是否调用成功
             if (not raw_data["success"]):
-                return
+                return []
 
             # 获取data数据
             data_json = raw_data["data"]
             if (data_json == None):
-                return
+                return []
 
             # 遍历获取到的接口数据
             for fund_info in data_json:
@@ -346,12 +346,12 @@ class CollectExcellentIndexFromCSIndex:
                                             relative_fund_code,relative_fund_name,p_day)
                         db_operator.DBOperator().operate("insert", "financial_data", inserting_sql)
                         # 日志记录
-                        msg = '将从中证官网接口获取的优异指数' + p_day + index_code + index_name + ' 存入数据库时成功'
+                        msg = '将从中证官网接口获取的优异指数 ' + p_day +" "+index_code + " "+index_name + ' 存入数据库时成功'
                         custom_logger.CustomLogger().log_writter(msg, 'info')
 
                     except Exception as e:
                         # 日志记录
-                        msg = '将从中证官网接口获取的优异指数' + p_day + index_code + index_name + ' 存入数据库时错误  ' + str(e)
+                        msg = '将从中证官网接口获取的优异指数 ' + p_day+" "+index_code + " "+index_name+" "+' 存入数据库时错误  ' + str(e)
                         custom_logger.CustomLogger().log_writter(msg, 'error')
 
     def main(self):
