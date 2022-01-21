@@ -23,14 +23,15 @@ class DataCollectorCommonIndexCollector:
         proxy = {'http': 'https://' + ip_address['ip_address']}
 
         # 接口地址
-        # 接口返回: 指数名称，当前点数，当前价格，涨跌率，成交量（手），成交额（万元）；
-        # 接口返回如： var hq_str_s_sz399997="中证白酒,17305.78,66.408,0.39,1882235,1917906";
+        # 接口返回: 指数名称，当前点数，当前价格，涨跌, 涨跌率，成交量（手），成交额（万元）, ,总市值；
+        # 接口返回如： 涨跌率, -0.86;
         # 只取 涨跌率
-        url = 'https://hq.sinajs.cn/list=s_'+index_code_with_location
+        url = 'https://qt.gtimg.cn/q=s_'+index_code_with_location
         content = requests.get(url, headers=header, proxies=proxy)
-        content_split = content.text.split(',')
+        content_split = content.text.split('~')
+        #return content_split
         #return float(content_split[3])
-        return decimal.Decimal(content_split[3])
+        return decimal.Decimal(content_split[5])
 
 if __name__ == '__main__':
     time_start = time.time()
