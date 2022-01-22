@@ -1,6 +1,6 @@
 /* --------- user：investor1 ------ */
 /* --------- db：target_pool ------ */
-/*创建一个表，fund_target，用于存储基金标的,对应策略*/
+/*创建一个表，index_target，用于存储基金标的,对应策略*/
 USE  target_pool;
 CREATE TABLE IF NOT EXISTS `index_target`(
     `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `stock_target`(
 	`submission_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
 	PRIMARY KEY ( `id` )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
-COMMENT '跟踪指数及跟踪策略标的池';
+COMMENT '跟踪股票及跟踪策略标的池';
 
 insert into stock_target (stock_code, stock_name, exchange_location_1, exchange_location_2, valuation_method, trigger_value, trigger_percent, p_day )
 values ('000002','万科A','sz','XSHE','pb',0.9,5,'2021-12-16');
